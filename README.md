@@ -1,181 +1,174 @@
-<p align="center">
-    <img src="assets/logo.svg" alt="PyMax" width="400">
-</p>
+# PyMax
 
-<p align="center">
-    <strong>Python wrapper для API мессенджера Max</strong>
-</p>
+Python-библиотека для Max API.
 
-> [!CAUTION]
-> ## 📦 Проект в режиме read-only (архивируется)
-> Этот репозиторий **больше не поддерживается**. Новые фичи и фиксы **не принимаются**,
-> Issues/PR могут быть отключены, релизы **не планируются**.
->
->
-> **Что делать пользователям:**
-> - ✅ Переходите на аналоги (если есть)
-> - ✅ Зафиксируйте версию: `maxapi-python==X.Y.Z`
-> - ⚠️ Используйте на свой риск: внутренний API Max может измениться без предупреждения
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Package](https://img.shields.io/badge/package-maxapi--python-orange.svg)](https://pypi.org/project/maxapi-python/)
 
-<p align="center">
-    <img src="https://img.shields.io/badge/python-3.10+-3776AB.svg" alt="Python 3.11+">
-    <img src="https://img.shields.io/badge/License-MIT-2f9872.svg" alt="License: MIT">
-    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
-    <img src="https://img.shields.io/badge/packaging-uv-D7FF64.svg" alt="Packaging">
-</p>
+> [!WARNING]
+> PyMax использует неофициальный внутренний API Max. API может измениться без
+> предупреждения, а использование библиотеки может нарушать условия сервиса.
+> Вы используете PyMax на свой риск; авторы и контрибьюторы не несут
+> ответственности за блокировки аккаунтов, потерю данных или другие последствия.
 
+## Что это
 
----
-> ⚠️ **Дисклеймер**
->
-> *   Это **неофициальная** библиотека для работы с внутренним API Max.
-> *   Использование может **нарушать условия предоставления услуг** сервиса.
-> *   **Вы используете её исключительно на свой страх и риск.**
-> *   **Разработчики и контрибьюторы не несут никакой ответственности** за любые последствия использования этого пакета, включая, но не ограничиваясь: блокировку аккаунтов, утерю данных, юридические риски и любые другие проблемы.
-> *   API может быть изменен в любой момент без предупреждения.
----
+**PyMax** - асинхронная Python-библиотека для внутреннего API Max. Она умеет
+авторизоваться в аккаунте, слушать события, отправлять сообщения, работать с
+чатами, пользователями, файлами, сессиями и доменными типами Max через TCP или
+WebSocket.
 
-## Описание
+## Возможности
 
-**`pymax`** — асинхронная Python библиотека для работы с API мессенджера Max. Предоставляет интерфейс для отправки сообщений, управления чатами, каналами и диалогами через WebSocket соединение.
-
-### Основные возможности
-
-- Вход по номеру телефона
-- Отправка, редактирование и удаление сообщений
-- Работа с чатами и каналами
-- История сообщений
+- Авторизация по телефону и SMS-коду через `Client`.
+- QR-авторизация web-клиента через `WebClient`.
+- Роутеры, фильтры, `on_start`, raw-события и typed events.
+- Сообщения: отправка, ответы, reply, реакции, pin, read, delete и история.
+- Чаты, группы, участники, invite-ссылки и настройки групп.
+- Пользователи, контакты, профиль, папки, активные сессии и 2FA.
+- Вложения: `Photo`, `File`, `Video`.
+- SQLite-сессии, sync-state, reconnect и debug-логи.
+- Pydantic-модели и удобные domain-объекты.
 
 ## Установка
 
-> [!IMPORTANT]
-> Для работы библиотеки требуется Python 3.10 или выше
-
-### Установка через pip
+Требуется Python 3.10 или новее.
 
 ```bash
 pip install -U maxapi-python
 ```
 
-### Установка через uv
+Через `uv`:
 
 ```bash
 uv add -U maxapi-python
 ```
 
+Напрямую из репозитория:
+
+```bash
+pip install git+https://github.com/MaxApiTeam/PyMax.git
+```
+
 ## Быстрый старт
 
-### Аутентификация (`device_type`)
-
-> [!IMPORTANT]
-> Параметр `device_type` в `UserAgentPayload` **критически важен** для выбора способа авторизации:
-
-**Вход по номеру телефона (DESKTOP):**
-
-```python
-from pymax import SocketMaxClient
-from pymax.payloads import UserAgentPayload
-
-ua = UserAgentPayload(device_type="DESKTOP", app_version="25.12.13")
-
-client = SocketMaxClient(
-    phone="+79111111111",
-    work_dir="cache",
-    headers=ua,
-)
-```
-
-**Вход через QR-код (WEB)** — токен совместим с веб-версией Max:
-
-```python
-from pymax import MaxClient
-from pymax.payloads import UserAgentPayload
-
-ua = UserAgentPayload(device_type="WEB", app_version="25.12.13")
-
-client = MaxClient(
-    phone="+7911111111",
-    work_dir="cache",
-    headers=ua,
-)
-```
-
-### Базовый пример использования
+`Client` использует TCP-соединение. При первом запуске PyMax попросит SMS-код
+и сохранит сессию в SQLite-файл; дальше этот файл используется автоматически.
 
 ```python
 import asyncio
 
-from pymax import MaxClient, Message
-from pymax.filters import Filters
+from pymax import Client, Message
 
-client = MaxClient(
-    phone="+1234567890",
-    work_dir="cache",  # директория для сессий
+client = Client(
+    phone="+79990000000",
+    work_dir="cache",
+    session_name="main.db",
 )
 
 
-# Обработка входящих сообщений
-@client.on_message(Filters.chat(0))  # фильтр по ID чата
-async def on_message(msg: Message) -> None:
-    print(f"[{msg.sender}] {msg.text}")
-
-    await client.send_message(
-        chat_id=msg.chat_id,
-        text="Привет, я бот на PyMax!",
-    )
-
-    await client.add_reaction(
-        chat_id=msg.chat_id,
-        message_id=str(msg.id),
-        reaction="👍",
-    )
+@client.on_start()
+async def on_start(client: Client) -> None:
+    print("Клиент запущен")
+    print("Ваш ID:", client.me.contact.id if client.me else "unknown")
 
 
-@client.on_start
-async def on_start() -> None:
-    print(f"Клиент запущен. Ваш ID: {client.me.id}")
+@client.on_message()
+async def on_message(message: Message, client: Client) -> None:
+    print(message.chat_id, message.sender, message.text)
 
-    # Получение истории
-    history = await client.fetch_history(chat_id=0)
-    print("Последние сообщения из чата 0:")
-    for m in history:
-        print(f"- {m.text}")
+    if message.chat_id is not None and message.text:
+        await message.answer("Привет от PyMax")
 
 
-async def main():
-    await client.start()  # подключение и авторизация
+async def main() -> None:
+    await client.start()
 
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## Документация
+## WebClient
 
-[GitHub Pages](https://maxapiteam.github.io/PyMax/)
-[DeepWiki](https://deepwiki.com/MaxApiTeam/PyMax)
+`WebClient` использует WebSocket и QR-авторизацию:
+
+```python
+import asyncio
+
+from pymax import WebClient
+
+client = WebClient(work_dir="cache", session_name="web.db")
+
+
+@client.on_start()
+async def on_start(client: WebClient) -> None:
+    print("Web-клиент запущен")
+
+
+asyncio.run(client.start())
+```
+
+## Роутеры
+
+Обработчики можно регистрировать на клиенте или вынести в отдельный роутер.
+Handler всегда принимает событие и клиента: `(event, client)`.
+
+```python
+from pymax import Client, ClientRouter, Message
+
+router = ClientRouter()
+
+
+def is_start(message: Message) -> bool:
+    return message.text == "/start"
+
+
+@router.on_message(is_start)
+async def start(message: Message, client: Client) -> None:
+    await message.answer("Готово")
+
+
+client = Client(phone="+79990000000", work_dir="cache")
+client.include_router(router)
+```
+
+## Куда дальше
+
+- [Getting Started](docs/getting-started.rst) - первый запуск и сессии.
+- [Client](docs/client.rst) - жизненный цикл клиента, reconnect и sync-state.
+- [Router](docs/router.rst) - роутеры, фильтры и raw events.
+- [Messages](docs/messages.rst) - сообщения, реакции, история и вложения.
+- [Files](docs/files.rst) - отправка и скачивание файлов.
+- [FAQ](docs/faq.rst) и [Troubleshooting](docs/troubleshooting.rst) - частые
+  проблемы.
+
+Опубликованная документация:
+
+- [docs.pymax.org](https://docs.pymax.org/)
+- [DeepWiki](https://deepwiki.com/MaxApiTeam/PyMax)
+
+## Разработка
+
+```bash
+uv sync --all-groups
+uv run python -c "import pymax; print(pymax.__all__)"
+uv run sphinx-build -b html docs docs/_build/html
+```
+
+## Ссылки
+
+- [GitHub](https://github.com/MaxApiTeam/PyMax)
+- [PyPI](https://pypi.org/project/maxapi-python/)
+- [Telegram](https://t.me/pymax_news)
 
 ## Лицензия
 
-Этот проект распространяется под лицензией MIT. См. файл [LICENSE](LICENSE) для получения информации.
-
-## Новости
-
-[Telegram](https://t.me/pymax_news)
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=ink-developer/PyMax&type=date&legend=top-left)](https://www.star-history.com/#ink-developer/PyMax&type=date&legend=top-left)
+Проект распространяется под лицензией MIT. Подробности см. в [LICENSE](LICENSE).
 
 ## Авторы
-- **[ink](https://github.com/ink-developer)** — Главный разработчик, исследование API и его документация
-- **[noxzion](https://github.com/noxzion)** — Оригинальный автор проекта
 
-
-## Контрибьюторы
-
-Спасибо всем за помощь в разработке!
-
-<a href="https://github.com/MaxApiTeam/PyMax/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ink-developer/PyMax" />
-</a>
+- [ink](https://github.com/ink-developer) - основной разработчик, исследование
+  API и документация.
+- [noxzion](https://github.com/noxzion) - оригинальный автор проекта.

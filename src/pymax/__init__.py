@@ -1,113 +1,58 @@
-"""
-Python wrapper для API мессенджера Max
-"""
+__version__ = "2.0.0"
 
-from .core import (
-    MaxClient,
-    SocketMaxClient,
-)
-from .exceptions import (
-    InvalidPhoneError,
-    LoginError,
-    ResponseError,
-    ResponseStructureError,
-    SocketNotConnectedError,
-    SocketSendError,
-    WebSocketNotConnectedError,
-)
-from .files import (
-    File,
-    Photo,
-)
-from .static.enum import (
-    AccessType,
-    AttachType,
-    AuthType,
-    ChatType,
-    ContactAction,
-    DeviceType,
-    ElementType,
-    FormattingType,
-    MarkupType,
-    MessageStatus,
-    MessageType,
-    Opcode,
-)
-from .types import (
-    Channel,
-    Chat,
-    Contact,
-    ControlAttach,
-    Dialog,
-    Element,
-    FileAttach,
-    FileRequest,
-    Me,
-    Member,
-    Message,
-    MessageLink,
-    Name,
-    Names,
-    PhotoAttach,
-    Presence,
-    ReactionCounter,
-    ReactionInfo,
-    Session,
-    User,
-    VideoAttach,
-    VideoRequest,
-)
 
-__author__ = "ink-developer"
+from .auth import (
+    AuthFlow,
+    ConsolePasswordProvider,
+    ConsoleQrHandler,
+    ConsoleSmsCodeProvider,
+    PasswordProvider,
+    QrAuthFlow,
+    QrHandler,
+    SmsAuthFlow,
+    SmsCodeProvider,
+)
+from .client import Client
+from .client_web import WebClient
+from .config import ExtraConfig
+from .dispatch import EventType, Router
+from .exceptions import ApiError, PyMaxError, UploadError
+from .files import File, Photo, Video
+from .logging import configure_logging
+from .routers import ClientRouter, WebRouter
+from .types import Chat, Message, MessageDeleteEvent, Profile, User
+from .types.domain.sync import SyncOverrides, SyncState
 
-__all__ = [
-    # Перечисления и константы
-    "AccessType",
-    "AttachType",
-    "AuthType",
-    # Типы данных
-    "Channel",
+__all__ = (
+    "ApiError",
+    "AuthFlow",
     "Chat",
-    "ChatType",
-    "Contact",
-    "ContactAction",
-    "ControlAttach",
-    "DeviceType",
-    "Dialog",
-    "Element",
-    "ElementType",
+    "Client",
+    "ClientRouter",
+    "ConsolePasswordProvider",
+    "ConsoleQrHandler",
+    "ConsoleSmsCodeProvider",
+    "EventType",
+    "ExtraConfig",
     "File",
-    "FileAttach",
-    "FileRequest",
-    "FormattingType",
-    # Исключения
-    "InvalidPhoneError",
-    "LoginError",
-    "MarkupType",
-    # Клиент
-    "MaxClient",
-    "Me",
-    "Member",
     "Message",
-    "MessageLink",
-    "MessageStatus",
-    "MessageType",
-    "Name",
-    "Names",
-    "Opcode",
+    "MessageDeleteEvent",
+    "PasswordProvider",
     "Photo",
-    "PhotoAttach",
-    "Presence",
-    "ReactionCounter",
-    "ReactionInfo",
-    "ResponseError",
-    "ResponseStructureError",
-    "Session",
-    "SocketMaxClient",
-    "SocketNotConnectedError",
-    "SocketSendError",
+    "Profile",
+    "PyMaxError",
+    "QrAuthFlow",
+    "QrHandler",
+    "Router",
+    "SmsAuthFlow",
+    "SmsCodeProvider",
+    "SyncOverrides",
+    "SyncState",
+    "UploadError",
     "User",
-    "VideoAttach",
-    "VideoRequest",
-    "WebSocketNotConnectedError",
-]
+    "Video",
+    "WebClient",
+    "WebRouter",
+    "__version__",
+    "configure_logging",
+)

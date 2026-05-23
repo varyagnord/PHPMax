@@ -1,108 +1,41 @@
-class InvalidPhoneError(Exception):
-    """
-    Исключение, вызываемое при неверном формате номера телефона.
-
-    Args:
-        phone (str): Некорректный номер телефона.
-    """
-
-    def __init__(self, phone: str) -> None:
-        super().__init__(f"Invalid phone number format: {phone}")
+from typing import Any
 
 
-class WebSocketNotConnectedError(Exception):
-    """
-    Исключение, вызываемое при попытке обращения к WebSocket,
-    если соединение не установлено.
-    """
-
-    def __init__(self) -> None:
-        super().__init__("WebSocket is not connected")
+class PyMaxError(Exception):
+    pass
 
 
-class SocketNotConnectedError(Exception):
-    """
-    Исключение, вызываемое при попытке обращения к сокету,
-    если соединение не установлено.
-    """
-
-    def __init__(self) -> None:
-        super().__init__("Socket is not connected")
+class UploadError(PyMaxError):
+    pass
 
 
-class SocketSendError(Exception):
-    """
-    Исключение, вызываемое при ошибке отправки данных через сокет.
-    """
-
-    def __init__(self) -> None:
-        super().__init__("Send and wait failed (socket)")
-
-
-class ResponseError(Exception):
-    """
-    Исключение, вызываемое при ошибке в ответе от сервера.
-    """
-
-    def __init__(self, message: str) -> None:
-        super().__init__(f"Response error: {message}")
-
-
-class ResponseStructureError(Exception):
-    """
-    Исключение, вызываемое при неверной структуре ответа от сервера.
-    """
-
-    def __init__(self, message: str) -> None:
-        super().__init__(f"Response structure error: {message}")
-
-
-class Error(Exception):
-    """
-    Базовое исключение для ошибок PyMax.
-    """
-
+class ApiError(PyMaxError):
     def __init__(
         self,
-        error: str,
-        message: str,
-        title: str,
+        *,
+        opcode: int,
+        error: str | None = None,
+        message: str | None = None,
         localized_message: str | None = None,
+        title: str | None = None,
+        payload: dict[str, Any] | None = None,
     ) -> None:
+        self.opcode = opcode
         self.error = error
         self.message = message
-        self.title = title
         self.localized_message = localized_message
+        self.title = title
+        self.payload = payload or {}
 
         parts = []
-        if localized_message:
-            parts.append(localized_message)
-        if message:
-            parts.append(message)
+        for part in (localized_message, message):
+            if part and part not in parts:
+                parts.append(part)
         if title:
             parts.append(f"({title})")
-        parts.append(f"[{error}]")
+        if error:
+            parts.append(f"[{error}]")
 
-        super().__init__("PyMax Error: " + " ".join(parts))
+        text = " ".join(parts) or "API request failed"
 
-
-class RateLimitError(Error):
-    """
-    Исключение, вызываемое при превышении лимита запросов.
-    """
-
-    def __init__(
-        self, error: str, message: str, title: str, localized_message: str | None = None
-    ) -> None:
-        super().__init__(error, message, title, localized_message)
-
-
-class LoginError(Error):
-    """
-    Исключение, вызываемое при ошибке авторизации.
-    """
-
-    def __init__(
-        self, error: str, message: str, title: str, localized_message: str | None = None
-    ) -> None:
-        super().__init__(error, message, title, localized_message)
+        super().__init__(text)
