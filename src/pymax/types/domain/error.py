@@ -9,12 +9,12 @@ class MaxApiError(CamelModel):
     :ivar message: Сообщение ошибки.
     :vartype message: str
     :ivar title: Заголовок ошибки.
-    :vartype title: str
+    :vartype title: str | None
     :ivar localized_message: Локализованное сообщение ошибки.
     :vartype localized_message: str | None
     """
 
     error: str
     message: str
-    title: str
-    localized_message: str | None
+    title: str | None = None
+    localized_message: str | None = None
