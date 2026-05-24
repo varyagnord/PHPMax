@@ -17,7 +17,7 @@ from pymax.types.domain.auth import (
 )
 from pymax.types.domain.login import LoginResponse
 
-from .enums import TwoFactorAction
+from .enums import ProfileOptions, TwoFactorAction
 from .payloads import (
     ApproveQrLoginPayload,
     CheckPasswordChallengePayload,
@@ -321,3 +321,9 @@ class AuthService:
         await self.app.invoke(Opcode.AUTH_QR_APPROVE, frame.to_payload())
 
         return True
+
+    async def check_2fa(self) -> bool:
+        if not self.app.me or not self.app.me.profile_options:
+            return False
+
+        return ProfileOptions.SECOND_FACTOR_PASSWORD_ENABLED in self.app.me.profile_options

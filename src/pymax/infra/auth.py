@@ -64,3 +64,12 @@ class AuthMixin(IClientProtocol):
             ``True``, если вход по QR-коду успешно авторизован.
         """
         return await self._app.api.auth.authorize_qr_login(qr_link=qr_link)
+
+    async def check_2fa(self) -> bool:
+        """Проверяет, есть ли 2fa на аккаунте
+
+        Returns:
+            ``True``, если на аккаунте установлен 2fa
+        """
+
+        return await self._app.api.auth.check_2fa()
