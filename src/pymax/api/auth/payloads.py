@@ -127,3 +127,7 @@ class RemoveTwoFactorPayload(CamelModel):
     expected_capabilities: list[Capability] = Field(
         default_factory=lambda: [Capability.REMOVE_2FA]
     )
+
+
+class ApproveQrLoginPayload(CamelModel):
+    qr_link: str

@@ -53,3 +53,14 @@ class AuthMixin(IClientProtocol):
             RuntimeError: Если удаление пароля не удалось.
         """
         return await self._app.api.auth.remove_2fa(password=password)
+
+    async def authorize_qr_login(self, qr_link: str) -> bool:
+        """Авторизует вход по QR-коду.
+
+        Args:
+            qr_link: Ссылка на QR-код для авторизации.
+
+        Returns:
+            ``True``, если вход по QR-коду успешно авторизован.
+        """
+        return await self._app.api.auth.authorize_qr_login(qr_link=qr_link)

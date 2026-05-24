@@ -87,6 +87,7 @@ class ClientConfig(BaseModel):
     session_name: str = "session.db"
     device: DeviceConfig
     token: str | None = None
+    proxy: str | None = None
 
     host: str = "api.oneme.ru"
     port: int = 443

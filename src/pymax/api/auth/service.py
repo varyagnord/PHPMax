@@ -19,6 +19,7 @@ from pymax.types.domain.login import LoginResponse
 
 from .enums import Capability
 from .payloads import (
+    ApproveQrLoginPayload,
     CheckPasswordChallengePayload,
     CheckQrPayload,
     ConfirmQrPayload,
@@ -309,5 +310,14 @@ class AuthService:
         )
 
         await self.app.invoke(Opcode.AUTH_SET_2FA, frame.to_payload())
+
+        return True
+
+    async def authorize_qr_login(self, qr_link: str) -> bool:
+        logger.info("approving qr login qr_link_set=%s", bool(qr_link))
+
+        frame = ApproveQrLoginPayload(qr_link=qr_link)
+
+        await self.app.invoke(Opcode.AUTH_QR_APPROVE, frame.to_payload())
 
         return True

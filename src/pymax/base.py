@@ -82,6 +82,7 @@ class BaseClient(BaseMixin, ABC, Generic[ClientT]):
             telemetry=self.extra_config.telemetry,
             sync=self.extra_config.sync,
             store=self.extra_config.store,
+            proxy=self.extra_config.proxy,
             device=DeviceConfig(
                 mt_instance_id=self.extra_config.mt_instance_id,
                 device_id=self.extra_config.device_id or str(uuid4()),
