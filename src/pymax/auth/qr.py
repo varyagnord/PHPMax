@@ -4,13 +4,13 @@ import asyncio
 import time
 from typing import TYPE_CHECKING
 
-import qrcode
-
 from pymax.exceptions import ApiError
 from pymax.logging import get_logger
 
 from .models import AuthResult
 from .providers import ConsolePasswordProvider, PasswordProvider, QrHandler
+from pymax.auth.base import AuthFlow
+
 
 if TYPE_CHECKING:
     from pymax.app import App
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-class QrAuthFlow:
+class QrAuthFlow(AuthFlow):
     """Стандартная QR-авторизация ``WebClient``.
 
     Flow получает QR-ссылку, передает ее в ``QrHandler``, ждет подтверждения и

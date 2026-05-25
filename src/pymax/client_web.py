@@ -9,6 +9,7 @@ from pymax.protocol.ws import WsProtocol
 from pymax.transport.websocket import WebSocketTransport
 
 from .base import BaseClient
+from pymax.auth.base import AuthFlow
 from .config import ExtraConfig
 
 logger = get_logger(__name__)
@@ -34,7 +35,7 @@ class WebClient(BaseClient["WebClient"]):
         session_name: str = "session.db",
         work_dir: str = ".",
         extra_config: ExtraConfig | None = None,
-        auth_flow: QrAuthFlow | None = None,
+        auth_flow: AuthFlow | None = None,
         qr_provider: QrHandler | None = None,
     ) -> None:
         self.extra_config = extra_config or ExtraConfig()

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from pymax.exceptions import ApiError
 from pymax.logging import get_logger
 
+from pymax.auth.base import AuthFlow
 from .models import AuthResult
 from .providers import ConsolePasswordProvider, PasswordProvider, SmsCodeProvider
 
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-class SmsAuthFlow:
+class SmsAuthFlow(AuthFlow):
     """Стандартная SMS-авторизация ``Client``.
 
     Flow запрашивает SMS-код, отправляет его в Max, при необходимости проходит

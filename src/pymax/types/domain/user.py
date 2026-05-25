@@ -18,6 +18,10 @@ class User(CamelModel):
     :vartype id: int
     :ivar account_status: Статус аккаунта в кодировке Max.
     :vartype account_status: int | None
+    :ivar registration_time: Время регистрации в формате Unix time.
+    :vartype registration_time: int | None
+    :ivar country: Код страны пользователя.
+    :vartype country: str | None
     :ivar base_raw_url: Исходный URL аватара.
     :vartype base_raw_url: str | None
     :ivar base_url: URL аватара.
@@ -30,6 +34,10 @@ class User(CamelModel):
     :vartype photo_id: int | None
     :ivar update_time: Время обновления в формате Unix time.
     :vartype update_time: int | None
+    :ivar phone: Телефон пользователя, если возвращен API.
+    :vartype phone: int | None
+    :ivar status: Статус контакта, если возвращен API.
+    :vartype status: str | None
     :ivar description: Описание профиля.
     :vartype description: str | None
     :ivar gender: Пол пользователя.
@@ -44,12 +52,16 @@ class User(CamelModel):
 
     id: int
     account_status: int | None = None
+    registration_time: int | None = None
+    country: str | None = None
     base_raw_url: str | None = None
     base_url: str | None = None
     names: list[Name] = Field(default_factory=list)
     options: list[str] = Field(default_factory=list)
     photo_id: int | None = None
     update_time: int | None = None
+    phone: int | None = None
+    status: str | None = None
     description: str | None = None
     gender: str | None = None
     link: str | None = None
