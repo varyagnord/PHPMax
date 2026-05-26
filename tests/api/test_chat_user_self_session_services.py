@@ -6,7 +6,6 @@ from pymax.api.session.enums import DeviceType
 from pymax.exceptions import PyMaxError
 from pymax.protocol import Opcode
 from pymax.session.models import SessionInfo
-
 from tests.conftest import (
     FakeApp,
     chat_payload,

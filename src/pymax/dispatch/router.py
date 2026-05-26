@@ -106,6 +106,7 @@ class Router(Generic[ClientT]):
                async def raw(frame: InboundFrame, client: Client) -> None:
                    print(frame.payload)
         """
+
         def decorator(
             handler: HandlerCallback[_EventT, ClientT],
         ) -> HandlerCallback[_EventT, ClientT]:
@@ -136,6 +137,7 @@ class Router(Generic[ClientT]):
         Returns:
             Декоратор для ``handler(client)``.
         """
+
         def decorator(handler: StartCallback) -> StartCallback:
             self.on_start_handler = handler
             return handler

@@ -153,6 +153,9 @@ client.include_router(router)
 
 ```bash
 uv sync --all-groups
+uv run pre-commit install
+uv run pre-commit run --all-files
+uv run pytest
 uv run python -c "import pymax; print(pymax.__all__)"
 uv run sphinx-build -b html docs docs/_build/html
 ```

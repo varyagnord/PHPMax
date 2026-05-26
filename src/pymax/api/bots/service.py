@@ -26,6 +26,10 @@ class BotsService:
         chat_id: int,
         start_param: str | None = None,
     ) -> InitData:
-        frame = RequestInitDataPayload(bot_id=bot_id, chat_id=chat_id, start_param=start_param)
-        response = await self.app.invoke(Opcode.WEB_APP_INIT_DATA, frame.to_payload())
+        frame = RequestInitDataPayload(
+            bot_id=bot_id, chat_id=chat_id, start_param=start_param
+        )
+        response = await self.app.invoke(
+            Opcode.WEB_APP_INIT_DATA, frame.to_payload()
+        )
         return require_payload_model(response, InitData)

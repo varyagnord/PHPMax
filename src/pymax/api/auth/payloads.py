@@ -1,4 +1,4 @@
-from pydantic import Field, field_serializer
+from pydantic import Field
 
 from pymax.api.models import CamelModel
 from pymax.api.session.payloads import MobileUserAgentPayload

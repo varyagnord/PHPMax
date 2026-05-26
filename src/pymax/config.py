@@ -8,7 +8,7 @@ from pymax.api.session.payloads import (
     DEFAULT_WEB_HEADER_USER_AGENT,
     MobileUserAgentPayload,
 )
-from pymax.session import SessionStore, StoreProtocol
+from pymax.session import StoreProtocol
 from pymax.types.domain.sync import SyncOverrides
 
 APP_VERSIONS: tuple[tuple[str, int], ...] = (
@@ -35,7 +35,12 @@ ANDROID_DEVICES: tuple[tuple[str, str, str, str], ...] = (
     ("Xiaomi 2201117TG", "Android 13", "395dpi 395dpi 1080x2400", "arm64-v8a"),
     ("Xiaomi 2201123G", "Android 14", "526dpi 526dpi 1440x3200", "arm64-v8a"),
     ("Xiaomi 2210132G", "Android 14", "446dpi 446dpi 1220x2712", "arm64-v8a"),
-    ("Xiaomi 23049PCD8G", "Android 14", "446dpi 446dpi 1220x2712", "arm64-v8a"),
+    (
+        "Xiaomi 23049PCD8G",
+        "Android 14",
+        "446dpi 446dpi 1220x2712",
+        "arm64-v8a",
+    ),
     ("Redmi 2201116TG", "Android 13", "395dpi 395dpi 1080x2400", "arm64-v8a"),
     ("Redmi 22101316G", "Android 13", "395dpi 395dpi 1080x2400", "arm64-v8a"),
     ("Redmi 23021RAA2Y", "Android 14", "395dpi 395dpi 1080x2400", "arm64-v8a"),
@@ -104,7 +109,9 @@ class ClientConfig(BaseModel):
 
     def ensure_config(self) -> None:
         if not self.phone:
-            raise ValueError("Phone must be provided when no saved session exists.")
+            raise ValueError(
+                "Phone must be provided when no saved session exists."
+            )
 
 
 class ExtraConfig(BaseModel):

@@ -88,10 +88,14 @@ class TelemetryService:
 
             while True:
                 self._session_id += 1
-                events = await self._collect_session_events(self._planner.new_profile())
+                events = await self._collect_session_events(
+                    self._planner.new_profile()
+                )
                 await self._send_events(events)
                 self._planner.reset_to_background()
-                await asyncio.sleep(self._between(self._timing.session_idle_delay))
+                await asyncio.sleep(
+                    self._between(self._timing.session_idle_delay)
+                )
 
         except asyncio.CancelledError:
             raise
@@ -159,7 +163,9 @@ class TelemetryService:
         except Exception:
             logger.debug("telemetry send failed", exc_info=True)
 
-    def _nav_event(self, screen_from: Screen, screen_to: Screen) -> TelemetryEvent:
+    def _nav_event(
+        self, screen_from: Screen, screen_to: Screen
+    ) -> TelemetryEvent:
         event = self._payloads.navigation(
             user_id=self._user_id,
             session_id=self._session_id,

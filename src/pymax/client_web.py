@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pymax.auth.base import AuthFlow
 from pymax.auth.providers import ConsoleQrHandler, QrHandler
 from pymax.auth.qr import QrAuthFlow
 from pymax.connection import ConnectionManager
@@ -9,7 +10,6 @@ from pymax.protocol.ws import WsProtocol
 from pymax.transport.websocket import WebSocketTransport
 
 from .base import BaseClient
-from pymax.auth.base import AuthFlow
 from .config import ExtraConfig
 
 logger = get_logger(__name__)
@@ -54,7 +54,8 @@ class WebClient(BaseClient["WebClient"]):
         self._config = self._build_config(
             phone=None,
             user_agent=(
-                self.extra_config.user_agent or self.extra_config.generate_web_user_agent()
+                self.extra_config.user_agent
+                or self.extra_config.generate_web_user_agent()
             ),
         )
 

@@ -31,7 +31,9 @@ async def test_tcp_reader_reads_header_then_payload() -> None:
         flags=0,
         payload_bytes=b"abc",
     )
-    transport = ChunkTransport([packet[: framer.HEADER_SIZE], packet[framer.HEADER_SIZE :]])
+    transport = ChunkTransport(
+        [packet[: framer.HEADER_SIZE], packet[framer.HEADER_SIZE :]]
+    )
     reader = TCPReader(transport, framer)
 
     assert await reader.read() == packet
@@ -77,14 +79,18 @@ class FakeStreamWriter:
 
 
 @pytest.mark.asyncio
-async def test_tcp_transport_connect_send_recv_and_close(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_tcp_transport_connect_send_recv_and_close(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     reader = FakeStreamReader()
     writer = FakeStreamWriter()
 
     async def open_connection(*args, **kwargs):
         return reader, writer
 
-    monkeypatch.setattr("pymax.transport.tcp.asyncio.open_connection", open_connection)
+    monkeypatch.setattr(
+        "pymax.transport.tcp.asyncio.open_connection", open_connection
+    )
     transport = TCPTransport("example.test", 443, proxy=None, use_ssl=True)
 
     await transport.connect()

@@ -8,7 +8,9 @@ from pymax.types.domain.sync import SyncState
 
 
 @pytest.mark.asyncio
-async def test_session_store_saves_loads_updates_and_deletes_session(tmp_path) -> None:
+async def test_session_store_saves_loads_updates_and_deletes_session(
+    tmp_path,
+) -> None:
     store = SessionStore(str(tmp_path), "test-session.db")
     session = SessionInfo(
         token="token-1",

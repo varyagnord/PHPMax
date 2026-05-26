@@ -1,5 +1,3 @@
-import asyncio
-
 from websockets import ClientConnection, Origin
 from websockets.asyncio import client
 

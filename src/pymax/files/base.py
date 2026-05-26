@@ -8,7 +8,12 @@ import aiohttp
 
 class BaseFile(ABC):
     def __init__(
-        self, raw: bytes | None = None, *, path: str | None, url: str | None, name: str | None
+        self,
+        raw: bytes | None = None,
+        *,
+        path: str | None,
+        url: str | None,
+        name: str | None,
     ) -> None:
         self.path = path
         self.url = url

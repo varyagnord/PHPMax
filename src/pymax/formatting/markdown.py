@@ -151,7 +151,10 @@ class Formatter:
                     if marker == "```":
                         closing_index = text.find(marker, i + marker_len)
 
-                        if closing_index == -1 or closing_index == i + marker_len:
+                        if (
+                            closing_index == -1
+                            or closing_index == i + marker_len
+                        ):
                             clean_text += marker
                             clean_pos += marker_len
                             i += marker_len

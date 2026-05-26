@@ -155,7 +155,9 @@ class NavigationPlanner:
             self.current_screen = self.history.pop()
             return self.current_screen
 
-        next_screen = self._weighted_choice(self.rules.graph[self.current_screen])
+        next_screen = self._weighted_choice(
+            self.rules.graph[self.current_screen]
+        )
         if next_screen != self.current_screen:
             self.history.append(self.current_screen)
             if len(self.history) > 4:

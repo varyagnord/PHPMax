@@ -145,18 +145,24 @@ class ConnectionManager:
                 model = self.protocol.decode(frame)
                 await self._handle_inbound(model)
 
-        except EOFError as e:
+        except EOFError:
             logger.warning("connection closed by server")
-            self.requests.cancel_all(exc=ConnectionError("Connection closed by the server"))
+            self.requests.cancel_all(
+                exc=ConnectionError("Connection closed by the server")
+            )
             self._connection_lost = True
         except TimeoutError as e:
             logger.exception("connection timed out")
-            self.requests.cancel_all(exc=ConnectionError("Connection timed out"))
+            self.requests.cancel_all(
+                exc=ConnectionError("Connection timed out")
+            )
             self._connection_lost = True
             raise e
         except Exception as e:
             logger.exception("connection receive loop failed")
-            self.requests.cancel_all(exc=ConnectionError(f"Connection error: {e}"))
+            self.requests.cancel_all(
+                exc=ConnectionError(f"Connection error: {e}")
+            )
             self._connection_lost = True
             raise e
 

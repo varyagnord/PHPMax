@@ -1,4 +1,4 @@
-from collections.abc import Generator, Iterator
+from collections.abc import Iterator
 from typing import Any
 
 from pydantic import Field

@@ -14,7 +14,6 @@ from pymax.telemetry.navigation import (
 from pymax.telemetry.payloads import TelemetryPayloadBuilder
 from pymax.telemetry.service import TelemetryService
 from pymax.types.domain import Chat, Profile
-
 from tests.conftest import FakeApp, chat_payload, profile_payload
 
 

@@ -1,5 +1,7 @@
 class Lz4BlockCompression:
-    def decompress(self, src: bytes, max_output: int = 5 * 1024 * 1024) -> bytes:
+    def decompress(
+        self, src: bytes, max_output: int = 5 * 1024 * 1024
+    ) -> bytes:
         dst = bytearray()
         pos = 0
 

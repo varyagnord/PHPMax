@@ -52,10 +52,17 @@ class MobileUserAgentPayload(CamelModel):
             by_alias=True,
             exclude_none=True,
         )
-        if self.device_type == DeviceType.WEB and "headerUserAgent" not in payload:
+        if (
+            self.device_type == DeviceType.WEB
+            and "headerUserAgent" not in payload
+        ):
             payload["headerUserAgent"] = DEFAULT_WEB_HEADER_USER_AGENT
 
-        return {alias: payload[alias] for alias in WEB_USER_AGENT_ALIASES if alias in payload}
+        return {
+            alias: payload[alias]
+            for alias in WEB_USER_AGENT_ALIASES
+            if alias in payload
+        }
 
 
 class MobileHandshakePayload(CamelModel):

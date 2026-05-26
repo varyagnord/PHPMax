@@ -10,7 +10,12 @@ from pymax.types.domain import Message
 from pymax.types.events import FileUploadSignal, VideoUploadSignal
 
 from .enums import EventType
-from .resolvers import resolve_attach, resolve_chat, resolve_message, resolve_message_delete
+from .resolvers import (
+    resolve_attach,
+    resolve_chat,
+    resolve_message,
+    resolve_message_delete,
+)
 
 if TYPE_CHECKING:
     from pymax.app import App
@@ -53,7 +58,9 @@ class EventMapper:
 
         if frame.payload:
             if event_type in (EventType.MESSAGE_NEW, EventType.MESSAGE_EDIT):
-                return Message.model_validate(frame.payload).bind(self.app.api.messages)
+                return Message.model_validate(frame.payload).bind(
+                    self.app.api.messages
+                )
             elif event_type == EventType.CHAT_UPDATE:
                 return Chat.model_validate(frame.payload["chat"]).bind(
                     self.app.api.messages,

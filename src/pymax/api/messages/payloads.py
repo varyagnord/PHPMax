@@ -3,7 +3,11 @@ from typing import Any
 from pydantic import Field
 
 from pymax.api.models import CamelModel
-from pymax.api.uploads.payloads import AttachFilePayload, AttachPhotoPayload, VideoAttachPayload
+from pymax.api.uploads.payloads import (
+    AttachFilePayload,
+    AttachPhotoPayload,
+    VideoAttachPayload,
+)
 
 from .enums import ItemType, ReadAction
 

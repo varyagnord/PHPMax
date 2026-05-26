@@ -55,12 +55,24 @@ class SessionStore:
             )
             """
         )
-        await self._ensure_column(conn, "mt_instance_id", "TEXT NOT NULL DEFAULT ''")
-        await self._ensure_column(conn, "chats_sync", "INTEGER NOT NULL DEFAULT -1")
-        await self._ensure_column(conn, "contacts_sync", "INTEGER NOT NULL DEFAULT -1")
-        await self._ensure_column(conn, "drafts_sync", "INTEGER NOT NULL DEFAULT -1")
-        await self._ensure_column(conn, "presence_sync", "INTEGER NOT NULL DEFAULT -1")
-        await self._ensure_column(conn, "config_hash", "TEXT NOT NULL DEFAULT ''")
+        await self._ensure_column(
+            conn, "mt_instance_id", "TEXT NOT NULL DEFAULT ''"
+        )
+        await self._ensure_column(
+            conn, "chats_sync", "INTEGER NOT NULL DEFAULT -1"
+        )
+        await self._ensure_column(
+            conn, "contacts_sync", "INTEGER NOT NULL DEFAULT -1"
+        )
+        await self._ensure_column(
+            conn, "drafts_sync", "INTEGER NOT NULL DEFAULT -1"
+        )
+        await self._ensure_column(
+            conn, "presence_sync", "INTEGER NOT NULL DEFAULT -1"
+        )
+        await self._ensure_column(
+            conn, "config_hash", "TEXT NOT NULL DEFAULT ''"
+        )
         await conn.execute(
             """
             UPDATE sessions
@@ -81,7 +93,9 @@ class SessionStore:
             columns = {row["name"] for row in await cursor.fetchall()}
 
         if name not in columns:
-            await conn.execute(f"ALTER TABLE sessions ADD COLUMN {name} {definition}")
+            await conn.execute(
+                f"ALTER TABLE sessions ADD COLUMN {name} {definition}"
+            )
 
     async def save_session(self, session_info: SessionInfo) -> None:
         conn = await self._get_connection()
@@ -144,7 +158,9 @@ class SessionStore:
         )
         return self._row_to_session(row)
 
-    async def load_session_by_device_id(self, device_id: str) -> SessionInfo | None:
+    async def load_session_by_device_id(
+        self, device_id: str
+    ) -> SessionInfo | None:
         conn = await self._get_connection()
         logger.debug("loading session by device_id=%s", device_id)
         async with conn.execute(

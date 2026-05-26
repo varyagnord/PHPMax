@@ -68,13 +68,29 @@ class SyncOverrides(BaseModel):
         :rtype: SyncState
         """
         return SyncState(
-            chats_sync=(self.chats_sync if self.chats_sync is not None else saved.chats_sync),
+            chats_sync=(
+                self.chats_sync
+                if self.chats_sync is not None
+                else saved.chats_sync
+            ),
             contacts_sync=(
-                self.contacts_sync if self.contacts_sync is not None else saved.contacts_sync
+                self.contacts_sync
+                if self.contacts_sync is not None
+                else saved.contacts_sync
             ),
-            drafts_sync=(self.drafts_sync if self.drafts_sync is not None else saved.drafts_sync),
+            drafts_sync=(
+                self.drafts_sync
+                if self.drafts_sync is not None
+                else saved.drafts_sync
+            ),
             presence_sync=(
-                self.presence_sync if self.presence_sync is not None else saved.presence_sync
+                self.presence_sync
+                if self.presence_sync is not None
+                else saved.presence_sync
             ),
-            config_hash=(self.config_hash if self.config_hash is not None else saved.config_hash),
+            config_hash=(
+                self.config_hash
+                if self.config_hash is not None
+                else saved.config_hash
+            ),
         )

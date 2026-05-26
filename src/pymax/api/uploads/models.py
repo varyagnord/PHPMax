@@ -1,9 +1,6 @@
-from typing import Literal
-
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from pymax.api.models import CamelModel
-from pymax.types import AttachmentType
 
 
 class PhotoPayloadResponse(BaseModel):

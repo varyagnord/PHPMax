@@ -7,7 +7,6 @@ from pymax.logging import get_logger
 
 from .compression import Lz4BlockCompression
 
-
 logger = get_logger(__name__)
 
 
@@ -44,7 +43,9 @@ class MsgpackPayloadCodec:
             return {}
 
         try:
-            return msgpack.unpackb(payload_bytes, raw=False, strict_map_key=False)
+            return msgpack.unpackb(
+                payload_bytes, raw=False, strict_map_key=False
+            )
         except msgpack.exceptions.ExtraData as e:
             if isinstance(e.unpacked, dict):
                 logger.debug(

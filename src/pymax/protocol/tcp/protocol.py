@@ -3,7 +3,11 @@ from pymax.protocol import InboundFrame, OutboundFrame
 from pymax.protocol.base import BaseProtocol
 
 from .framing import TcpPacketFramer
-from .payload import Lz4BlockCompression, MsgpackPayloadCodec, TcpPayloadDecoder
+from .payload import (
+    Lz4BlockCompression,
+    MsgpackPayloadCodec,
+    TcpPayloadDecoder,
+)
 
 logger = get_logger(__name__)
 
@@ -21,7 +25,11 @@ class TcpProtocol(BaseProtocol):
         )
 
     def encode(self, frame: OutboundFrame) -> bytes:
-        payload_bytes = self.serializer.encode(frame.payload) if frame.payload is not None else b""
+        payload_bytes = (
+            self.serializer.encode(frame.payload)
+            if frame.payload is not None
+            else b""
+        )
 
         flags = 0
 
@@ -44,7 +52,9 @@ class TcpProtocol(BaseProtocol):
 
         packed_packet = self.framer.unpack(raw)
         if not packed_packet:
-            return InboundFrame(opcode=0, cmd=0, seq=None, payload=None, raw=None)
+            return InboundFrame(
+                opcode=0, cmd=0, seq=None, payload=None, raw=None
+            )
 
         logger.debug(
             "tcp frame decoded header ver=%s cmd=%s seq=%s opcode=%s flags=%s payload_len=%s",

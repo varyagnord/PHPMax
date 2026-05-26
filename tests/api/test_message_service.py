@@ -61,7 +61,9 @@ async def test_upload_attachments_handles_file_video_and_empty_lists() -> None:
     app = FakeApp()
     assert await app.api.messages._upload_attachments(None) == []
 
-    result = await app.api.messages._upload_attachments([File(raw=b"abc", name="doc.txt")])
+    result = await app.api.messages._upload_attachments(
+        [File(raw=b"abc", name="doc.txt")]
+    )
 
     assert result[0].file_id == 30
     assert app.api.uploads.calls[0][0] == "file"
@@ -106,9 +108,13 @@ async def test_delete_pin_and_read_message_send_expected_opcodes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr("pymax.api.messages.service.time.time", lambda: 3000.0)
-    app = FakeApp([frame({}), frame({}), frame({"unread": 0, "mark": 3000000})])
+    app = FakeApp(
+        [frame({}), frame({}), frame({"unread": 0, "mark": 3000000})]
+    )
 
-    assert await app.api.messages.delete_message(100, [1, 2], for_me=True) is True
+    assert (
+        await app.api.messages.delete_message(100, [1, 2], for_me=True) is True
+    )
     assert await app.api.messages.pin_message(100, 2, notify_pin=False) is True
     read_state = await app.api.messages.read_message(2, 100)
 
@@ -125,7 +131,10 @@ async def test_delete_pin_and_read_message_send_expected_opcodes(
 
 @pytest.mark.asyncio
 async def test_reaction_methods_parse_optional_reaction_info() -> None:
-    reaction_info = {"totalCount": 1, "counters": [{"count": 1, "reaction": "👍"}]}
+    reaction_info = {
+        "totalCount": 1,
+        "counters": [{"count": 1, "reaction": "👍"}],
+    }
     app = FakeApp(
         [
             frame({MessagePayloadKey.REACTION_INFO.value: reaction_info}),
@@ -177,8 +186,16 @@ async def test_get_video_and_file_by_id_parse_request_models() -> None:
         Opcode.VIDEO_PLAY,
         Opcode.FILE_DOWNLOAD,
     ]
-    assert app.calls[0].payload == {"chatId": 100, "messageId": 10, "videoId": 20}
-    assert app.calls[1].payload == {"chatId": 100, "messageId": "10", "fileId": 30}
+    assert app.calls[0].payload == {
+        "chatId": 100,
+        "messageId": 10,
+        "videoId": 20,
+    }
+    assert app.calls[1].payload == {
+        "chatId": 100,
+        "messageId": "10",
+        "fileId": 30,
+    }
 
 
 def test_next_cid_is_monotonic_when_clock_does_not_move(

@@ -12,7 +12,11 @@ async def test_file_raw_source_reads_sizes_and_chunks() -> None:
 
     assert await file.read() == b"abcdef"
     assert await file.size() == 6
-    assert [chunk async for chunk in file.iter_chunks(2)] == [b"ab", b"cd", b"ef"]
+    assert [chunk async for chunk in file.iter_chunks(2)] == [
+        b"ab",
+        b"cd",
+        b"ef",
+    ]
 
     with pytest.raises(ValueError, match="size must be greater"):
         [chunk async for chunk in file.iter_chunks(0)]
@@ -47,7 +51,9 @@ def test_markdown_formatter_extracts_functional_entities() -> None:
     )
 
     assert clean == "Title\nQuote\nHello bold and site"
-    assert [(entity.type, entity.from_, entity.length) for entity in entities] == [
+    assert [
+        (entity.type, entity.from_, entity.length) for entity in entities
+    ] == [
         ("HEADING", 0, 5),
         ("QUOTE", 6, 5),
         ("STRONG", 18, 4),

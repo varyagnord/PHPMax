@@ -42,13 +42,18 @@ async def test_request_and_send_code_parse_auth_responses() -> None:
 
     assert start.token == "sms-token"
     assert result.login_token == "login-token"
-    assert [call.opcode for call in app.calls] == [Opcode.AUTH_REQUEST, Opcode.AUTH]
+    assert [call.opcode for call in app.calls] == [
+        Opcode.AUTH_REQUEST,
+        Opcode.AUTH,
+    ]
     assert app.calls[0].payload["phone"] == "+79990000000"
     assert app.calls[1].payload["verifyCode"] == "111111"
 
 
 @pytest.mark.asyncio
-async def test_mobile_login_sends_sync_payload_and_persists_updated_session() -> None:
+async def test_mobile_login_sends_sync_payload_and_persists_updated_session() -> (
+    None
+):
     app = FakeApp(
         [
             frame(
@@ -65,7 +70,9 @@ async def test_mobile_login_sends_sync_payload_and_persists_updated_session() ->
         token="local-token",
         device_id="device-test",
         phone="+79990000000",
-        sync=SyncState(chats_sync=1, contacts_sync=2, drafts_sync=3, presence_sync=4),
+        sync=SyncState(
+            chats_sync=1, contacts_sync=2, drafts_sync=3, presence_sync=4
+        ),
     )
 
     response = await app.api.auth.mobile_login()
@@ -73,7 +80,9 @@ async def test_mobile_login_sends_sync_payload_and_persists_updated_session() ->
     assert response.token == "server-token"
     assert app.calls[0].opcode == Opcode.LOGIN
     assert app.calls[0].payload["token"] == "local-token"
-    assert app.calls[0].payload["userAgent"]["deviceType"] == DeviceType.ANDROID
+    assert (
+        app.calls[0].payload["userAgent"]["deviceType"] == DeviceType.ANDROID
+    )
     assert app.session is not None
     assert app.session.mt_instance_id == "mt-test"
     assert app.session.sync.chats_sync == 777
@@ -119,7 +128,14 @@ async def test_login_without_session_raises_runtime_error() -> None:
 async def test_set_2fa_runs_password_email_hint_and_final_commit() -> None:
     provider = StaticEmailProvider()
     app = FakeApp(
-        [frame({"trackId": "track-1"}), frame({}), frame({}), frame({}), frame({}), frame({})]
+        [
+            frame({"trackId": "track-1"}),
+            frame({}),
+            frame({}),
+            frame({}),
+            frame({}),
+            frame({}),
+        ]
     )
 
     result = await app.api.auth.set_2fa(
@@ -170,7 +186,9 @@ async def test_remove_2fa_checks_password_then_removes_factor() -> None:
         Opcode.AUTH_SET_2FA,
     ]
     assert app.calls[2].payload["remove2fa"] is True
-    assert app.calls[2].payload["expectedCapabilities"] == [TwoFactorAction.REMOVE_2FA]
+    assert app.calls[2].payload["expectedCapabilities"] == [
+        TwoFactorAction.REMOVE_2FA
+    ]
 
 
 @pytest.mark.asyncio

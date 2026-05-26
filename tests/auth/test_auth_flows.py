@@ -135,11 +135,15 @@ class QrAuthApi:
 
     async def confirm_qr(self, track_id: str):
         self.calls.append(("confirm_qr", (track_id,)))
-        return CheckCodeResponse.model_validate({"tokenAttrs": {"LOGIN": {"token": "qr-token"}}})
+        return CheckCodeResponse.model_validate(
+            {"tokenAttrs": {"LOGIN": {"token": "qr-token"}}}
+        )
 
 
 @pytest.mark.asyncio
-async def test_qr_auth_flow_shows_qr_polls_until_available_and_confirms() -> None:
+async def test_qr_auth_flow_shows_qr_polls_until_available_and_confirms() -> (
+    None
+):
     provider = QrProvider()
     auth_api = QrAuthApi()
     app = SimpleNamespace(api=SimpleNamespace(auth=auth_api))

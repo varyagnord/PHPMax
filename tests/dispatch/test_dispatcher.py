@@ -9,7 +9,9 @@ from tests.conftest import FakeApp, chat_payload, frame, message_payload
 
 
 @pytest.mark.asyncio
-async def test_dispatcher_routes_message_events_through_filters_and_raw_handler() -> None:
+async def test_dispatcher_routes_message_events_through_filters_and_raw_handler() -> (
+    None
+):
     app = FakeApp()
     router: Router[str] = Router()
     dispatcher: Dispatcher[str] = Dispatcher(app, router)
@@ -38,11 +40,16 @@ async def test_dispatcher_routes_message_events_through_filters_and_raw_handler(
         )
     )
 
-    assert seen == [("client", 1), ("client", f"raw:{int(Opcode.NOTIF_MESSAGE)}")]
+    assert seen == [
+        ("client", 1),
+        ("client", f"raw:{int(Opcode.NOTIF_MESSAGE)}"),
+    ]
 
 
 @pytest.mark.asyncio
-async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> None:
+async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> (
+    None
+):
     app = FakeApp()
     router: Router[str] = Router()
     child: Router[str] = Router()
@@ -64,7 +71,11 @@ async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> None:
         seen.append(("file", signal.file_id))
 
     await dispatcher.dispatch(
-        frame({"chat": chat_payload(5)}, opcode=Opcode.NOTIF_CHAT, cmd=Command.REQUEST)
+        frame(
+            {"chat": chat_payload(5)},
+            opcode=Opcode.NOTIF_CHAT,
+            cmd=Command.REQUEST,
+        )
     )
     await dispatcher.dispatch(
         frame(

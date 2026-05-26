@@ -9,7 +9,11 @@ from pymax.api.response import (
     payload_item,
     require_payload_model,
 )
-from pymax.api.uploads.payloads import AttachFilePayload, AttachPhotoPayload, VideoAttachPayload
+from pymax.api.uploads.payloads import (
+    AttachFilePayload,
+    AttachPhotoPayload,
+    VideoAttachPayload,
+)
 from pymax.exceptions import UploadError
 from pymax.files import File, Photo, Video
 from pymax.formatting.markdown import Formatter
@@ -65,13 +69,17 @@ class MessageService:
     async def _upload_attachments(
         self, attachments: SendAttachments
     ) -> list[AttachPhotoPayload | VideoAttachPayload | AttachFilePayload]:
-        result: list[AttachPhotoPayload | VideoAttachPayload | AttachFilePayload] = []
+        result: list[
+            AttachPhotoPayload | VideoAttachPayload | AttachFilePayload
+        ] = []
         if not attachments:
             return result
 
         for attachment in attachments:
             if isinstance(attachment, Photo):
-                upload_result = await self.app.api.uploads.upload_photo(attachment)
+                upload_result = await self.app.api.uploads.upload_photo(
+                    attachment
+                )
                 if not upload_result:
                     logger.error("Photo uploading failed")
                     raise UploadError("Photo uploading failed")
@@ -79,7 +87,9 @@ class MessageService:
                 result.append(upload_result)
 
             elif isinstance(attachment, Video):
-                upload_result = await self.app.api.uploads.upload_video(attachment)
+                upload_result = await self.app.api.uploads.upload_video(
+                    attachment
+                )
                 if not upload_result:
                     logger.error("Video uploading failed")
                     raise UploadError("Video uploading failed")
@@ -87,7 +97,9 @@ class MessageService:
                 result.append(upload_result)
 
             elif isinstance(attachment, File):
-                upload_result = await self.app.api.uploads.upload_file(attachment)
+                upload_result = await self.app.api.uploads.upload_file(
+                    attachment
+                )
                 if not upload_result:
                     logger.error("File uploading failed")
                     raise UploadError("File uploading failed")
@@ -105,7 +117,9 @@ class MessageService:
         *,
         notify: bool = True,
     ) -> Message | None:
-        logger.info("sending message chat_id=%s text_len=%s", chat_id, len(text))
+        logger.info(
+            "sending message chat_id=%s text_len=%s", chat_id, len(text)
+        )
 
         clean_text, elements = Formatter.format_markdown(text)
 
@@ -157,7 +171,10 @@ class MessageService:
             Opcode.CHAT_HISTORY,
             payload=frame.to_payload(),
         )
-        return parse_payload_list(response, MessagePayloadKey.MESSAGES, Message) or None
+        return (
+            parse_payload_list(response, MessagePayloadKey.MESSAGES, Message)
+            or None
+        )
 
     async def delete_message(
         self,
@@ -178,7 +195,9 @@ class MessageService:
         )
 
         await self.app.invoke(Opcode.MSG_DELETE, frame.to_payload())
-        logger.info("messages deleted chat_id=%s count=%s", chat_id, len(message_ids))
+        logger.info(
+            "messages deleted chat_id=%s count=%s", chat_id, len(message_ids)
+        )
         return True
 
     async def pin_message(
@@ -200,7 +219,9 @@ class MessageService:
         )
 
         await self.app.invoke(Opcode.CHAT_UPDATE, frame.to_payload())
-        logger.info("message pinned chat_id=%s message_id=%s", chat_id, message_id)
+        logger.info(
+            "message pinned chat_id=%s message_id=%s", chat_id, message_id
+        )
         return True
 
     async def get_video_by_id(
@@ -242,7 +263,9 @@ class MessageService:
             file_id=file_id,
         )
 
-        response = await self.app.invoke(Opcode.FILE_DOWNLOAD, frame.to_payload())
+        response = await self.app.invoke(
+            Opcode.FILE_DOWNLOAD, frame.to_payload()
+        )
         return parse_payload_model(response, FileRequest)
 
     async def add_reaction(
@@ -263,7 +286,9 @@ class MessageService:
             reaction=ReactionInfoPayload(id=reaction),
         )
 
-        response = await self.app.invoke(Opcode.MSG_REACTION, frame.to_payload())
+        response = await self.app.invoke(
+            Opcode.MSG_REACTION, frame.to_payload()
+        )
         reaction_info = payload_item(response, MessagePayloadKey.REACTION_INFO)
         if reaction_info:
             return ReactionInfo.model_validate(reaction_info)
