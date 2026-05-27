@@ -104,6 +104,53 @@ async def test_tcp_transport_connect_send_recv_and_close(
     assert writer.closed is True
 
 
+@pytest.mark.asyncio
+async def test_tcp_transport_proxy_ssl_passes_server_hostname(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reader = FakeStreamReader()
+    writer = FakeStreamWriter()
+    sock = object()
+    proxy_connect_kwargs = {}
+    open_connection_kwargs = {}
+
+    class FakeProxy:
+        async def connect(self, **kwargs):
+            proxy_connect_kwargs.update(kwargs)
+            return sock
+
+    async def open_connection(*args, **kwargs):
+        open_connection_kwargs.update(kwargs)
+        return reader, writer
+
+    monkeypatch.setattr(
+        "pymax.transport.tcp.Proxy.from_url",
+        lambda proxy_url: FakeProxy(),
+    )
+    monkeypatch.setattr(
+        "pymax.transport.tcp.asyncio.open_connection", open_connection
+    )
+
+    transport = TCPTransport(
+        "example.test",
+        443,
+        proxy="socks5://localhost:9050",
+        use_ssl=True,
+    )
+
+    await transport.connect()
+
+    assert proxy_connect_kwargs == {
+        "dest_host": "example.test",
+        "dest_port": 443,
+    }
+    assert open_connection_kwargs == {
+        "sock": sock,
+        "ssl": True,
+        "server_hostname": "example.test",
+    }
+
+
 class FakeWebSocket:
     def __init__(self) -> None:
         self.close_code = None
