@@ -32,21 +32,26 @@ Account
 Фотография профиля
 ------------------
 
-Сейчас ``change_profile(photo=...)`` не загружает файл напрямую. Для фото
-нужен ``photo_token`` от API Max:
+Передайте ``Photo`` в ``change_profile(photo=...)``, чтобы PyMax сам загрузил
+файл и применил новый токен фотографии:
 
 .. code-block:: python
 
-   upload_url = await client.request_profile_photo_upload_url()
-   print(upload_url)
+   from pymax import Photo
+
+   await client.change_profile(
+       first_name="Alex",
+       photo=Photo(path="avatar.jpg"),
+   )
+
+Если у вас уже есть токен фотографии от API Max, его можно передать напрямую:
+
+.. code-block:: python
 
    await client.change_profile(
        first_name="Alex",
        photo_token="PHOTO_TOKEN",
    )
-
-Если передать ``photo`` вместо ``photo_token``, PyMax выбросит
-``NotImplementedError``.
 
 Папки чатов
 -----------
@@ -118,9 +123,9 @@ Account
    ``on_start`` или после успешного ``await client.start()`` в собственном
    lifecycle.
 
-``NotImplementedError`` при ``change_profile(photo=...)``
-   Прямая загрузка фото через параметр ``photo`` пока не реализована.
-   Используйте ``photo_token``.
+Фото профиля не обновилось
+   Если переданы и ``photo``, и ``photo_token``, PyMax загрузит ``photo`` и
+   использует новый токен загруженной фотографии.
 
 Папка создалась, но список старый
    Используйте ``get_folders()`` после изменения и сохраняйте новый

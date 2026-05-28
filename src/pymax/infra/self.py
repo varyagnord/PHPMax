@@ -29,17 +29,13 @@ class SelfMixin(IClientProtocol):
             first_name: Имя профиля.
             last_name: Фамилия профиля.
             description: Описание профиля.
-            photo: Файл или объект фото. Прямая загрузка через этот
-                параметр пока не реализована.
+            photo: Файл или объект фото, который нужно загрузить как новую
+                фотографию профиля.
             photo_token: Токен фотографии, уже загруженной через API Max.
 
         Returns:
             ``True`` после успешного обновления. Клиент также обновит
             ``client.me`` и кеш текущего контакта.
-
-        Raises:
-            NotImplementedError: Если передан ``photo`` вместо
-                ``photo_token``.
         """
         return await self._app.api.account.change_profile(
             first_name=first_name,

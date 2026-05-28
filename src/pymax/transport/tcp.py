@@ -10,9 +10,7 @@ logger = get_logger(__name__)
 
 
 class TCPTransport(Transport):
-    def __init__(
-        self, host: str, port: int, proxy: str | None, use_ssl: bool = True
-    ) -> None:
+    def __init__(self, host: str, port: int, proxy: str | None, use_ssl: bool = True) -> None:
         self._host = host
         self._port = port
         self._proxy = proxy
@@ -33,10 +31,12 @@ class TCPTransport(Transport):
             sock = await proxy.connect(
                 dest_host=self._host,
                 dest_port=self._port,
-                ssl=self._use_ssl,
             )
+            server_hostname = self._host if self._use_ssl else None
             self._reader, self._writer = await asyncio.open_connection(
-                sock=sock, ssl=self._use_ssl
+                sock=sock,
+                ssl=self._use_ssl,
+                server_hostname=server_hostname,
             )
             logger.info(
                 "tcp connected via proxy %s host=%s port=%s ssl=%s",

@@ -38,24 +38,16 @@ logger = get_logger(__name__)
 class UploadService:
     def __init__(self, app: App) -> None:
         self.app = app
-        self.video_upload_waiters: dict[
-            int, asyncio.Future[VideoUploadSignal]
-        ] = {}
-        self.file_upload_waiters: dict[
-            int, asyncio.Future[FileUploadSignal]
-        ] = {}
-        self.app.dispatcher.on_internal(EventType.VIDEO_READY)(
-            self.on_video_attach
-        )
-        self.app.dispatcher.on_internal(EventType.FILE_READY)(
-            self.on_file_attach
-        )
+        self.video_upload_waiters: dict[int, asyncio.Future[VideoUploadSignal]] = {}
+        self.file_upload_waiters: dict[int, asyncio.Future[FileUploadSignal]] = {}
+        self.app.dispatcher.on_internal(EventType.VIDEO_READY)(self.on_video_attach)
+        self.app.dispatcher.on_internal(EventType.FILE_READY)(self.on_file_attach)
 
-    async def upload_photo(self, photo: Photo) -> AttachPhotoPayload:
+    async def upload_photo(self, photo: Photo, profile: bool = False) -> AttachPhotoPayload:
         logger.info("Uploading photo")
         logger.debug("Preparing photo upload payload")
 
-        payload = UploadPayload().model_dump()
+        payload = UploadPayload(profile=profile).model_dump()
 
         try:
             data = await self.app.invoke(
@@ -70,9 +62,7 @@ class UploadService:
             url = payload_item(data, "url", str)  # TODO: ENUM!!!!
         except Exception as e:
             logger.exception("Failed to parse photo upload URL from response")
-            raise UploadError(
-                "Failed to parse photo upload URL from response"
-            ) from e
+            raise UploadError("Failed to parse photo upload URL from response") from e
 
         if not url:
             logger.error("No upload URL received")
@@ -90,15 +80,11 @@ class UploadService:
         except (KeyError, IndexError) as e:
             logger.exception("Photo upload URL does not contain photoIds")
             logger.debug("Invalid photo upload URL=%s", url)
-            raise UploadError(
-                "Photo upload URL does not contain photoIds"
-            ) from e
+            raise UploadError("Photo upload URL does not contain photoIds") from e
         except Exception as e:
             logger.exception("Failed to parse photo id from upload URL")
             logger.debug("Invalid photo upload URL=%s", url)
-            raise UploadError(
-                "Failed to parse photo id from upload URL"
-            ) from e
+            raise UploadError("Failed to parse photo id from upload URL") from e
 
         logger.debug("Photo upload id parsed photo_id=%s", photo_id)
 
@@ -142,27 +128,17 @@ class UploadService:
                     data=form,
                 ) as response,
             ):
-                logger.debug(
-                    "Photo upload HTTP response status=%s", response.status
-                )
+                logger.debug("Photo upload HTTP response status=%s", response.status)
 
                 if response.status != HTTPStatus.OK:
-                    logger.error(
-                        "Photo upload failed with status %s", response.status
-                    )
-                    raise UploadError(
-                        f"Photo upload failed with status {response.status}"
-                    )
+                    logger.error("Photo upload failed with status %s", response.status)
+                    raise UploadError(f"Photo upload failed with status {response.status}")
 
                 try:
                     result = await response.json()
                 except Exception as e:
-                    logger.exception(
-                        "Failed to decode photo upload response JSON"
-                    )
-                    raise UploadError(
-                        "Failed to decode photo upload response JSON"
-                    ) from e
+                    logger.exception("Failed to decode photo upload response JSON")
+                    raise UploadError("Failed to decode photo upload response JSON") from e
 
         except UploadError:
             raise
@@ -278,9 +254,7 @@ class UploadService:
             async with aiohttp.ClientSession(
                 timeout=timeout, proxy=self.app.config.proxy
             ) as session:
-                logger.debug(
-                    "Starting video upload HTTP request video_id=%s", video_id
-                )
+                logger.debug("Starting video upload HTTP request video_id=%s", video_id)
 
                 async with session.post(
                     url=upload_info.url,
@@ -325,26 +299,14 @@ class UploadService:
         except UploadError:
             raise
         except aiohttp.ClientError as e:
-            logger.exception(
-                "HTTP error during video upload video_id=%s", video_id
-            )
-            raise UploadError(
-                f"HTTP error during video upload video_id={video_id}"
-            ) from e
+            logger.exception("HTTP error during video upload video_id=%s", video_id)
+            raise UploadError(f"HTTP error during video upload video_id={video_id}") from e
         except asyncio.TimeoutError as e:
-            logger.exception(
-                "Timed out during video upload video_id=%s", video_id
-            )
-            raise UploadError(
-                f"Timed out during video upload video_id={video_id}"
-            ) from e
+            logger.exception("Timed out during video upload video_id=%s", video_id)
+            raise UploadError(f"Timed out during video upload video_id={video_id}") from e
         except Exception as e:
-            logger.exception(
-                "Unexpected error during video upload video_id=%s", video_id
-            )
-            raise UploadError(
-                f"Unexpected error during video upload video_id={video_id}"
-            ) from e
+            logger.exception("Unexpected error during video upload video_id=%s", video_id)
+            raise UploadError(f"Unexpected error during video upload video_id={video_id}") from e
         finally:
             self.video_upload_waiters.pop(video_id, None)
             logger.debug("Video upload waiter removed video_id=%s", video_id)
@@ -456,70 +418,44 @@ class UploadService:
         except UploadError:
             raise
         except aiohttp.ClientError as e:
-            logger.exception(
-                "HTTP error during file upload file_id=%s", file_id
-            )
-            raise UploadError(
-                f"HTTP error during file upload file_id={file_id}"
-            ) from e
+            logger.exception("HTTP error during file upload file_id=%s", file_id)
+            raise UploadError(f"HTTP error during file upload file_id={file_id}") from e
         except asyncio.TimeoutError as e:
-            logger.exception(
-                "Timed out during file upload file_id=%s", file_id
-            )
-            raise UploadError(
-                f"Timed out during file upload file_id={file_id}"
-            ) from e
+            logger.exception("Timed out during file upload file_id=%s", file_id)
+            raise UploadError(f"Timed out during file upload file_id={file_id}") from e
         except Exception as e:
-            logger.exception(
-                "Unexpected error during file upload file_id=%s", file_id
-            )
-            raise UploadError(
-                f"Unexpected error during file upload file_id={file_id}"
-            ) from e
+            logger.exception("Unexpected error during file upload file_id=%s", file_id)
+            raise UploadError(f"Unexpected error during file upload file_id={file_id}") from e
         finally:
             self.file_upload_waiters.pop(file_id, None)
             logger.debug("File upload waiter removed file=%s", file_id)
 
-    async def on_video_attach(
-        self, attach: VideoUploadSignal, _: Client
-    ) -> None:
+    async def on_video_attach(self, attach: VideoUploadSignal, _: Client) -> None:
         logger.debug("Received attach event video_id=%s", attach.video_id)
 
         future = self.video_upload_waiters.pop(attach.video_id, None)
 
         if not future:
-            logger.debug(
-                "No video upload waiter found video_id=%s", attach.video_id
-            )
+            logger.debug("No video upload waiter found video_id=%s", attach.video_id)
             return
 
         if future.done():
-            logger.debug(
-                "Video upload waiter already done video_id=%s", attach.video_id
-            )
+            logger.debug("Video upload waiter already done video_id=%s", attach.video_id)
             return
 
         future.set_result(attach)
-        logger.debug(
-            "Video upload waiter resolved video_id=%s", attach.video_id
-        )
+        logger.debug("Video upload waiter resolved video_id=%s", attach.video_id)
 
-    async def on_file_attach(
-        self, attach: FileUploadSignal, _: Client
-    ) -> None:
+    async def on_file_attach(self, attach: FileUploadSignal, _: Client) -> None:
         logger.debug("Received attach event file_id=%s", attach.file_id)
         future = self.file_upload_waiters.pop(attach.file_id, None)
 
         if not future:
-            logger.debug(
-                "No file upload waiter found file_id=%s", attach.file_id
-            )
+            logger.debug("No file upload waiter found file_id=%s", attach.file_id)
             return
 
         if future.done():
-            logger.debug(
-                "File upload waiter already done file_id=%s", attach.file_id
-            )
+            logger.debug("File upload waiter already done file_id=%s", attach.file_id)
             return
 
         future.set_result(attach)
