@@ -56,7 +56,8 @@ class SelfService:
                 logger.warning(
                     "photo_token argument was provided but will be overridden by the uploaded photo token"
                 )
-                photo_token = attach.photo_token
+
+            photo_token = attach.photo_token
 
         frame = ChangeProfilePayload(
             first_name=first_name,
