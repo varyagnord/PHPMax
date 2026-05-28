@@ -129,6 +129,7 @@ class App(Generic[ClientT]):
 
         if response.token != self.session.token:
             await self.store.update_token(self.session.token, response.token)
+            self.session.token = response.token
 
         self.me = response.profile
         self.chats = response.chats
