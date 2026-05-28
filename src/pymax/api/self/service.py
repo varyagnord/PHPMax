@@ -38,7 +38,9 @@ class SelfService:
     async def request_profile_photo_upload_url(self) -> str:
         logger.info("requesting profile photo upload url")
         frame = UploadPayload(profile=True)
-        response = await self.app.invoke(Opcode.PHOTO_UPLOAD, frame.to_payload())
+        response = await self.app.invoke(
+            Opcode.PHOTO_UPLOAD, frame.to_payload()
+        )
         return str(require_payload_item(response, SelfPayloadKey.URL))
 
     async def change_profile(
@@ -51,7 +53,9 @@ class SelfService:
         photo_token: str | None = None,
     ) -> bool:
         if photo is not None:
-            attach = await self.app.api.uploads.upload_photo(photo, profile=True)
+            attach = await self.app.api.uploads.upload_photo(
+                photo, profile=True
+            )
             if photo_token:
                 logger.warning(
                     "photo_token argument was provided but will be overridden by the uploaded photo token"
@@ -88,13 +92,17 @@ class SelfService:
             include=chat_include,
             filters=filters or [],
         )
-        response = await self.app.invoke(Opcode.FOLDERS_UPDATE, frame.to_payload())
+        response = await self.app.invoke(
+            Opcode.FOLDERS_UPDATE, frame.to_payload()
+        )
         return require_payload_model(response, FolderUpdate)
 
     async def get_folders(self, folder_sync: int = 0) -> FolderList:
         logger.info("fetching folders")
         frame = GetFolderPayload(folder_sync=folder_sync)
-        response = await self.app.invoke(Opcode.FOLDERS_GET, frame.to_payload())
+        response = await self.app.invoke(
+            Opcode.FOLDERS_GET, frame.to_payload()
+        )
         return require_payload_model(response, FolderList)
 
     async def update_folder(
@@ -113,13 +121,17 @@ class SelfService:
             filters=filters or [],
             options=options or [],
         )
-        response = await self.app.invoke(Opcode.FOLDERS_UPDATE, frame.to_payload())
+        response = await self.app.invoke(
+            Opcode.FOLDERS_UPDATE, frame.to_payload()
+        )
         return require_payload_model(response, FolderUpdate)
 
     async def delete_folder(self, folder_id: str) -> FolderUpdate:
         logger.info("deleting folder")
         frame = DeleteFolderPayload(folder_ids=[folder_id])
-        response = await self.app.invoke(Opcode.FOLDERS_DELETE, frame.to_payload())
+        response = await self.app.invoke(
+            Opcode.FOLDERS_DELETE, frame.to_payload()
+        )
         return require_payload_model(response, FolderUpdate)
 
     async def close_all_sessions(self) -> bool:
@@ -133,7 +145,9 @@ class SelfService:
         token = payload_item(response, SelfPayloadKey.TOKEN, str)
 
         if not token:
-            logger.warning("no token received after closing sessions, skipping token update")
+            logger.warning(
+                "no token received after closing sessions, skipping token update"
+            )
             return False
 
         await self.app.store.update_token(self.app.session.token, token)
