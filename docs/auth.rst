@@ -91,7 +91,7 @@ Provider нужен, когда код приходит не из консоли
 Кастомный QR handler
 --------------------
 
-``QrHandler`` не должен подтверждать QR сам. Его задача - показать ссылку
+Обычно ``QrHandler`` не подтверждает QR сам. Его задача - показать ссылку
 пользователю: вывести в терминал, отправить в web UI или положить в лог.
 
 .. code-block:: python
@@ -109,6 +109,33 @@ Provider нужен, когда код приходит не из консоли
        session_name="web.db",
        qr_provider=PrintQrUrl(),
    )
+
+Если у вас уже есть запущенный и авторизованный ``Client``, QR-ссылку можно
+подтвердить программно через ``authorize_qr_login()``. Это удобно, когда
+``WebClient`` получает QR, а основной mobile-клиент должен разрешить вход:
+
+.. code-block:: python
+
+   from pymax import Client, WebClient
+
+
+   class ConfirmQrWithClient:
+       def __init__(self, client: Client) -> None:
+           self.client = client
+
+       async def show_qr(self, qr_url: str) -> None:
+           await self.client.authorize_qr_login(qr_url)
+
+
+   mobile_client = Client(phone="+79990000000", work_dir="cache")
+   # mobile_client должен уже пройти start/login в вашей программе.
+   web_client = WebClient(qr_provider=ConfirmQrWithClient(mobile_client))
+
+``mobile_client`` должен быть уже авторизован к моменту вызова
+``show_qr()``. Для такого подтверждения используйте ``Client`` с
+``device_type`` ``ANDROID`` или ``IOS``; при ``DESKTOP`` метод
+``authorize_qr_login()`` не работает. ``WebClient`` в штатной конфигурации
+всегда использует ``WEB``.
 
 Полный кастомный AuthFlow
 -------------------------
