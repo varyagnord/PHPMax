@@ -339,3 +339,15 @@ class ChatMixin(IClientProtocol):
             chat_id=chat_id,
             user_id=user_id,
         )
+
+    async def join_channel(self, link: str) -> Chat:
+        """Вступает в канал по ссылке.
+
+        Args:
+            link: Полная ссылка на канал, invite-ссылка или ее часть с
+                join-токеном Max.
+
+        Returns:
+            Канал, в который вступил клиент.
+        """
+        return await self._app.api.chats.join_channel(link=link)

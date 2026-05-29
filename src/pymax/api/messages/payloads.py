@@ -92,5 +92,5 @@ class RemoveReactionPayload(CamelModel):
 class ReadMessagesPayload(CamelModel):
     type: ReadAction
     chat_id: int
-    message_id: str
+    message_id: str | int  # Сокет просит int а вс str
     mark: int

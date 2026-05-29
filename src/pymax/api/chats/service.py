@@ -81,6 +81,12 @@ class ChatService:
         idx = link.find(ChatLinkPrefix.JOIN)
         return link[idx:] if idx != -1 else None
 
+    async def _join_chat(self, link: str) -> Chat:
+        frame = JoinChatPayload(link=link)
+        response = await self.app.invoke(Opcode.CHAT_JOIN, frame.to_payload())
+        chat = require_payload_item_model(response, ChatPayloadKey.CHAT, Chat)
+        return self._cache_chat(chat)
+
     async def create_group(
         self,
         name: str,
@@ -222,10 +228,12 @@ class ChatService:
         if proceed_link is None:
             raise ValueError("Invalid group link")
 
-        frame = JoinChatPayload(link=proceed_link)
-        response = await self.app.invoke(Opcode.CHAT_JOIN, frame.to_payload())
-        chat = require_payload_item_model(response, ChatPayloadKey.CHAT, Chat)
-        return self._cache_chat(chat)
+        return await self._join_chat(proceed_link)
+
+    async def join_channel(self, link: str) -> Chat:
+        proceed_link = self._process_chat_join_link(link)
+
+        return await self._join_chat(proceed_link or link)
 
     async def resolve_group_by_link(self, link: str) -> Chat | None:
         proceed_link = self._process_chat_join_link(link)

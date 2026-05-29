@@ -76,6 +76,28 @@ async def test_join_group_validates_link_and_caches_joined_chat() -> None:
 
 
 @pytest.mark.asyncio
+async def test_join_channel_accepts_raw_or_invite_links() -> None:
+    app = FakeApp(
+        [
+            frame({"chat": chat_payload(11, "CHANNEL")}),
+            frame({"chat": chat_payload(12, "CHANNEL")}),
+        ]
+    )
+
+    raw_chat = await app.api.chats.join_channel("https://max.ru/channel/news")
+    invite_chat = await app.api.chats.join_channel("https://max.ru/join/abc")
+
+    assert raw_chat.id == 11
+    assert invite_chat.id == 12
+    assert [call.opcode for call in app.calls] == [
+        Opcode.CHAT_JOIN,
+        Opcode.CHAT_JOIN,
+    ]
+    assert app.calls[0].payload["link"] == "https://max.ru/channel/news"
+    assert app.calls[1].payload["link"] == "join/abc"
+
+
+@pytest.mark.asyncio
 async def test_create_group_returns_chat_and_message_and_updates_cache() -> (
     None
 ):

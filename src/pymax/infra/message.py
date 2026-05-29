@@ -236,7 +236,9 @@ class MessageMixin(IClientProtocol):
             message_id=message_id,
         )
 
-    async def read_message(self, message_id: int, chat_id: int) -> ReadState:
+    async def read_message(
+        self, message_id: int | str, chat_id: int
+    ) -> ReadState:
         """Отмечает сообщение как прочитанное.
 
         Args:
