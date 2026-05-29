@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
+from pymax.api.binding import bind_api_model
 from pymax.api.response import (
     parse_payload_list,
     require_payload_dict,
@@ -30,13 +31,14 @@ class UserService:
         self.app = app
 
     def _cache_user(self, user: User) -> User:
+        user = bind_api_model(self.app, user)
         self.app.users[user.id] = user
         return user
 
     def get_cached_user(self, user_id: int) -> User | None:
         user = self.app.users.get(user_id)
         logger.debug("get_cached_user id=%s hit=%s", user_id, bool(user))
-        return user
+        return bind_api_model(self.app, user) if user is not None else None
 
     async def get_users(self, user_ids: list[int]) -> list[User]:
         cached = {

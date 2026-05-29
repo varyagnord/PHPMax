@@ -147,6 +147,10 @@ class Chat(CamelModel):
         """
         self._message_actions = message_actions
         self._chat_actions = chat_actions
+        if self.last_message is not None:
+            self.last_message.bind(message_actions)
+        if self.pinned_message is not None:
+            self.pinned_message.bind(message_actions)
         return self
 
     async def answer(

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pymax.api.binding import bind_api_model
 from pymax.api.response import (
     payload_item,
     payload_keys,
@@ -128,7 +129,10 @@ class AuthService:
 
         logger.debug("login response payload_keys=%s", payload_keys(response))
 
-        login_response = require_payload_model(response, LoginResponse)
+        login_response = bind_api_model(
+            self.app,
+            require_payload_model(response, LoginResponse),
+        )
         await self._update_session(login_response)
         return login_response
 
@@ -149,7 +153,10 @@ class AuthService:
 
         logger.debug("login response payload_keys=%s", payload_keys(response))
 
-        login_response = require_payload_model(response, LoginResponse)
+        login_response = bind_api_model(
+            self.app,
+            require_payload_model(response, LoginResponse),
+        )
         await self._update_session(login_response)
         return login_response
 

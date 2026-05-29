@@ -208,6 +208,7 @@ async def test_join_request_methods_fetch_confirm_decline_and_update_cache() -> 
     declined = await app.api.chats.decline_join_request(10, 5)
 
     assert [request.contact.id for request in requests] == [2]
+    assert requests[0].contact._actions is app.api.users
     assert confirmed is not None
     assert confirmed_one is not None
     assert declined is not None
@@ -254,6 +255,7 @@ async def test_user_service_fetches_caches_searches_and_removes_contacts() -> (
 
     assert [user.id for user in users] == [1, 2, 3]
     assert found.id == 4
+    assert found._actions is app.api.users
     assert removed is True
     assert 2 not in app.users
     assert [call.opcode for call in app.calls] == [
@@ -281,7 +283,9 @@ async def test_user_service_get_user_add_contact_sessions_and_chat_id() -> (
 
     assert user is not None
     assert user.id == 5
+    assert user._actions is app.api.users
     assert added.id == 6
+    assert added._actions is app.api.users
     assert sessions[0].device_id == "device"
     assert app.api.users.get_chat_id(10, 3) == 9
     assert [call.opcode for call in app.calls] == [
@@ -307,6 +311,7 @@ async def test_self_service_change_profile_and_close_all_sessions() -> None:
     )
     assert app.me is not None
     assert app.me.contact.id == 9
+    assert app.me.contact._actions is app.api.users
     assert app.users[9].id == 9
 
     assert await app.api.account.close_all_sessions() is True

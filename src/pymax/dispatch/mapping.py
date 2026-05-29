@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
+from pymax.api.binding import bind_api_model
 from pymax.protocol import InboundFrame, Opcode
 from pymax.protocol.enums import Command
 from pymax.types import Chat, MessageDeleteEvent
@@ -58,21 +59,20 @@ class EventMapper:
 
         if frame.payload:
             if event_type in (EventType.MESSAGE_NEW, EventType.MESSAGE_EDIT):
-                return Message.model_validate(frame.payload).bind(
-                    self.app.api.messages
+                return bind_api_model(
+                    self.app,
+                    Message.model_validate(frame.payload),
                 )
             elif event_type == EventType.CHAT_UPDATE:
-                return Chat.model_validate(frame.payload["chat"]).bind(
-                    self.app.api.messages,
-                    self.app.api.chats,
+                return bind_api_model(
+                    self.app,
+                    Chat.model_validate(frame.payload["chat"]),
                 )
             elif event_type == EventType.MESSAGE_DELETE:
-                model = MessageDeleteEvent.model_validate(frame.payload)
-                model.chat.bind(
-                    self.app.api.messages,
-                    self.app.api.chats,
+                return bind_api_model(
+                    self.app,
+                    MessageDeleteEvent.model_validate(frame.payload),
                 )
-                return model
             elif event_type == EventType.VIDEO_READY:
                 return VideoUploadSignal.model_validate(frame.payload)
             elif event_type == EventType.FILE_READY:

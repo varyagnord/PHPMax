@@ -56,23 +56,34 @@ async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> (
     router.include_router(child)
     dispatcher: Dispatcher[str] = Dispatcher(app, router)
     dispatcher.bind_client("client")
-    seen: list[tuple[str, object]] = []
+    seen: list[tuple[str, object, object | None]] = []
 
     @child.on_chat_update()
     async def on_chat(chat, _client):
-        seen.append(("chat", chat.id))
+        seen.append(
+            (
+                "chat",
+                chat.id,
+                chat.pinned_message._actions is app.api.messages,
+            )
+        )
 
     @router.on_message_delete()
     async def on_delete(event, _client):
-        seen.append(("delete", tuple(event.message_ids)))
+        seen.append(("delete", tuple(event.message_ids), None))
 
     @dispatcher.on_internal(EventType.FILE_READY)
     async def on_file(signal, _client):
-        seen.append(("file", signal.file_id))
+        seen.append(("file", signal.file_id, None))
 
     await dispatcher.dispatch(
         frame(
-            {"chat": chat_payload(5)},
+            {
+                "chat": {
+                    **chat_payload(5),
+                    "pinnedMessage": message_payload(9, 5),
+                }
+            },
             opcode=Opcode.NOTIF_CHAT,
             cmd=Command.REQUEST,
         )
@@ -88,7 +99,11 @@ async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> (
         frame({"fileId": 99}, opcode=Opcode.NOTIF_ATTACH, cmd=Command.REQUEST)
     )
 
-    assert seen == [("chat", 5), ("delete", (1, 2)), ("file", 99)]
+    assert seen == [
+        ("chat", 5, True),
+        ("delete", (1, 2), None),
+        ("file", 99, None),
+    ]
 
 
 @pytest.mark.asyncio

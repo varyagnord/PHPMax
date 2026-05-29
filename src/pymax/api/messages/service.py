@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, TypeAlias
 
+from pymax.api.binding import bind_api_model, bind_api_models
 from pymax.api.response import (
     parse_payload_list,
     parse_payload_model,
@@ -137,7 +138,10 @@ class MessageService:
 
         response = await self.app.invoke(Opcode.MSG_SEND, frame.to_payload())
 
-        message = require_payload_model(response, Message).bind(self)
+        message = bind_api_model(
+            self.app,
+            require_payload_model(response, Message),
+        )
         logger.info("message sent chat_id=%s", chat_id)
         return message
 
@@ -171,10 +175,11 @@ class MessageService:
             Opcode.CHAT_HISTORY,
             payload=frame.to_payload(),
         )
-        return (
-            parse_payload_list(response, MessagePayloadKey.MESSAGES, Message)
-            or None
+        messages = bind_api_models(
+            self.app,
+            parse_payload_list(response, MessagePayloadKey.MESSAGES, Message),
         )
+        return messages or None
 
     async def delete_message(
         self,

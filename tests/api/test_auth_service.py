@@ -7,7 +7,15 @@ from pymax.api.session.enums import DeviceType
 from pymax.protocol import Opcode
 from pymax.session.models import SessionInfo
 from pymax.types.domain.sync import SyncState
-from tests.conftest import FakeApp, frame, mobile_user_agent, profile_payload
+from tests.conftest import (
+    FakeApp,
+    chat_payload,
+    frame,
+    message_payload,
+    mobile_user_agent,
+    profile_payload,
+    user_payload,
+)
 
 
 class StaticEmailProvider:
@@ -59,6 +67,14 @@ async def test_mobile_login_sends_sync_payload_and_persists_updated_session() ->
             frame(
                 {
                     "profile": profile_payload(42),
+                    "chats": [
+                        {
+                            **chat_payload(100),
+                            "pinnedMessage": message_payload(10, 100),
+                        }
+                    ],
+                    "messages": {"100": [message_payload(11, 100)]},
+                    "contacts": [user_payload(43)],
                     "token": "server-token",
                     "time": 777,
                     "config": {"hash": "cfg-hash"},
@@ -91,6 +107,13 @@ async def test_mobile_login_sends_sync_payload_and_persists_updated_session() ->
     assert app.session.sync.presence_sync == 777
     assert app.session.sync.config_hash == "cfg-hash"
     assert app.store.saved_sessions == [app.session]
+    assert response.profile.contact._actions is app.api.users
+    assert response.chats[0]._message_actions is app.api.messages
+    assert response.chats[0].pinned_message is not None
+    assert response.chats[0].pinned_message._actions is app.api.messages
+    assert response.messages[100][0]._actions is app.api.messages
+    assert response.contacts[0] is not None
+    assert response.contacts[0]._actions is app.api.users
 
 
 @pytest.mark.asyncio

@@ -97,6 +97,8 @@ async def test_fetch_history_builds_payload_and_parses_messages(
     )
 
     assert [message.id for message in messages or []] == [1, 2]
+    assert messages is not None
+    assert all(message._actions is app.api.messages for message in messages)
     assert app.calls[0].opcode == Opcode.CHAT_HISTORY
     assert app.calls[0].payload["from"] == 123
     assert app.calls[0].payload["itemType"] == ItemType.DELAYED

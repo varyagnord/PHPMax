@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
+from pymax.api.binding import bind_api_model
 from pymax.api.response import (
     payload_item,
     require_payload_item,
@@ -70,10 +71,13 @@ class SelfService:
             photo_token=photo_token,
         )
         response = await self.app.invoke(Opcode.PROFILE, frame.to_payload())
-        profile = require_payload_item_model(
-            response,
-            SelfPayloadKey.PROFILE,
-            Profile,
+        profile = bind_api_model(
+            self.app,
+            require_payload_item_model(
+                response,
+                SelfPayloadKey.PROFILE,
+                Profile,
+            ),
         )
         self.app.me = profile
         self.app.users[profile.contact.id] = profile.contact

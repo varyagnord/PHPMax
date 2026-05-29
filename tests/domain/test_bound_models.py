@@ -148,6 +148,23 @@ async def test_chat_bound_methods_delegate_by_chat_type() -> None:
     assert channel.is_channel is True
 
 
+def test_chat_bind_also_binds_nested_messages() -> None:
+    messages = MessageActions()
+    chats = ChatActions()
+    payload = {
+        **chat_payload(100, "CHAT"),
+        "lastMessage": message_payload(10, 100),
+        "pinnedMessage": message_payload(11, 100),
+    }
+
+    chat = Chat.model_validate(payload).bind(messages, chats)
+
+    assert chat.last_message is not None
+    assert chat.pinned_message is not None
+    assert chat.last_message._actions is messages
+    assert chat.pinned_message._actions is messages
+
+
 @pytest.mark.asyncio
 async def test_dialog_leave_and_unbound_chat_raise_errors() -> None:
     dialog = Chat.model_validate(chat_payload(1, "DIALOG")).bind(

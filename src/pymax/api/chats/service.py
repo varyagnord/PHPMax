@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING
 
+from pymax.api.binding import bind_api_model
 from pymax.api.response import (
     parse_payload_item_model,
     parse_payload_list,
@@ -46,7 +47,7 @@ class ChatService:
         self.app = app
 
     def _bind_chat(self, chat: Chat) -> Chat:
-        return chat.bind(self.app.api.messages, self)
+        return bind_api_model(self.app, chat)
 
     def _cache_chat(self, chat: Chat) -> Chat:
         chat = self._bind_chat(chat)
@@ -116,7 +117,10 @@ class ChatService:
             return None
 
         chat = self._cache_chat(chat)
-        message = require_payload_model(response, Message).bind(self.app.api.messages)
+        message = bind_api_model(
+            self.app,
+            require_payload_model(response, Message),
+        )
         return chat, message
 
     async def invite_users_to_group(
@@ -291,7 +295,10 @@ class ChatService:
 
         response = await self.app.invoke(Opcode.CHAT_MEMBERS, frame.to_payload())
 
-        return parse_payload_list(response, ChatPayloadKey.MEMBERS, Member)
+        return bind_api_model(
+            self.app,
+            parse_payload_list(response, ChatPayloadKey.MEMBERS, Member),
+        )
 
     async def confirm_join_requests(
         self,
