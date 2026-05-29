@@ -1,4 +1,4 @@
-name: Upload Python Package
+name: Publish
 
 on:
   release:
@@ -8,77 +8,57 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  release-checks:
+  package:
+    name: Build package
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
         with:
-          python-version: "3.10"
           enable-cache: true
 
-      - name: Check lint
-        run: uv run ruff check src tests
-
-      - name: Check formatting
-        run: uv run ruff format --check src tests
-
-      - name: Run tests
-        run: uv run pytest
-
-      - name: Build docs
-        run: uv run sphinx-build -b html docs /tmp/pymax-docs
-
-  release-build:
-    runs-on: ubuntu-latest
-    needs: release-checks
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          python-version: "3.10"
-          enable-cache: true
-
-      - name: Build release distributions
+      - name: Build package distributions
         run: uv build
 
-      - name: Check distributions
+      - name: Validate package distributions
         run: uv run twine check dist/*
 
-      - name: Upload distributions
+      - name: Upload package distributions
         uses: actions/upload-artifact@v4
         with:
-          name: release-dists
+          name: package-distributions
           path: dist/
 
-  pypi-publish:
+  publish:
+    name: Publish to PyPI
     runs-on: ubuntu-latest
-    needs: release-build
+    needs: [package]
+
     environment:
       name: pypi
-      url: https://pypi.org/project/maxapi-python/
 
     permissions:
       contents: read
       id-token: write
 
     steps:
-      - name: Retrieve release distributions
+      - name: Download package distributions
         uses: actions/download-artifact@v4
         with:
-          name: release-dists
+          name: package-distributions
           path: dist/
 
-      - name: Publish release distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+
+      - name: Publish package to PyPI
+        run: uv publish
