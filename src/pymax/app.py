@@ -127,7 +127,7 @@ class App(Generic[ClientT]):
             self.config.device.user_agent,
         )
 
-        if response.token != self.session.token:
+        if response.token is not None and response.token != self.session.token:
             await self.store.update_token(self.session.token, response.token)
             self.session.token = response.token
 
