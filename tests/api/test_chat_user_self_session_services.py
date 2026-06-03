@@ -345,7 +345,7 @@ async def test_self_service_profile_photo_folders_and_logout() -> None:
 
     assert created.folder is not None
     assert created.folder.title == "Work"
-    assert [folder.id for folder in folders] == ["folder-1"]
+    assert [folder.id for folder in folders.folders] == ["folder-1"]
     assert updated.folder is not None
     assert updated.folder.title == "New"
     assert deleted.folder_sync == 4

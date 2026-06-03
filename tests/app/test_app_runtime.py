@@ -150,3 +150,21 @@ async def test_app_invoke_turns_error_frames_into_api_error() -> None:
     assert exc_info.value.error == "rate_limited"
     assert exc_info.value.opcode == Opcode.PING
     assert connection.sent[0][0].seq == 0
+
+
+@pytest.mark.asyncio
+async def test_app_invoke_uses_config_timeout_and_allows_override() -> None:
+    store = RuntimeStore(
+        SessionInfo(token="token", device_id="dev", phone="+7")
+    )
+    config = make_config().model_copy(
+        update={"request_timeout": 12.5, "store": store}
+    )
+    connection = RuntimeConnection([frame({}), frame({})])
+    app: App[object] = App(connection, config, StaticAuthFlow())
+
+    await app.invoke(Opcode.PING, {"interactive": True})
+    await app.invoke(Opcode.PING, {"interactive": True}, timeout=3.0)
+
+    assert connection.sent[0][1] == 12.5
+    assert connection.sent[1][1] == 3.0

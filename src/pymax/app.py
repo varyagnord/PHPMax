@@ -33,9 +33,7 @@ class App(Generic[ClientT]):
         self.dispatcher: Dispatcher[ClientT] = Dispatcher(self, root_router)
         self.api = ApiFacade(self)
         self.config = config
-        self.store = self.config.store or SessionStore(
-            config.work_dir, config.session_name
-        )
+        self.store = self.config.store or SessionStore(config.work_dir, config.session_name)
         self.auth_flow = auth_flow
 
         self.me: Profile | None = None
@@ -76,18 +74,14 @@ class App(Generic[ClientT]):
             await self.connection.open()
 
             handshake_device_id = (
-                session_data.device_id
-                if session_data
-                else self.config.device.device_id
+                session_data.device_id if session_data else self.config.device.device_id
             )
             logger.debug("running handshake")
             await self.handshake(handshake_device_id)
         except (ConnectionError, EOFError, OSError, TimeoutError) as e:
             logger.exception("failed to connect or handshake")
             await self.connection.close()
-            raise ConnectionError(
-                f"Failed to connect and handshake: {e}"
-            ) from e
+            raise ConnectionError(f"Failed to connect and handshake: {e}") from e
 
         self._ping_task = asyncio.create_task(self._ping_loop())
 
@@ -108,9 +102,7 @@ class App(Generic[ClientT]):
 
                 if not auth_result.token:
                     logger.error("authentication finished without token")
-                    raise RuntimeError(
-                        "Authentication failed: no token received"
-                    )
+                    raise RuntimeError("Authentication failed: no token received")
 
                 await self.store.save_session(
                     session_data := SessionInfo(
@@ -135,7 +127,7 @@ class App(Generic[ClientT]):
             self.config.device.user_agent,
         )
 
-        if response.token != self.session.token:
+        if response.token is not None and response.token != self.session.token:
             await self.store.update_token(self.session.token, response.token)
             self.session.token = response.token
 
@@ -189,7 +181,7 @@ class App(Generic[ClientT]):
         opcode: int,
         payload: dict[str, Any],
         cmd: int = Command.REQUEST,
-        timeout: float | None = 30.0,
+        timeout: float | None = None,
         compress: bool = False,
     ) -> InboundFrame:
         seq = self.connection.next_seq()
@@ -211,10 +203,11 @@ class App(Generic[ClientT]):
             payload_keys,
         )
         logger.debug("Request data=%s", frame.model_dump())
-        response = await self.connection.request(frame, timeout=timeout)
-        response_keys = (
-            sorted(response.payload.keys()) if response.payload else []
+        request_timeout = (
+            self.config.request_timeout if timeout is None else timeout
         )
+        response = await self.connection.request(frame, timeout=request_timeout)
+        response_keys = sorted(response.payload.keys()) if response.payload else []
         logger.debug(
             "response opcode=%s cmd=%s seq=%s payload_keys=%s",
             response.opcode,
