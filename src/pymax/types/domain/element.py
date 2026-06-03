@@ -4,7 +4,7 @@ from .base import CamelModel
 
 
 class ElementAttributes(CamelModel):
-    url: str
+    url: str | None = None
 
 
 class Element(CamelModel):
