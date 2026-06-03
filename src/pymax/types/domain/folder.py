@@ -68,7 +68,3 @@ class FolderList(CamelModel):
     folders: list[Folder] = Field(default_factory=list)
     all_filter_exclude_folders: list[Any] = Field(default_factory=list)
     folder_sync: int = 0
-
-    @override
-    def __iter__(self) -> Iterator[Folder]:  # pyright: ignore[reportIncompatibleMethodOverride]
-        yield from self.folders
