@@ -14,6 +14,7 @@ class AttachmentType(str, Enum):
     CALL = "CALL"
     SHARE = "SHARE"
     INLINE_KEYBOARD = "INLINE_KEYBOARD"
+    UNKNOWN = "UNKNOWN"
 
 
 class TranscriptionStatus(str, Enum):
