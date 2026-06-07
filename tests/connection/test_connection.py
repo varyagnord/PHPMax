@@ -28,10 +28,11 @@ class FakeProtocol:
 
 
 class FakeTransport:
-    def __init__(self) -> None:
+    def __init__(self, send_error: Exception | None = None) -> None:
         self.sent: list[bytes | str] = []
         self.connected = False
         self.closed = False
+        self.send_error = send_error
 
     async def connect(self) -> None:
         self.connected = True
@@ -41,6 +42,9 @@ class FakeTransport:
         self.connected = False
 
     async def send(self, data: bytes | str) -> None:
+        if self.send_error:
+            raise self.send_error
+
         self.sent.append(data)
 
 
@@ -125,10 +129,53 @@ async def test_connection_request_resolves_when_matching_response_arrives() -> (
 
 
 @pytest.mark.asyncio
+async def test_connection_request_discards_pending_future_when_send_fails() -> (
+    None
+):
+    manager = ConnectionManager(
+        reader=QueueReader([]),
+        transport=FakeTransport(send_error=ConnectionError("closed")),
+        protocol=FakeProtocol(),
+    )
+    frame = OutboundFrame(
+        ver=1, opcode=99, cmd=Command.REQUEST, seq=7, payload={}
+    )
+
+    with pytest.raises(ConnectionError, match="closed"):
+        await manager.request(frame, timeout=1)
+
+    assert manager.requests._pending == {}
+
+
+@pytest.mark.asyncio
+async def test_connection_request_discards_pending_future_when_cancelled() -> (
+    None
+):
+    manager = ConnectionManager(
+        reader=QueueReader([]),
+        transport=FakeTransport(),
+        protocol=FakeProtocol(),
+    )
+    frame = OutboundFrame(
+        ver=1, opcode=99, cmd=Command.REQUEST, seq=7, payload={}
+    )
+
+    task = asyncio.create_task(manager.request(frame, timeout=10))
+    await asyncio.sleep(0)
+    task.cancel()
+
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+    assert manager.requests._pending == {}
+
+
+@pytest.mark.asyncio
 async def test_connection_open_recv_loop_dispatches_events_and_closes() -> (
     None
 ):
     events: list[InboundFrame] = []
+    closed: list[Exception | None] = []
     transport = FakeTransport()
 
     async def on_event(event: InboundFrame) -> None:
@@ -139,6 +186,7 @@ async def test_connection_open_recv_loop_dispatches_events_and_closes() -> (
         transport=transport,
         protocol=FakeProtocol(),
         on_event=on_event,
+        on_close=closed.append,
     )
 
     await manager.open()
@@ -148,6 +196,8 @@ async def test_connection_open_recv_loop_dispatches_events_and_closes() -> (
         await manager.wait_closed()
 
     assert manager.is_open is False
+    assert len(closed) == 1
+    assert isinstance(closed[0], ConnectionError)
     await manager.close()
     assert transport.closed is True
     assert [event.opcode for event in events] == [42]

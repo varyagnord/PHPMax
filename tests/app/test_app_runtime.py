@@ -44,6 +44,7 @@ class RuntimeConnection:
         self.closed = False
         self.failed = None
         self.on_event = None
+        self.on_close = None
         self._seq = -1
 
     async def open(self) -> None:
@@ -55,6 +56,9 @@ class RuntimeConnection:
 
     async def fail(self, exc: Exception | None = None) -> None:
         self.failed = exc
+        self.opened = False
+        if self.on_close:
+            self.on_close(exc)
 
     async def request(self, outbound, timeout=None):
         self.sent.append((outbound, timeout))
@@ -168,3 +172,44 @@ async def test_app_invoke_uses_config_timeout_and_allows_override() -> None:
 
     assert connection.sent[0][1] == 12.5
     assert connection.sent[1][1] == 3.0
+
+
+@pytest.mark.asyncio
+async def test_app_marks_stopped_and_cancels_ping_on_connection_loss(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def idle_ping_loop(self):
+        await asyncio.Event().wait()
+
+    monkeypatch.setattr(App, "_ping_loop", idle_ping_loop)
+    store = RuntimeStore()
+    config = make_config().model_copy(
+        update={"token": "config-token", "store": store}
+    )
+    connection = RuntimeConnection(
+        [
+            frame({}),
+            frame(
+                {
+                    "profile": profile_payload(77),
+                    "contacts": [profile_payload(77)["contact"]],
+                    "chats": [],
+                    "messages": {},
+                }
+            ),
+        ]
+    )
+    app: App[object] = App(connection, config, StaticAuthFlow())
+
+    await app.start()
+    assert app.started is True
+    ping_task = app._ping_task
+    assert ping_task is not None
+
+    await connection.fail(ConnectionError("lost"))
+    await asyncio.sleep(0)
+
+    assert app.started is False
+    assert ping_task.cancelled()
+
+    await app.close()
