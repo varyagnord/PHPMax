@@ -15,10 +15,7 @@ class MsgpackPayloadCodec:
         if isinstance(value, Enum):
             return value.value
         if isinstance(value, dict):
-            return {
-                self._to_msgpack_value(k): self._to_msgpack_value(v)
-                for k, v in value.items()
-            }
+            return {self._to_msgpack_value(k): self._to_msgpack_value(v) for k, v in value.items()}
         if isinstance(value, list):
             return [self._to_msgpack_value(item) for item in value]
         if isinstance(value, tuple):
@@ -28,56 +25,42 @@ class MsgpackPayloadCodec:
     def encode(self, payload: object) -> bytes:
         if payload is None:
             return b""
-        return (
-            msgpack.packb(self._to_msgpack_value(payload), use_bin_type=True)
-            or b""
-        )
+        return msgpack.packb(self._to_msgpack_value(payload), use_bin_type=True) or b""
 
-    def _unpack_stream(self, payload_bytes: bytes, *, raw: bool) -> list[Any]:
+    def _unpack_stream(
+        self, payload_bytes: bytes, *, raw: bool
+    ) -> list[Any]:  # TODO: deprecate? idk
         unpacker = msgpack.Unpacker(raw=raw, strict_map_key=False)
         unpacker.feed(payload_bytes)
         return list(unpacker)
 
-    def decode(self, payload_bytes: bytes) -> dict[Any, Any]:
+    def decode(self, payload_bytes: bytes) -> Any:
         if not payload_bytes:
             return {}
 
         try:
             return msgpack.unpackb(
-                payload_bytes, raw=False, strict_map_key=False
+                payload_bytes,
+                raw=False,
+                strict_map_key=False,
             )
-        except msgpack.exceptions.ExtraData as e:
-            if isinstance(e.unpacked, dict):
-                logger.debug(
-                    "msgpack payload has trailing data unpacked_type=%s extra_bytes=%s extra_head=%s",
-                    type(e.unpacked).__name__,
-                    len(e.extra),
-                    e.extra[:16].hex(),
-                )
-                return e.unpacked
 
-            try:
-                values = self._unpack_stream(payload_bytes, raw=False)
-            except UnicodeDecodeError:
-                values = self._unpack_stream(payload_bytes, raw=True)
+        except msgpack.exceptions.ExtraData as e:
             logger.debug(
-                "msgpack payload has extra data objects=%s extra_bytes=%s",
-                [type(value).__name__ for value in values],
+                "msgpack extra data: unpacked_type=%s extra_len=%s extra_head=%s payload_head=%s",
+                type(e.unpacked).__name__,
                 len(e.extra),
+                e.extra[:64].hex(),
+                payload_bytes[:128].hex(),
             )
-            for value in values:
-                if isinstance(value, dict):
-                    return value
-            raise
-        except UnicodeDecodeError:
-            values = self._unpack_stream(payload_bytes, raw=True)
-            logger.debug(
-                "msgpack payload decoded with raw bytes objects=%s",
-                [type(value).__name__ for value in values],
+            return e.unpacked
+
+        except Exception:
+            logger.exception(
+                "msgpack decode failed: payload_len=%s payload_head=%s",
+                len(payload_bytes),
+                payload_bytes[:128].hex(),
             )
-            for value in values:
-                if isinstance(value, dict):
-                    return value
             raise
 
 
@@ -93,10 +76,7 @@ class TcpPayloadDecoder:
 
     def _normalize_keys(self, obj: Any) -> Any:
         if isinstance(obj, dict):
-            return {
-                self._normalize_key(k): self._normalize_keys(v)
-                for k, v in obj.items()
-            }
+            return {self._normalize_key(k): self._normalize_keys(v) for k, v in obj.items()}
         if isinstance(obj, list):
             return [self._normalize_keys(item) for item in obj]
         if isinstance(obj, tuple):

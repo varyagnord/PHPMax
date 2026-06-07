@@ -49,6 +49,7 @@ class App(Generic[ClientT]):
         self._telemetry = TelemetryService(self) if config.telemetry else None
 
         self.connection.on_event = self.on_event
+        self.connection.on_close = self.on_connection_lost
         logger.debug(
             "app initialized session=%s work_dir=%s auth_flow=%s",
             config.session_name,
@@ -174,6 +175,7 @@ class App(Generic[ClientT]):
         await self.dispatcher.stop_startup_tasks()
         await self.connection.close()
         await self.store.close()
+
         self.started = False
 
     async def invoke(
@@ -203,9 +205,7 @@ class App(Generic[ClientT]):
             payload_keys,
         )
         logger.debug("Request data=%s", frame.model_dump())
-        request_timeout = (
-            self.config.request_timeout if timeout is None else timeout
-        )
+        request_timeout = self.config.request_timeout if timeout is None else timeout
         response = await self.connection.request(frame, timeout=request_timeout)
         response_keys = sorted(response.payload.keys()) if response.payload else []
         logger.debug(
@@ -231,8 +231,22 @@ class App(Generic[ClientT]):
         except asyncio.CancelledError:
             raise
         except Exception as e:
-            logger.exception("ping loop failed; closing transport")
+            logger.warning("ping loop failed; closing transport: %s", e)
             await self.connection.fail(ConnectionError(f"Ping failed: {e}"))
+
+    def on_connection_lost(self, exc: Exception | None = None) -> None:
+        if self.started:
+            logger.warning("connection lost; marking app as stopped: %s", exc)
+
+        self.started = False
+
+        task = self._ping_task
+        if task is None or task.done():
+            return
+
+        current_task = asyncio.current_task()
+        if task is not current_task:
+            task.cancel()
 
     def _build_api_error(self, response: InboundFrame) -> ApiError:
         try:

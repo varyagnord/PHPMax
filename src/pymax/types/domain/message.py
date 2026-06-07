@@ -15,6 +15,7 @@ from pymax.types.domain import (
     PhotoAttachment,
     ShareAttachment,
     StickerAttachment,
+    UnknownAttachment,
     VideoAttachment,
 )
 
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
     from pymax.api.messages.service import MessageService
 
 
-Attachment: TypeAlias = Annotated[
+KnownAttachment: TypeAlias = Annotated[
     PhotoAttachment
     | VideoAttachment
     | FileAttachment
@@ -39,6 +40,7 @@ Attachment: TypeAlias = Annotated[
     | CallAttachment,
     Field(discriminator="type"),
 ]
+Attachment: TypeAlias = KnownAttachment | UnknownAttachment
 SendAttachment: TypeAlias = Photo | File | Video
 SendAttachments: TypeAlias = list[SendAttachment] | None
 

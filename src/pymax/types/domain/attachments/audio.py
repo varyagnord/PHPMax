@@ -11,9 +11,9 @@ class AudioAttachment(CamelModel):
     """Аудио-вложение сообщения.
 
     :ivar duration: Длительность аудио.
-    :vartype duration: int
+    :vartype duration: int | None
     :ivar audio_id: ID аудио.
-    :vartype audio_id: int
+    :vartype audio_id: int | None
     :ivar wave: Данные waveform.
     :vartype wave: str | None
     :ivar transcription_status: Статус транскрибации.
@@ -26,8 +26,8 @@ class AudioAttachment(CamelModel):
     :vartype token: str | None
     """
 
-    duration: int
-    audio_id: int
+    duration: int | None = None
+    audio_id: int | None = None
     wave: str | None = None
     transcription_status: TranscriptionStatus | None = None
     url: str | None = None

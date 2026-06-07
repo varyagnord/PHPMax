@@ -31,7 +31,7 @@ class VideoAttachment(CamelModel):
     :ivar video_id: ID видео.
     :vartype video_id: int
     :ivar duration: Длительность видео.
-    :vartype duration: int
+    :vartype duration: int | None
     :ivar preview_data: Данные превью.
     :vartype preview_data: bytes
     :ivar type: Тип вложения.
@@ -47,7 +47,7 @@ class VideoAttachment(CamelModel):
     height: int
     width: int
     video_id: int
-    duration: int
+    duration: int | None = None
     preview_data: bytes
     type: Literal[AttachmentType.VIDEO] = Field(alias="_type")
     thumbnail: str

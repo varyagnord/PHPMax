@@ -1,6 +1,7 @@
 import mimetypes
 from collections.abc import AsyncGenerator
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from .base import BaseFile
 from .static import ALLOWED_EXTENSIONS
@@ -66,12 +67,13 @@ class Photo(BaseFile):
                 raise ValueError(msg)
             return (extension[1:], ("image/" + extension[1:]).lower())
         if self.url:
-            extension = Path(self.url).suffix.lower()
+            url_path = urlsplit(self.url).path
+            extension = Path(url_path).suffix.lower()
             if extension not in ALLOWED_EXTENSIONS:
                 msg = f"Invalid photo extension: {extension}. Allowed: {ALLOWED_EXTENSIONS}"
                 raise ValueError(msg)
 
-            mime_type = mimetypes.guess_type(self.url)[0]
+            mime_type = mimetypes.guess_type(url_path)[0]
 
             if not mime_type or not mime_type.startswith("image/"):
                 msg = f"URL does not appear to be an image: {self.url}"

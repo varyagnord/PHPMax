@@ -8,4 +8,5 @@ from .keyboards import InlineKeyboardAttachment
 from .photo import PhotoAttachment
 from .share import ShareAttachment
 from .sticker import StickerAttachment
+from .unknown import UnknownAttachment
 from .video import VideoAttachment, VideoRequest

@@ -4,7 +4,7 @@ from .base import CamelModel
 
 
 class ElementAttributes(CamelModel):
-    url: str
+    url: str | None = None
 
 
 class Element(CamelModel):
@@ -15,10 +15,10 @@ class Element(CamelModel):
     :ivar from_: Начальная позиция элемента.
     :vartype from_: int | None
     :ivar length: Длина элемента.
-    :vartype length: int
+    :vartype length: int | None
     """
 
     type: str
     from_: int | None = Field(serialization_alias="from", default=None)
-    length: int
+    length: int | None = None
     attributes: ElementAttributes | None = None
