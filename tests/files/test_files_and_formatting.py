@@ -45,6 +45,12 @@ def test_file_and_photo_validation_errors() -> None:
         Photo(raw=b"not image", name="bad.txt").validate_photo()
 
 
+def test_photo_url_validation_ignores_query_string() -> None:
+    photo = Photo(url="https://example.com/image.jpg?quality=95&as=32x20")
+
+    assert photo.validate_photo() == ("jpg", "image/jpeg")
+
+
 def test_markdown_formatter_extracts_functional_entities() -> None:
     clean, entities = Formatter.format_markdown(
         "# Title\n> Quote\nHello **bold** and [site](https://example.com)"

@@ -4,6 +4,7 @@ import sys
 from typing import TextIO
 
 DATE_FORMAT = "%H:%M:%S"
+PYMAX_HANDLER_ATTR = "_pymax_pretty_handler"
 
 RESET = "\x1b[0m"
 DIM = "\x1b[2m"
@@ -56,17 +57,22 @@ def configure_logging(
     *,
     stream: TextIO | None = None,
     use_colors: bool | None = None,
+    force: bool = False,
 ) -> None:
     """Настраивает pretty-логи для logger-а ``pymax``.
 
     Обычно уровень логов задают через ``ExtraConfig(log_level="DEBUG")``.
-    Вызывайте эту функцию вручную, если хотите управлять stream или цветами.
+    PyMax ставит свой handler только если приложение еще не настроило logging.
+    Вызывайте эту функцию с ``force=True``, если хотите принудительно включить
+    pretty-логи PyMax.
 
     Args:
         level: Уровень логирования: строка вроде ``"DEBUG"`` или число из
             модуля ``logging``.
         stream: Поток для вывода. По умолчанию ``sys.stderr``.
         use_colors: Включить ANSI-цвета. Если ``None``, определяется по TTY.
+        force: Заменить существующие handler-ы logger-а ``pymax`` на pretty
+            handler PyMax.
 
     Returns:
         ``None``.
@@ -84,17 +90,25 @@ def configure_logging(
         use_colors = hasattr(stream, "isatty") and stream.isatty()
 
     logger = logging.getLogger("pymax")
+    level_value = _normalize_level(level)
+    logger.setLevel(level_value)
+
+    if not force and _logging_already_configured(logger):
+        if logging.getLogger().handlers and not _has_non_null_handlers(logger):
+            logger.propagate = True
+        return
+
     logger.handlers.clear()
-    logger.setLevel(_normalize_level(level))
     logger.propagate = False
 
     handler = logging.StreamHandler(stream)
-    handler.setLevel(_normalize_level(level))
+    handler.setLevel(level_value)
     handler.setFormatter(
         PrettyFormatter(
             use_colors=use_colors,
         )
     )
+    setattr(handler, PYMAX_HANDLER_ATTR, True)
 
     logger.addHandler(handler)
 
@@ -124,6 +138,22 @@ def _normalize_level(level: int | str) -> int:
 def _strip_ansi(text: str) -> str:
 
     return re.sub(r"\x1b\[[0-9;]*m", "", text)
+
+
+def _logging_already_configured(logger: logging.Logger) -> bool:
+    return bool(logging.getLogger().handlers or _has_external_handlers(logger))
+
+
+def _has_non_null_handlers(logger: logging.Logger) -> bool:
+    return any(not isinstance(handler, logging.NullHandler) for handler in logger.handlers)
+
+
+def _has_external_handlers(logger: logging.Logger) -> bool:
+    return any(
+        not isinstance(handler, logging.NullHandler)
+        and not getattr(handler, PYMAX_HANDLER_ATTR, False)
+        for handler in logger.handlers
+    )
 
 
 logging.getLogger("pymax").addHandler(logging.NullHandler())

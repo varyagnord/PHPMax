@@ -66,10 +66,7 @@ class Client(BaseClient["Client"]):
 
         self._config = self._build_config(
             phone=phone,
-            user_agent=(
-                self.extra_config.user_agent
-                or self.extra_config.generate_user_agent()
-            ),
+            user_agent=(self.extra_config.user_agent or self.extra_config.generate_user_agent()),
         )
 
         if auth_flow is None:

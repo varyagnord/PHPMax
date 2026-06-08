@@ -78,6 +78,7 @@ release = __version__
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
@@ -85,6 +86,8 @@ extensions = [
 ]
 
 templates_path = ["_templates"]
+
+autosummary_generate = True
 
 exclude_patterns = [
     "_build",
@@ -99,20 +102,24 @@ language = "ru"
 autodoc_default_options = {
     "members": True,
     "undoc-members": False,
-    "show-inheritance": False,
+    "show-inheritance": True,
     "private-members": False,
     "special-members": False,
+    "member-order": "bysource",
     "exclude-members": (
-        "dict,json,parse_obj,parse_raw,schema,model_dump,model_validate,"
-        "model_json_schema,model_construct"
+        "dict,json,parse_obj,parse_raw,schema,schema_json,"
+        "copy,construct,from_orm,update_forward_refs,validate,"
+        "model_dump,model_dump_json,model_validate,model_validate_json,"
+        "model_validate_strings,model_json_schema,model_construct,"
+        "model_copy,model_rebuild,model_post_init,model_parametrized_name"
     ),
 }
 
+
+autodoc_typehints_format = "short"
 autodoc_member_order = "bysource"
 autodoc_typehints = "description"
-autodoc_typehints_format = "short"
 autodoc_class_signature = "separated"
-
 # -- Napoleon ----------------------------------------------------------------
 
 napoleon_google_docstring = True
@@ -131,7 +138,9 @@ intersphinx_mapping = {
 
 # -- HTML --------------------------------------------------------------------
 
+# html_theme = "shibuya"
 html_theme = "furo"
+
 html_title = "PyMax"
 html_static_path = ["_static"]
 

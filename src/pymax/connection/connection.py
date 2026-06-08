@@ -20,16 +20,19 @@ class ConnectionManager:
         transport: Transport,
         protocol: BaseProtocol,
         on_event: Callable[[InboundFrame], Awaitable[None]] | None = None,
+        on_close: Callable[[Exception | None], None] | None = None,
     ) -> None:
         self.reader = reader
         self.transport = transport
         self.protocol = protocol
         self.on_event = on_event
+        self.on_close = on_close
 
         self.requests = PendingRequests()
 
         self._is_open = False
         self._connection_lost = False
+        self._close_reported = False
         self._seq = -1
 
         self._recv_task: asyncio.Task[None] | None = None
@@ -44,6 +47,7 @@ class ConnectionManager:
         await self.transport.connect()
         self._is_open = True
         self._connection_lost = False
+        self._close_reported = False
 
         self._recv_task = asyncio.create_task(self._recv_loop())
         logger.debug("receive loop started")
@@ -80,7 +84,7 @@ class ConnectionManager:
         self._connection_lost = True
         self.requests.cancel_all(exc=exc)
         await self.transport.close()
-        self._is_open = False
+        self._mark_closed(exc)
 
     async def send(self, frame: OutboundFrame) -> None:
         if not self._is_open:
@@ -116,20 +120,38 @@ class ConnectionManager:
             )
             await self.transport.send(raw)
             return await asyncio.wait_for(future, timeout)
-        except Exception as e:
+        except asyncio.CancelledError:
+            self.requests.discard(frame.seq)
+            raise
+        except (ConnectionError, EOFError, OSError, TimeoutError) as e:
+            logger.warning(
+                "request failed seq=%s opcode=%s error=%s",
+                frame.seq,
+                frame.opcode,
+                e,
+            )
+            self.requests.discard(frame.seq)
+            raise
+        except Exception:
             logger.exception(
                 "request failed seq=%s opcode=%s",
                 frame.seq,
                 frame.opcode,
             )
-            self.requests.reject(frame.seq, e)
+            self.requests.discard(frame.seq)
             raise
 
     async def wait_closed(self) -> None:
         if not self._recv_task:
             return
 
-        await self._recv_task
+        try:
+            await self._recv_task
+        except Exception as e:
+            if self._connection_lost:
+                raise ConnectionError("Connection lost") from e
+            raise
+
         if self._connection_lost:
             raise ConnectionError("Connection lost")
 
@@ -147,27 +169,23 @@ class ConnectionManager:
                 await self._handle_inbound(model)
 
         except EOFError:
+            exc = ConnectionError("Connection closed by the server")
             logger.warning("connection closed by server")
-            self.requests.cancel_all(
-                exc=ConnectionError("Connection closed by the server")
-            )
+            self.requests.cancel_all(exc=exc)
             self._connection_lost = True
-            self._is_open = False
-        except TimeoutError as e:
-            logger.exception("connection timed out")
-            self.requests.cancel_all(
-                exc=ConnectionError("Connection timed out")
-            )
+            self._mark_closed(exc)
+        except (ConnectionError, OSError, TimeoutError) as e:
+            exc = ConnectionError(f"Connection error: {e}")
+            logger.warning("connection closed while reading payload: %s", e)
+            self.requests.cancel_all(exc=exc)
             self._connection_lost = True
-            self._is_open = False
-            raise e
+            self._mark_closed(exc)
         except Exception as e:
+            exc = ConnectionError(f"Connection error: {e}")
             logger.exception("connection receive loop failed")
-            self.requests.cancel_all(
-                exc=ConnectionError(f"Connection error: {e}")
-            )
+            self.requests.cancel_all(exc=exc)
             self._connection_lost = True
-            self._is_open = False
+            self._mark_closed(exc)
             raise e
 
     async def _handle_inbound(self, frame: InboundFrame) -> None:
@@ -209,6 +227,15 @@ class ConnectionManager:
     def next_seq(self) -> int:
         self._seq = (self._seq + 1) % 0x10000
         return self._seq
+
+    def _mark_closed(self, exc: Exception | None = None) -> None:
+        self._is_open = False
+        if self._close_reported:
+            return
+
+        self._close_reported = True
+        if self.on_close:
+            self.on_close(exc)
 
     @property
     def is_open(self) -> bool:
