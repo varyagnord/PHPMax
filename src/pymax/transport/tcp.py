@@ -10,9 +10,7 @@ logger = get_logger(__name__)
 
 
 class TCPTransport(Transport):
-    def __init__(
-        self, host: str, port: int, proxy: str | None, use_ssl: bool = True
-    ) -> None:
+    def __init__(self, host: str, port: int, proxy: str | None, use_ssl: bool = True) -> None:
         self._host = host
         self._port = port
         self._proxy = proxy

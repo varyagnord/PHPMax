@@ -85,9 +85,7 @@ class UserActions:
 
 
 @pytest.mark.asyncio
-async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> (
-    None
-):
+async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> None:
     actions = MessageActions()
     message = Message.model_validate(message_payload(10, 100)).bind(actions)
 
@@ -112,23 +110,15 @@ async def test_unbound_message_raises_helpful_runtime_errors() -> None:
         await Message.model_validate(message_payload(10, 100)).answer("x")
 
     with pytest.raises(RuntimeError, match="chat_id"):
-        await (
-            Message.model_validate(message_payload(10, None))
-            .bind(MessageActions())
-            .answer("x")
-        )
+        await Message.model_validate(message_payload(10, None)).bind(MessageActions()).answer("x")
 
 
 @pytest.mark.asyncio
 async def test_chat_bound_methods_delegate_by_chat_type() -> None:
     messages = MessageActions()
     chats = ChatActions()
-    group = Chat.model_validate(chat_payload(100, "CHAT")).bind(
-        messages, chats
-    )
-    channel = Chat.model_validate(chat_payload(200, "CHANNEL")).bind(
-        messages, chats
-    )
+    group = Chat.model_validate(chat_payload(100, "CHAT")).bind(messages, chats)
+    channel = Chat.model_validate(chat_payload(200, "CHANNEL")).bind(messages, chats)
 
     assert await group.answer("hello") == "sent"
     assert await group.history(backward=1) == ["history"]
@@ -167,9 +157,7 @@ def test_chat_bind_also_binds_nested_messages() -> None:
 
 @pytest.mark.asyncio
 async def test_dialog_leave_and_unbound_chat_raise_errors() -> None:
-    dialog = Chat.model_validate(chat_payload(1, "DIALOG")).bind(
-        MessageActions(), ChatActions()
-    )
+    dialog = Chat.model_validate(chat_payload(1, "DIALOG")).bind(MessageActions(), ChatActions())
 
     with pytest.raises(RuntimeError, match="Cannot leave dialog"):
         await dialog.leave()

@@ -8,9 +8,7 @@ logger = get_logger(__name__)
 
 
 class TCPReader(BaseReader):
-    def __init__(
-        self, transport: TCPTransport, framer: TcpPacketFramer
-    ) -> None:
+    def __init__(self, transport: TCPTransport, framer: TcpPacketFramer) -> None:
         super().__init__()
         self.transport = transport
         self.framer = framer

@@ -65,9 +65,7 @@ async def test_pending_requests_resolve_reject_discard_and_cancel() -> None:
     pending = PendingRequests()
 
     first = pending.create(1)
-    assert pending.resolve(
-        1, InboundFrame(opcode=1, seq=1, payload={"ok": True})
-    )
+    assert pending.resolve(1, InboundFrame(opcode=1, seq=1, payload={"ok": True}))
     assert (await first).payload == {"ok": True}
     assert not pending.resolve(1, InboundFrame(opcode=1, seq=1))
 
@@ -101,25 +99,19 @@ async def test_connection_next_seq_wraps_after_uint16_max() -> None:
 
 
 @pytest.mark.asyncio
-async def test_connection_request_resolves_when_matching_response_arrives() -> (
-    None
-):
+async def test_connection_request_resolves_when_matching_response_arrives() -> None:
     transport = FakeTransport()
     manager = ConnectionManager(
         reader=QueueReader([]),
         transport=transport,
         protocol=FakeProtocol(),
     )
-    frame = OutboundFrame(
-        ver=1, opcode=99, cmd=Command.REQUEST, seq=7, payload={}
-    )
+    frame = OutboundFrame(ver=1, opcode=99, cmd=Command.REQUEST, seq=7, payload={})
 
     task = asyncio.create_task(manager.request(frame, timeout=1))
     await asyncio.sleep(0)
     await manager._handle_inbound(
-        InboundFrame(
-            opcode=99, cmd=Command.RESPONSE, seq=7, payload={"done": True}
-        )
+        InboundFrame(opcode=99, cmd=Command.RESPONSE, seq=7, payload={"done": True})
     )
 
     response = await task
@@ -129,17 +121,13 @@ async def test_connection_request_resolves_when_matching_response_arrives() -> (
 
 
 @pytest.mark.asyncio
-async def test_connection_request_discards_pending_future_when_send_fails() -> (
-    None
-):
+async def test_connection_request_discards_pending_future_when_send_fails() -> None:
     manager = ConnectionManager(
         reader=QueueReader([]),
         transport=FakeTransport(send_error=ConnectionError("closed")),
         protocol=FakeProtocol(),
     )
-    frame = OutboundFrame(
-        ver=1, opcode=99, cmd=Command.REQUEST, seq=7, payload={}
-    )
+    frame = OutboundFrame(ver=1, opcode=99, cmd=Command.REQUEST, seq=7, payload={})
 
     with pytest.raises(ConnectionError, match="closed"):
         await manager.request(frame, timeout=1)
@@ -148,17 +136,13 @@ async def test_connection_request_discards_pending_future_when_send_fails() -> (
 
 
 @pytest.mark.asyncio
-async def test_connection_request_discards_pending_future_when_cancelled() -> (
-    None
-):
+async def test_connection_request_discards_pending_future_when_cancelled() -> None:
     manager = ConnectionManager(
         reader=QueueReader([]),
         transport=FakeTransport(),
         protocol=FakeProtocol(),
     )
-    frame = OutboundFrame(
-        ver=1, opcode=99, cmd=Command.REQUEST, seq=7, payload={}
-    )
+    frame = OutboundFrame(ver=1, opcode=99, cmd=Command.REQUEST, seq=7, payload={})
 
     task = asyncio.create_task(manager.request(frame, timeout=10))
     await asyncio.sleep(0)
@@ -171,9 +155,7 @@ async def test_connection_request_discards_pending_future_when_cancelled() -> (
 
 
 @pytest.mark.asyncio
-async def test_connection_open_recv_loop_dispatches_events_and_closes() -> (
-    None
-):
+async def test_connection_open_recv_loop_dispatches_events_and_closes() -> None:
     events: list[InboundFrame] = []
     closed: list[Exception | None] = []
     transport = FakeTransport()

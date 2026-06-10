@@ -20,14 +20,8 @@ class WsProtocol(BaseProtocol):
             data = json.loads(raw)
             return InboundFrame.model_validate(data)
         except json.JSONDecodeError:
-            logger.debug(
-                "failed to decode websocket frame json", exc_info=True
-            )
-            return InboundFrame(
-                opcode=0, cmd=0, seq=None, payload=None, raw=None
-            )
+            logger.debug("failed to decode websocket frame json", exc_info=True)
+            return InboundFrame(opcode=0, cmd=0, seq=None, payload=None, raw=None)
         except ValidationError:
             logger.debug("failed to validate websocket frame", exc_info=True)
-            return InboundFrame(
-                opcode=0, cmd=0, seq=None, payload=None, raw=None
-            )
+            return InboundFrame(opcode=0, cmd=0, seq=None, payload=None, raw=None)

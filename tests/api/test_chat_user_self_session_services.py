@@ -33,17 +33,11 @@ def test_base_mixin_exposes_chat_join_request_and_bot_methods() -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_chats_uses_cache_fetches_misses_and_preserves_order() -> (
-    None
-):
+async def test_get_chats_uses_cache_fetches_misses_and_preserves_order() -> None:
     app = FakeApp([frame({"chats": [chat_payload(2), chat_payload(3)]})])
     from pymax.types.domain import Chat
 
-    app.chats = [
-        Chat.model_validate(chat_payload(1)).bind(
-            app.api.messages, app.api.chats
-        )
-    ]
+    app.chats = [Chat.model_validate(chat_payload(1)).bind(app.api.messages, app.api.chats)]
 
     chats = await app.api.chats.get_chats([1, 2, 3])
 
@@ -98,12 +92,8 @@ async def test_join_channel_accepts_raw_or_invite_links() -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_group_returns_chat_and_message_and_updates_cache() -> (
-    None
-):
-    app = FakeApp(
-        [frame({**message_payload(7, 10), "chat": chat_payload(10)})]
-    )
+async def test_create_group_returns_chat_and_message_and_updates_cache() -> None:
+    app = FakeApp([frame({**message_payload(7, 10), "chat": chat_payload(10)})])
 
     result = await app.api.chats.create_group("Team", [1, 2], notify=False)
 
@@ -123,12 +113,8 @@ async def test_leave_group_removes_cached_chat() -> None:
 
     app = FakeApp([frame({})])
     app.chats = [
-        Chat.model_validate(chat_payload(10)).bind(
-            app.api.messages, app.api.chats
-        ),
-        Chat.model_validate(chat_payload(11)).bind(
-            app.api.messages, app.api.chats
-        ),
+        Chat.model_validate(chat_payload(10)).bind(app.api.messages, app.api.chats),
+        Chat.model_validate(chat_payload(11)).bind(app.api.messages, app.api.chats),
     ]
 
     await app.api.chats.leave_group(10)
@@ -138,9 +124,7 @@ async def test_leave_group_removes_cached_chat() -> None:
 
 
 @pytest.mark.asyncio
-async def test_group_mutation_methods_update_cache_and_parse_optional_chats() -> (
-    None
-):
+async def test_group_mutation_methods_update_cache_and_parse_optional_chats() -> None:
     app = FakeApp(
         [
             frame({"chat": chat_payload(10, "CHAT")}),
@@ -156,14 +140,10 @@ async def test_group_mutation_methods_update_cache_and_parse_optional_chats() ->
 
     assert await app.api.chats.invite_users_to_group(10, [1, 2]) is not None
     assert await app.api.chats.invite_users_to_channel(10, [3]) is not None
-    assert await app.api.chats.remove_users_from_group(
-        10, [2], clean_msg_period=0
-    )
+    assert await app.api.chats.remove_users_from_group(10, [2], clean_msg_period=0)
     await app.api.chats.change_group_settings(10, all_can_pin_message=True)
     await app.api.chats.change_group_profile(10, "New title", "Description")
-    resolved = await app.api.chats.resolve_group_by_link(
-        "https://max.ru/join/abc"
-    )
+    resolved = await app.api.chats.resolve_group_by_link("https://max.ru/join/abc")
     reworked = await app.api.chats.rework_invite_link(10)
     fetched = await app.api.chats.fetch_chats(marker=123)
 
@@ -186,9 +166,7 @@ async def test_group_mutation_methods_update_cache_and_parse_optional_chats() ->
 
 
 @pytest.mark.asyncio
-async def test_join_request_methods_fetch_confirm_decline_and_update_cache() -> (
-    None
-):
+async def test_join_request_methods_fetch_confirm_decline_and_update_cache() -> None:
     app = FakeApp(
         [
             frame({"members": [member_payload(2)]}),
@@ -235,9 +213,7 @@ async def test_join_request_methods_fetch_confirm_decline_and_update_cache() -> 
 
 
 @pytest.mark.asyncio
-async def test_user_service_fetches_caches_searches_and_removes_contacts() -> (
-    None
-):
+async def test_user_service_fetches_caches_searches_and_removes_contacts() -> None:
     app = FakeApp(
         [
             frame({"contacts": [user_payload(2), user_payload(3)]}),
@@ -245,9 +221,9 @@ async def test_user_service_fetches_caches_searches_and_removes_contacts() -> (
             frame({"contact": user_payload(2)}),
         ]
     )
-    app.users[1] = __import__(
-        "pymax.types.domain", fromlist=["User"]
-    ).User.model_validate(user_payload(1))
+    app.users[1] = __import__("pymax.types.domain", fromlist=["User"]).User.model_validate(
+        user_payload(1)
+    )
 
     users = await app.api.users.get_users([1, 2, 3])
     found = await app.api.users.search_by_phone("+79990000004")
@@ -266,9 +242,7 @@ async def test_user_service_fetches_caches_searches_and_removes_contacts() -> (
 
 
 @pytest.mark.asyncio
-async def test_user_service_get_user_add_contact_sessions_and_chat_id() -> (
-    None
-):
+async def test_user_service_get_user_add_contact_sessions_and_chat_id() -> None:
     app = FakeApp(
         [
             frame({"contacts": [user_payload(5)]}),
@@ -305,10 +279,7 @@ async def test_self_service_change_profile_and_close_all_sessions() -> None:
     )
     app.session = SessionInfo(token="old-token", device_id="dev", phone="+7")
 
-    assert (
-        await app.api.account.change_profile("Ink", description="hello")
-        is True
-    )
+    assert await app.api.account.change_profile("Ink", description="hello") is True
     assert app.me is not None
     assert app.me.contact.id == 9
     assert app.me.contact._actions is app.api.users
@@ -323,9 +294,7 @@ async def test_self_service_change_profile_and_close_all_sessions() -> None:
 
 
 @pytest.mark.asyncio
-async def test_close_all_sessions_returns_false_without_session_or_token() -> (
-    None
-):
+async def test_close_all_sessions_returns_false_without_session_or_token() -> None:
     app = FakeApp()
     assert await app.api.account.close_all_sessions() is False
 
@@ -352,18 +321,13 @@ async def test_self_service_profile_photo_folders_and_logout() -> None:
                     "folderSync": 2,
                 }
             ),
-            frame(
-                {"folder": {"id": "folder-1", "title": "New"}, "folderSync": 3}
-            ),
+            frame({"folder": {"id": "folder-1", "title": "New"}, "folderSync": 3}),
             frame({"foldersOrder": [], "folderSync": 4}),
             frame({}),
         ]
     )
 
-    assert (
-        await app.api.account.request_profile_photo_upload_url()
-        == "https://upload.profile"
-    )
+    assert await app.api.account.request_profile_photo_upload_url() == "https://upload.profile"
     created = await app.api.account.create_folder("Work", [10])
     folders = await app.api.account.get_folders(folder_sync=1)
     updated = await app.api.account.update_folder("folder-1", "New", [11])
@@ -387,9 +351,7 @@ async def test_self_service_profile_photo_folders_and_logout() -> None:
 
 
 @pytest.mark.asyncio
-async def test_session_handshake_switches_between_mobile_and_web_payloads() -> (
-    None
-):
+async def test_session_handshake_switches_between_mobile_and_web_payloads() -> None:
     mobile_app = FakeApp([frame({})])
     await mobile_app.api.session.handshake(
         "mt",
@@ -407,9 +369,7 @@ async def test_session_handshake_switches_between_mobile_and_web_payloads() -> (
     assert mobile_app.calls[0].opcode == Opcode.SESSION_INIT
     assert mobile_app.calls[0].payload["mt_instanceid"] == "mt"
     assert web_app.calls[0].payload["deviceId"] == "web-device"
-    assert (
-        web_app.calls[0].payload["userAgent"]["deviceType"] == DeviceType.WEB
-    )
+    assert web_app.calls[0].payload["userAgent"]["deviceType"] == DeviceType.WEB
     assert "mt_instanceid" not in web_app.calls[0].payload
 
 

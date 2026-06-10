@@ -10,9 +10,7 @@ from tests.conftest import FakeApp, frame
 
 
 class FakeHttpResponse:
-    def __init__(
-        self, status: int, json_data: dict | None = None, on_enter=None
-    ) -> None:
+    def __init__(self, status: int, json_data: dict | None = None, on_enter=None) -> None:
         self.status = status
         self.json_data = json_data or {}
         self.on_enter = on_enter
@@ -31,9 +29,7 @@ class FakeHttpResponse:
 
 class FakeHttpSession:
     posts: list[dict] = []
-    response = FakeHttpResponse(
-        200, {"photos": {"photo-1": {"token": "uploaded"}}}
-    )
+    response = FakeHttpResponse(200, {"photos": {"photo-1": {"token": "uploaded"}}})
 
     def __init__(self, *args, **kwargs) -> None:
         self.args = args
@@ -54,9 +50,7 @@ class FakeHttpSession:
 async def test_upload_photo_requests_url_posts_file_and_returns_attach_payload(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    app = FakeApp(
-        [frame({"url": "https://upload.test/path?photoIds=photo-1"})]
-    )
+    app = FakeApp([frame({"url": "https://upload.test/path?photoIds=photo-1"})])
     service = UploadService(app)
     monkeypatch.setattr(
         "pymax.api.uploads.service.aiohttp.ClientSession",
@@ -68,22 +62,15 @@ async def test_upload_photo_requests_url_posts_file_and_returns_attach_payload(
         {"photos": {"photo-1": {"token": "uploaded"}}},
     )
 
-    result = await service.upload_photo(
-        Photo(raw=b"image-bytes", name="image.jpg")
-    )
+    result = await service.upload_photo(Photo(raw=b"image-bytes", name="image.jpg"))
 
     assert result.photo_token == "uploaded"
     assert app.calls[0].opcode == Opcode.PHOTO_UPLOAD
-    assert (
-        FakeHttpSession.posts[0]["url"]
-        == "https://upload.test/path?photoIds=photo-1"
-    )
+    assert FakeHttpSession.posts[0]["url"] == "https://upload.test/path?photoIds=photo-1"
 
 
 @pytest.mark.asyncio
-async def test_upload_waiters_resolve_video_and_file_processing_signals() -> (
-    None
-):
+async def test_upload_waiters_resolve_video_and_file_processing_signals() -> None:
     app = FakeApp()
     service = UploadService(app)
     loop = __import__("asyncio").get_running_loop()
@@ -123,14 +110,10 @@ async def test_upload_video_posts_chunks_waits_for_processing_and_cleans_waiter(
     service = UploadService(app)
 
     def resolve_processing() -> None:
-        service.video_upload_waiters[10].set_result(
-            VideoUploadSignal(video_id=10)
-        )
+        service.video_upload_waiters[10].set_result(VideoUploadSignal(video_id=10))
 
     FakeHttpSession.posts = []
-    FakeHttpSession.response = FakeHttpResponse(
-        200, on_enter=resolve_processing
-    )
+    FakeHttpSession.response = FakeHttpResponse(200, on_enter=resolve_processing)
     monkeypatch.setattr(
         "pymax.api.uploads.service.aiohttp.ClientSession",
         FakeHttpSession,
@@ -167,14 +150,10 @@ async def test_upload_file_posts_chunks_waits_for_processing_and_cleans_waiter(
     service = UploadService(app)
 
     def resolve_processing() -> None:
-        service.file_upload_waiters[11].set_result(
-            FileUploadSignal(file_id=11)
-        )
+        service.file_upload_waiters[11].set_result(FileUploadSignal(file_id=11))
 
     FakeHttpSession.posts = []
-    FakeHttpSession.response = FakeHttpResponse(
-        200, on_enter=resolve_processing
-    )
+    FakeHttpSession.response = FakeHttpResponse(200, on_enter=resolve_processing)
     monkeypatch.setattr(
         "pymax.api.uploads.service.aiohttp.ClientSession",
         FakeHttpSession,

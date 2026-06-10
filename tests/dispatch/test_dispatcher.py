@@ -9,9 +9,7 @@ from tests.conftest import FakeApp, chat_payload, frame, message_payload
 
 
 @pytest.mark.asyncio
-async def test_dispatcher_routes_message_events_through_filters_and_raw_handler() -> (
-    None
-):
+async def test_dispatcher_routes_message_events_through_filters_and_raw_handler() -> None:
     app = FakeApp()
     router: Router[str] = Router()
     dispatcher: Dispatcher[str] = Dispatcher(app, router)
@@ -47,9 +45,7 @@ async def test_dispatcher_routes_message_events_through_filters_and_raw_handler(
 
 
 @pytest.mark.asyncio
-async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> (
-    None
-):
+async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> None:
     app = FakeApp()
     router: Router[str] = Router()
     child: Router[str] = Router()

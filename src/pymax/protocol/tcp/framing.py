@@ -31,9 +31,7 @@ class TcpPacketFramer:
         if len(data) < self.HEADER_SIZE:
             return None
 
-        ver, cmd, seq, opcode, packed_len = self.HEADER_STRUCT.unpack_from(
-            data, 0
-        )
+        ver, cmd, seq, opcode, packed_len = self.HEADER_STRUCT.unpack_from(data, 0)
         flags = (packed_len >> 24) & 0xFF
         payload_len = packed_len & 0x00FFFFFF
 

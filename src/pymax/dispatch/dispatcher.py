@@ -33,9 +33,7 @@ ClientT = TypeVar("ClientT")
 
 
 class Dispatcher(Generic[ClientT]):
-    def __init__(
-        self, app: App, root_router: Router[ClientT] | None = None
-    ) -> None:
+    def __init__(self, app: App, root_router: Router[ClientT] | None = None) -> None:
         self.root_router: Router[ClientT] = root_router or Router()
         self.internal_router: Router[ClientT] = Router()
         self.resolver = EventResolver()
@@ -71,9 +69,7 @@ class Dispatcher(Generic[ClientT]):
         event: EventType,
         *filters: FilterCallback[Any],
     ) -> HandlerDecorator[Any, ClientT]:
-        logger.debug(
-            "registering handler event=%s filters=%s", event, len(filters)
-        )
+        logger.debug("registering handler event=%s filters=%s", event, len(filters))
         return self.root_router.on(event, *filters)
 
     def on_message(
@@ -87,9 +83,7 @@ class Dispatcher(Generic[ClientT]):
         self,
         *filters: FilterCallback[Message],
     ) -> HandlerDecorator[Message, ClientT]:
-        logger.debug(
-            "registering message edit handler filters=%s", len(filters)
-        )
+        logger.debug("registering message edit handler filters=%s", len(filters))
         return self.root_router.on_message_edit(*filters)
 
     def on_message_delete(
@@ -116,9 +110,7 @@ class Dispatcher(Generic[ClientT]):
     def iter_routers(self) -> Generator[Router[ClientT], Any, None]:
         yield from self._iter_router(self.root_router)
 
-    def _iter_router(
-        self, router: Router[ClientT]
-    ) -> Generator[Router[ClientT], Any, None]:
+    def _iter_router(self, router: Router[ClientT]) -> Generator[Router[ClientT], Any, None]:
         yield router
 
         for child in router.children:
@@ -161,9 +153,7 @@ class Dispatcher(Generic[ClientT]):
         if event_type is not None:
             logger.debug("dispatching event type=%s", event_type)
             event = self.mapper.map(event_type, frame)
-            await self._dispatch_to_router(
-                self.internal_router, event_type, event
-            )
+            await self._dispatch_to_router(self.internal_router, event_type, event)
             await self._dispatch_to_router(self.root_router, event_type, event)
         else:
             logger.debug(
@@ -209,9 +199,7 @@ class Dispatcher(Generic[ClientT]):
                 return False
         return True
 
-    async def _call(
-        self, callback: HandlerCallback[Any, ClientT], event: Any
-    ) -> Any:
+    async def _call(self, callback: HandlerCallback[Any, ClientT], event: Any) -> Any:
         if self.client is None:
             raise RuntimeError("client is not bound")
 

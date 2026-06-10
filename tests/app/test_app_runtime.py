@@ -90,9 +90,7 @@ async def test_app_start_with_config_token_handshakes_logs_in_and_saves_session(
 
     monkeypatch.setattr(App, "_ping_loop", idle_ping_loop)
     store = RuntimeStore()
-    config = make_config().model_copy(
-        update={"token": "config-token", "store": store}
-    )
+    config = make_config().model_copy(update={"token": "config-token", "store": store})
     connection = RuntimeConnection(
         [
             frame({}),
@@ -127,9 +125,7 @@ async def test_app_start_with_config_token_handshakes_logs_in_and_saves_session(
 
 @pytest.mark.asyncio
 async def test_app_invoke_turns_error_frames_into_api_error() -> None:
-    store = RuntimeStore(
-        SessionInfo(token="token", device_id="dev", phone="+7")
-    )
+    store = RuntimeStore(SessionInfo(token="token", device_id="dev", phone="+7"))
     config = make_config().model_copy(update={"store": store})
     connection = RuntimeConnection(
         [
@@ -158,12 +154,8 @@ async def test_app_invoke_turns_error_frames_into_api_error() -> None:
 
 @pytest.mark.asyncio
 async def test_app_invoke_uses_config_timeout_and_allows_override() -> None:
-    store = RuntimeStore(
-        SessionInfo(token="token", device_id="dev", phone="+7")
-    )
-    config = make_config().model_copy(
-        update={"request_timeout": 12.5, "store": store}
-    )
+    store = RuntimeStore(SessionInfo(token="token", device_id="dev", phone="+7"))
+    config = make_config().model_copy(update={"request_timeout": 12.5, "store": store})
     connection = RuntimeConnection([frame({}), frame({})])
     app: App[object] = App(connection, config, StaticAuthFlow())
 
@@ -183,9 +175,7 @@ async def test_app_marks_stopped_and_cancels_ping_on_connection_loss(
 
     monkeypatch.setattr(App, "_ping_loop", idle_ping_loop)
     store = RuntimeStore()
-    config = make_config().model_copy(
-        update={"token": "config-token", "store": store}
-    )
+    config = make_config().model_copy(update={"token": "config-token", "store": store})
     connection = RuntimeConnection(
         [
             frame({}),

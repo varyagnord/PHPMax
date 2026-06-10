@@ -59,9 +59,7 @@ async def test_request_and_send_code_parse_auth_responses() -> None:
 
 
 @pytest.mark.asyncio
-async def test_mobile_login_sends_sync_payload_and_persists_updated_session() -> (
-    None
-):
+async def test_mobile_login_sends_sync_payload_and_persists_updated_session() -> None:
     app = FakeApp(
         [
             frame(
@@ -86,9 +84,7 @@ async def test_mobile_login_sends_sync_payload_and_persists_updated_session() ->
         token="local-token",
         device_id="device-test",
         phone="+79990000000",
-        sync=SyncState(
-            chats_sync=1, contacts_sync=2, drafts_sync=3, presence_sync=4
-        ),
+        sync=SyncState(chats_sync=1, contacts_sync=2, drafts_sync=3, presence_sync=4),
     )
 
     response = await app.api.auth.mobile_login()
@@ -96,9 +92,7 @@ async def test_mobile_login_sends_sync_payload_and_persists_updated_session() ->
     assert response.token == "server-token"
     assert app.calls[0].opcode == Opcode.LOGIN
     assert app.calls[0].payload["token"] == "local-token"
-    assert (
-        app.calls[0].payload["userAgent"]["deviceType"] == DeviceType.ANDROID
-    )
+    assert app.calls[0].payload["userAgent"]["deviceType"] == DeviceType.ANDROID
     assert app.session is not None
     assert app.session.mt_instance_id == "mt-test"
     assert app.session.sync.chats_sync == 777
@@ -209,9 +203,7 @@ async def test_remove_2fa_checks_password_then_removes_factor() -> None:
         Opcode.AUTH_SET_2FA,
     ]
     assert app.calls[2].payload["remove2fa"] is True
-    assert app.calls[2].payload["expectedCapabilities"] == [
-        TwoFactorAction.REMOVE_2FA
-    ]
+    assert app.calls[2].payload["expectedCapabilities"] == [TwoFactorAction.REMOVE_2FA]
 
 
 @pytest.mark.asyncio
