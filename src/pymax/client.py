@@ -39,7 +39,7 @@ class Client(BaseClient["Client"]):
         password_provider: Провайдер пароля 2FA, если аккаунт его требует.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         phone: str,
         session_name: str = "session.db",
@@ -49,6 +49,7 @@ class Client(BaseClient["Client"]):
         sms_code_provider: SmsCodeProvider | None = None,
         password_provider: PasswordProvider | None = None,
     ) -> None:
+
         self.phone = phone
         self.extra_config = extra_config or ExtraConfig()
         self.session_name = session_name

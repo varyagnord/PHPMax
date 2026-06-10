@@ -236,13 +236,15 @@ class MessageMixin(IClientProtocol):
             message_id=message_id,
         )
 
-    async def read_message(
-        self, message_id: int | str, chat_id: int
-    ) -> ReadState:
+    async def read_message(self, message_id: int | str, chat_id: int) -> ReadState:
         """Отмечает сообщение как прочитанное.
 
+        У Max различается wire-формат ``message_id`` для отметки прочтения:
+        TCP-клиент ожидает ``int``, WebSocket-клиент - ``str``.
+
         Args:
-            message_id: ID сообщения.
+            message_id: ID сообщения. Передавайте ``int`` для ``Client`` и
+                ``str`` для ``WebClient``.
             chat_id: ID чата.
 
         Returns:

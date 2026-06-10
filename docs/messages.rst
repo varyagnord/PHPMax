@@ -69,6 +69,13 @@ Messages
        elif message.text == "/delete":
            await message.delete(for_me=False)
 
+.. note::
+
+   У низкоуровневого ``client.read_message(...)`` есть особенность Max:
+   для отметки прочтения TCP-клиент ожидает ``message_id`` как ``int``, а
+   WebSocket-клиент - как ``str``. Если вызываете метод напрямую, выбирайте
+   тип по клиенту.
+
 История сообщений
 -----------------
 
