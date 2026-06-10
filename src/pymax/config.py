@@ -84,6 +84,11 @@ class DeviceConfig(BaseModel):
     client_session_id: int = Field(default_factory=lambda: randint(1, 70))
 
 
+class RegistrationConfig(BaseModel):
+    first_name: str
+    last_name: str | None = None
+
+
 class ClientConfig(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -93,6 +98,7 @@ class ClientConfig(BaseModel):
     device: DeviceConfig
     token: str | None = None
     proxy: str | None = None
+    registration_config: RegistrationConfig | None = None
 
     host: str = "api.oneme.ru"
     port: int = 443
@@ -109,9 +115,7 @@ class ClientConfig(BaseModel):
 
     def ensure_config(self) -> None:
         if not self.phone:
-            raise ValueError(
-                "Phone must be provided when no saved session exists."
-            )
+            raise ValueError("Phone must be provided when no saved session exists.")
 
 
 class ExtraConfig(BaseModel):
@@ -156,6 +160,7 @@ class ExtraConfig(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     token: str | None = None
+    registration_config: RegistrationConfig | None = None
 
     host: str = "api.oneme.ru"
     port: int = 443
@@ -221,3 +226,25 @@ class ExtraConfig(BaseModel):
             device_locale=locale,
             header_user_agent=DEFAULT_WEB_HEADER_USER_AGENT,
         )
+
+
+# ignore. for future upd
+
+# class TcpOptions(BaseModel):
+#     host: str = "api.oneme.ru"
+#     port: int = 443
+#     use_ssl: bool = True
+#     proxy: str | None = None
+
+
+# class RuntimeOptions(BaseModel):
+#     request_timeout: float = 30.0
+#     reconnect: bool = True
+#     reconnect_delay: float = 1.0
+
+
+# class DeviceOptions(BaseModel):
+#     device_id: str | None = None
+#     device_type: DeviceType = DeviceType.ANDROID
+#     user_agent: MobileUserAgentPayload | None = None
+#     mt_instance_id: str = Field(default_factory=lambda: str(uuid4()))

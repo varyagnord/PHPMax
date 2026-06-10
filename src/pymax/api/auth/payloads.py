@@ -131,3 +131,10 @@ class RemoveTwoFactorPayload(CamelModel):
 
 class ApproveQrLoginPayload(CamelModel):
     qr_link: str
+
+
+class ConfirmRegistrationPayload(CamelModel):
+    first_name: str
+    last_name: str | None = None
+    token: str
+    token_type: AuthType = AuthType.REGISTER

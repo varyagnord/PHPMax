@@ -83,6 +83,7 @@ class BaseClient(BaseMixin, ABC, Generic[ClientT]):
             sync=self.extra_config.sync,
             store=self.extra_config.store,
             proxy=self.extra_config.proxy,
+            registration_config=self.extra_config.registration_config,
             device=DeviceConfig(
                 mt_instance_id=self.extra_config.mt_instance_id,
                 device_id=self.extra_config.device_id or str(uuid4()),

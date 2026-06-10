@@ -1,6 +1,9 @@
 from pydantic import BaseModel, Field
 
+from pymax.api.auth.enums import AuthType
 from pymax.api.models import CamelModel
+
+from .profile import Profile
 
 
 class StartAuthResponse(CamelModel):
@@ -159,3 +162,10 @@ class CheckQrResponse(CamelModel):
     """
 
     status: QrStatus
+
+
+class ConfirmRegistrationResponse(CamelModel):
+    user_token: int
+    profile: Profile
+    token_type: AuthType
+    token: str

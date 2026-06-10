@@ -75,13 +75,35 @@ class SmsAuthFlow(AuthFlow):
         logger.debug("sms code provider returned code_set=%s", bool(code))
         result = await app.api.auth.send_code(start.token, code)
 
-        token = result.login_token
-        if not token and result.password_challenge:
+        if result.login_token:
+            token = result.login_token
+        elif not result.login_token and result.password_challenge:
             token = await self._authenticate_with_password(
                 app,
                 track_id=result.password_challenge.track_id,
                 hint=result.password_challenge.hint,
             )
+        elif result.register_token:
+            if not app.config.registration_config:
+                logger.error(
+                    "Registration token received, but registration config is missing "
+                    "(client.extra_config.registration_config)"
+                )
+                token = None
+            else:
+                registration_config = app.config.registration_config
+                response = await app.api.auth.confirm_registration(
+                    first_name=registration_config.first_name,
+                    last_name=registration_config.last_name,
+                    token=result.register_token,
+                )
+                token = response.token
+        else:
+            logger.error(
+                "Authentication failed: server returned no login token, "
+                "password challenge, or registration token"
+            )
+            token = None
 
         logger.info(
             "sms authentication completed token_set=%s",
@@ -109,23 +131,17 @@ class SmsAuthFlow(AuthFlow):
                 continue
 
             try:
-                response = await app.api.auth.check_password(
-                    track_id, password
-                )
+                response = await app.api.auth.check_password(track_id, password)
             except ApiError as e:
                 logger.error("2fa password check failed: %s", e)
                 continue
 
             if response.error:
-                logger.error(
-                    "2fa password check failed error=%s", response.error
-                )
+                logger.error("2fa password check failed error=%s", response.error)
                 continue
 
             if response.login_token:
                 logger.info("2fa password authentication completed")
                 return response.login_token
 
-            logger.error(
-                "2fa password response did not contain login token; retrying"
-            )
+            logger.error("2fa password response did not contain login token; retrying")

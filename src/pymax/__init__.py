@@ -14,7 +14,7 @@ from .auth import (
 )
 from .client import Client
 from .client_web import WebClient
-from .config import ExtraConfig
+from .config import ExtraConfig, RegistrationConfig
 from .dispatch import EventType, Router
 from .exceptions import ApiError, PyMaxError, UploadError
 from .files import File, Photo, Video
@@ -43,6 +43,7 @@ __all__ = (
     "PyMaxError",
     "QrAuthFlow",
     "QrHandler",
+    "RegistrationConfig",
     "Router",
     "SmsAuthFlow",
     "SmsCodeProvider",
