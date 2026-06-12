@@ -8,7 +8,11 @@ from pymax.protocol import InboundFrame, Opcode
 from pymax.protocol.enums import Command
 from pymax.types import Chat, MessageDeleteEvent
 from pymax.types.domain import Message
-from pymax.types.events import FileUploadSignal, VideoUploadSignal
+from pymax.types.events import (
+    FileUploadSignal,
+    TypingEvent,
+    VideoUploadSignal,
+)
 
 from .enums import EventType
 from .resolvers import (
@@ -16,6 +20,7 @@ from .resolvers import (
     resolve_chat,
     resolve_message,
     resolve_message_delete,
+    resolve_typing,
 )
 
 if TYPE_CHECKING:
@@ -29,6 +34,7 @@ EVENT_MAP: dict[Opcode, Resolver] = {
     Opcode.NOTIF_CHAT: resolve_chat,
     Opcode.NOTIF_MSG_DELETE: resolve_message_delete,
     Opcode.NOTIF_ATTACH: resolve_attach,
+    Opcode.NOTIF_TYPING: resolve_typing,
 }
 
 
@@ -73,6 +79,8 @@ class EventMapper:
                     self.app,
                     MessageDeleteEvent.model_validate(frame.payload),
                 )
+            elif event_type == EventType.TYPING:
+                return TypingEvent.model_validate(frame.payload)
             elif event_type == EventType.VIDEO_READY:
                 return VideoUploadSignal.model_validate(frame.payload)
             elif event_type == EventType.FILE_READY:

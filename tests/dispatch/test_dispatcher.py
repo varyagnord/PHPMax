@@ -159,6 +159,29 @@ async def test_dispatcher_maps_web_removed_message_to_delete_event() -> None:
 
 
 @pytest.mark.asyncio
+async def test_dispatcher_maps_typing_event() -> None:
+    app = FakeApp()
+    router: Router[str] = Router()
+    dispatcher: Dispatcher[str] = Dispatcher(app, router)
+    dispatcher.bind_client("client")
+    seen: list[tuple[str, object]] = []
+
+    @router.on_typing()
+    async def on_typing(event, _client):
+        seen.append(("typing", (event.chat_id, event.user_id)))
+
+    await dispatcher.dispatch(
+        frame(
+            {"chatId": 239067070, "userId": 17620943},
+            opcode=Opcode.NOTIF_TYPING,
+            cmd=Command.REQUEST,
+        )
+    )
+
+    assert seen == [("typing", (239067070, 17620943))]
+
+
+@pytest.mark.asyncio
 async def test_dispatcher_requires_bound_client_for_callbacks() -> None:
     dispatcher: Dispatcher[str] = Dispatcher(FakeApp())
 

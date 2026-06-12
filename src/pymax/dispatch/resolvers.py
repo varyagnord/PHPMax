@@ -20,6 +20,10 @@ def resolve_message_delete(_: InboundFrame) -> EventType | None:
     return EventType.MESSAGE_DELETE
 
 
+def resolve_typing(_: InboundFrame) -> EventType | None:
+    return EventType.TYPING
+
+
 def resolve_attach(frame: InboundFrame) -> EventType | None:
     try:
         FileUploadSignal.model_validate(frame.payload)

@@ -20,7 +20,14 @@ from .exceptions import ApiError, PyMaxError, UploadError
 from .files import File, Photo, Video
 from .logging import configure_logging
 from .routers import ClientRouter, WebRouter
-from .types import Chat, Message, MessageDeleteEvent, Profile, User
+from .types import (
+    Chat,
+    Message,
+    MessageDeleteEvent,
+    Profile,
+    TypingEvent,
+    User,
+)
 from .types.domain.sync import SyncOverrides, SyncState
 
 __all__ = (
@@ -49,6 +56,7 @@ __all__ = (
     "SmsCodeProvider",
     "SyncOverrides",
     "SyncState",
+    "TypingEvent",
     "UploadError",
     "User",
     "Video",

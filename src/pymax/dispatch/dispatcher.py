@@ -9,6 +9,7 @@ from pymax.logging import get_logger
 from pymax.protocol import InboundFrame
 from pymax.types import Chat, MessageDeleteEvent
 from pymax.types.domain import Message
+from pymax.types.events import TypingEvent
 
 from .enums import EventType
 from .mapping import EventMapper, EventResolver
@@ -91,6 +92,12 @@ class Dispatcher(Generic[ClientT]):
         *filters: FilterCallback[MessageDeleteEvent],
     ) -> HandlerDecorator[MessageDeleteEvent, ClientT]:
         return self.root_router.on_message_delete(*filters)
+
+    def on_typing(
+        self,
+        *filters: FilterCallback[TypingEvent],
+    ) -> HandlerDecorator[TypingEvent, ClientT]:
+        return self.root_router.on_typing(*filters)
 
     def on_chat_update(
         self,
