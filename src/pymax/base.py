@@ -22,7 +22,7 @@ if TYPE_CHECKING:
         StartDecorator,
     )
     from pymax.protocol import InboundFrame
-    from pymax.types import Chat, MessageDeleteEvent, TypingEvent, User
+    from pymax.types import Chat, MessageDeleteEvent, ReactionUpdateEvent, TypingEvent, User
     from pymax.types.domain import Message, Profile
 
 logger = get_logger(__name__)
@@ -193,6 +193,13 @@ class BaseClient(BaseMixin, ABC, Generic[ClientT]):
     ) -> HandlerDecorator[TypingEvent, ClientT]:
         """Регистрирует обработчик набора текста."""
         return self._router.on_typing(*filters)
+
+    def on_reaction_update(
+        self,
+        *filters: FilterCallback[ReactionUpdateEvent],
+    ) -> HandlerDecorator[ReactionUpdateEvent, ClientT]:
+        """Регистрирует обработчик обновления реакций сообщения."""
+        return self._router.on_reaction_update(*filters)
 
     def on_chat_update(
         self,

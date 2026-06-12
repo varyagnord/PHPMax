@@ -24,6 +24,10 @@ def resolve_typing(_: InboundFrame) -> EventType | None:
     return EventType.TYPING
 
 
+def resolve_reaction_update(_: InboundFrame) -> EventType | None:
+    return EventType.REACTION_UPDATE
+
+
 def resolve_attach(frame: InboundFrame) -> EventType | None:
     try:
         FileUploadSignal.model_validate(frame.payload)

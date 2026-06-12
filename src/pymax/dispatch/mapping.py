@@ -10,6 +10,7 @@ from pymax.types import Chat, MessageDeleteEvent
 from pymax.types.domain import Message
 from pymax.types.events import (
     FileUploadSignal,
+    ReactionUpdateEvent,
     TypingEvent,
     VideoUploadSignal,
 )
@@ -20,6 +21,7 @@ from .resolvers import (
     resolve_chat,
     resolve_message,
     resolve_message_delete,
+    resolve_reaction_update,
     resolve_typing,
 )
 
@@ -35,6 +37,7 @@ EVENT_MAP: dict[Opcode, Resolver] = {
     Opcode.NOTIF_MSG_DELETE: resolve_message_delete,
     Opcode.NOTIF_ATTACH: resolve_attach,
     Opcode.NOTIF_TYPING: resolve_typing,
+    Opcode.NOTIF_MSG_REACTIONS_CHANGED: resolve_reaction_update,
 }
 
 
@@ -81,6 +84,8 @@ class EventMapper:
                 )
             elif event_type == EventType.TYPING:
                 return TypingEvent.model_validate(frame.payload)
+            elif event_type == EventType.REACTION_UPDATE:
+                return ReactionUpdateEvent.model_validate(frame.payload)
             elif event_type == EventType.VIDEO_READY:
                 return VideoUploadSignal.model_validate(frame.payload)
             elif event_type == EventType.FILE_READY:

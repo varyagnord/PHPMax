@@ -25,6 +25,7 @@ from .types import (
     Message,
     MessageDeleteEvent,
     Profile,
+    ReactionUpdateEvent,
     TypingEvent,
     User,
 )
@@ -50,6 +51,7 @@ __all__ = (
     "PyMaxError",
     "QrAuthFlow",
     "QrHandler",
+    "ReactionUpdateEvent",
     "RegistrationConfig",
     "Router",
     "SmsAuthFlow",

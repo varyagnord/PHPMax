@@ -6,6 +6,7 @@ class EventType(str, Enum):
     MESSAGE_EDIT = "message_edit"
     MESSAGE_DELETE = "message_delete"
     TYPING = "typing"
+    REACTION_UPDATE = "reaction_update"
     CHAT_UPDATE = "chat_update"
     USER_UPDATE = "user_update"
     VIDEO_READY = "video_ready"

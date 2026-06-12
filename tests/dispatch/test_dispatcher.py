@@ -182,6 +182,42 @@ async def test_dispatcher_maps_typing_event() -> None:
 
 
 @pytest.mark.asyncio
+async def test_dispatcher_maps_reaction_update_event() -> None:
+    app = FakeApp()
+    router: Router[str] = Router()
+    dispatcher: Dispatcher[str] = Dispatcher(app, router)
+    dispatcher.bind_client("client")
+    seen: list[tuple[str, int, int, int, str]] = []
+
+    @router.on_reaction_update()
+    async def on_reaction_update(event, _client):
+        seen.append(
+            (
+                event.message_id,
+                event.chat_id,
+                event.total_count,
+                event.counters[0].count,
+                event.counters[0].reaction,
+            )
+        )
+
+    await dispatcher.dispatch(
+        frame(
+            {
+                "messageId": "116739131144745294",
+                "chatId": 239067070,
+                "counters": [{"count": 1, "reaction": "👍"}],
+                "totalCount": 1,
+            },
+            opcode=Opcode.NOTIF_MSG_REACTIONS_CHANGED,
+            cmd=Command.REQUEST,
+        )
+    )
+
+    assert seen == [("116739131144745294", 239067070, 1, 1, "👍")]
+
+
+@pytest.mark.asyncio
 async def test_dispatcher_requires_bound_client_for_callbacks() -> None:
     dispatcher: Dispatcher[str] = Dispatcher(FakeApp())
 
