@@ -45,6 +45,8 @@ def resolve_message(frame: InboundFrame) -> EventType | None:
 
         if model.status == MessageStatus.EDITED:
             return EventType.MESSAGE_EDIT
+        if model.status == MessageStatus.REMOVED:
+            return EventType.MESSAGE_DELETE
         else:
             return EventType.MESSAGE_NEW
     except ValidationError:

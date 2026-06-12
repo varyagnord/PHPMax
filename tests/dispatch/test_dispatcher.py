@@ -86,7 +86,11 @@ async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> None:
     )
     await dispatcher.dispatch(
         frame(
-            {"chat": chat_payload(5), "messageIds": [1, 2]},
+            {
+                "chat": chat_payload(5),
+                "messageIds": [1, 2],
+                "ttl": False,
+            },
             opcode=Opcode.NOTIF_MSG_DELETE,
             cmd=Command.REQUEST,
         )
@@ -99,6 +103,58 @@ async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> None:
         ("chat", 5, True),
         ("delete", (1, 2), None),
         ("file", 99, None),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_dispatcher_maps_web_removed_message_to_delete_event() -> None:
+    app = FakeApp()
+    router: Router[str] = Router()
+    dispatcher: Dispatcher[str] = Dispatcher(app, router)
+    dispatcher.bind_client("client")
+    seen: list[tuple[int, list[int], int | None, bool, bool]] = []
+
+    @router.on_message_delete()
+    async def on_delete(event, _client):
+        seen.append(
+            (
+                event.chat_id,
+                event.message_ids,
+                event.message.id if event.message is not None else None,
+                event.ttl,
+                event.message is not None and event.message._actions is app.api.messages,
+            )
+        )
+
+    await dispatcher.dispatch(
+        frame(
+            {
+                "chatId": 0,
+                "message": {
+                    "id": "116738762887754287",
+                    "time": 1781292158321,
+                    "type": "USER",
+                    "status": "REMOVED",
+                    "text": "deleted",
+                    "attaches": [],
+                },
+                "ttl": False,
+                "unread": 0,
+                "mark": 1781292158321,
+            },
+            opcode=Opcode.NOTIF_MESSAGE,
+            cmd=Command.REQUEST,
+        )
+    )
+
+    assert seen == [
+        (
+            0,
+            [116738762887754287],
+            116738762887754287,
+            False,
+            True,
+        )
     ]
 
 
