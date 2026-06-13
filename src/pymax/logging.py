@@ -85,6 +85,8 @@ def configure_logging(
            configure_logging("DEBUG", use_colors=False)
     """
     stream = stream or sys.stderr
+    if stream is None:
+        raise RuntimeError("No logging stream is available")
 
     if use_colors is None:
         use_colors = hasattr(stream, "isatty") and stream.isatty()

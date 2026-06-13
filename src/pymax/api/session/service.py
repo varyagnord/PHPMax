@@ -55,9 +55,7 @@ class SessionService:
         await self.app.invoke(Opcode.SESSION_INIT, frame.to_payload())
         logger.info("mobile handshake completed")
 
-    async def web_handshake(
-        self, user_agent: MobileUserAgentPayload, device_id: str
-    ) -> None:
+    async def web_handshake(self, user_agent: MobileUserAgentPayload, device_id: str) -> None:
         logger.debug(
             "web handshake device_id=%s app_version=%s browser=%s",
             device_id,

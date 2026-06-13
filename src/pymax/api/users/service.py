@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
+from pymax.api.binding import bind_api_model
 from pymax.api.response import (
     parse_payload_list,
     require_payload_dict,
@@ -30,13 +31,14 @@ class UserService:
         self.app = app
 
     def _cache_user(self, user: User) -> User:
+        user = bind_api_model(self.app, user)
         self.app.users[user.id] = user
         return user
 
     def get_cached_user(self, user_id: int) -> User | None:
         user = self.app.users.get(user_id)
         logger.debug("get_cached_user id=%s hit=%s", user_id, bool(user))
-        return user
+        return bind_api_model(self.app, user) if user is not None else None
 
     async def get_users(self, user_ids: list[int]) -> list[User]:
         cached = {
@@ -44,9 +46,7 @@ class UserService:
             for user_id in user_ids
             if (user := self.get_cached_user(user_id)) is not None
         }
-        missing_ids = [
-            user_id for user_id in user_ids if user_id not in cached
-        ]
+        missing_ids = [user_id for user_id in user_ids if user_id not in cached]
 
         if missing_ids:
             for user in await self.fetch_users(missing_ids):
@@ -64,15 +64,11 @@ class UserService:
     async def fetch_users(self, user_ids: list[int]) -> list[User]:
         logger.info("fetching users count=%s", len(user_ids))
         frame = FetchContactsPayload(contact_ids=user_ids)
-        response = await self.app.invoke(
-            Opcode.CONTACT_INFO, frame.to_payload()
-        )
+        response = await self.app.invoke(Opcode.CONTACT_INFO, frame.to_payload())
 
         users = [
             self._cache_user(user)
-            for user in parse_payload_list(
-                response, UserPayloadKey.CONTACTS, User
-            )
+            for user in parse_payload_list(response, UserPayloadKey.CONTACTS, User)
         ]
         logger.debug("fetched users count=%s", len(users))
         return users
@@ -97,12 +93,8 @@ class UserService:
         response = await self.app.invoke(Opcode.SESSIONS_INFO, {})
         return parse_payload_list(response, UserPayloadKey.SESSIONS, Session)
 
-    async def _contact_action(
-        self, payload: ContactActionPayload
-    ) -> InboundFrame:
-        response = await self.app.invoke(
-            Opcode.CONTACT_UPDATE, payload.to_payload()
-        )
+    async def _contact_action(self, payload: ContactActionPayload) -> InboundFrame:
+        response = await self.app.invoke(Opcode.CONTACT_UPDATE, payload.to_payload())
         require_payload_dict(response)
         return response
 

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, TypeVar, overload
+from typing import Any, TypeVar, cast, overload
 
 from pydantic import BaseModel
 
@@ -60,7 +60,7 @@ def payload_item(
     if validation_type is None:
         return data
 
-    return validation_type(data)
+    return cast(Any, validation_type)(data)
 
 
 def require_payload_item(

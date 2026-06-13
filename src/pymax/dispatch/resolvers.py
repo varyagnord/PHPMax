@@ -20,6 +20,22 @@ def resolve_message_delete(_: InboundFrame) -> EventType | None:
     return EventType.MESSAGE_DELETE
 
 
+def resolve_message_read(_: InboundFrame) -> EventType | None:
+    return EventType.MESSAGE_READ
+
+
+def resolve_typing(_: InboundFrame) -> EventType | None:
+    return EventType.TYPING
+
+
+def resolve_presence(_: InboundFrame) -> EventType | None:
+    return EventType.PRESENCE
+
+
+def resolve_reaction_update(_: InboundFrame) -> EventType | None:
+    return EventType.REACTION_UPDATE
+
+
 def resolve_attach(frame: InboundFrame) -> EventType | None:
     try:
         FileUploadSignal.model_validate(frame.payload)
@@ -45,6 +61,8 @@ def resolve_message(frame: InboundFrame) -> EventType | None:
 
         if model.status == MessageStatus.EDITED:
             return EventType.MESSAGE_EDIT
+        if model.status == MessageStatus.REMOVED:
+            return EventType.MESSAGE_DELETE
         else:
             return EventType.MESSAGE_NEW
     except ValidationError:

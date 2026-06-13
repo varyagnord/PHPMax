@@ -85,6 +85,10 @@ API reference
    chat
    message
    message_delete_event
+   message_read_event
+   typing_event
+   presence_event
+   reaction_update_event
    reaction_counter
    reaction_info
    read_state

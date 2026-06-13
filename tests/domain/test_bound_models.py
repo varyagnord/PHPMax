@@ -14,6 +14,18 @@ class MessageActions:
         self.calls.append(("send_message", args, kwargs))
         return "sent"
 
+    async def get_message(self, *args, **kwargs):
+        self.calls.append(("get_message", args, kwargs))
+        return "message"
+
+    async def get_messages(self, *args, **kwargs):
+        self.calls.append(("get_messages", args, kwargs))
+        return ["messages"]
+
+    async def edit_message(self, *args, **kwargs):
+        self.calls.append(("edit_message", args, kwargs))
+        return "edited"
+
     async def pin_message(self, *args, **kwargs):
         self.calls.append(("pin_message", args, kwargs))
         return True
@@ -85,14 +97,20 @@ class UserActions:
 
 
 @pytest.mark.asyncio
-async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> (
-    None
-):
+async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> None:
     actions = MessageActions()
     message = Message.model_validate(message_payload(10, 100)).bind(actions)
 
     assert await message.reply("reply") == "sent"
     assert await message.answer("answer", reply_to=9) == "sent"
+    assert (
+        await message.edit(
+            "edited",
+            attachment="photo",
+            attachments=["file"],
+        )
+        == "edited"
+    )
     assert await message.pin(notify_pin=False) is True
     assert await message.delete(for_me=True) is True
     assert await message.read() == "read"
@@ -102,8 +120,11 @@ async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> (
 
     assert actions.calls[0][2]["reply_to"] == 10
     assert actions.calls[1][2]["reply_to"] == 9
-    assert actions.calls[3][2]["message_ids"] == [10]
-    assert actions.calls[5][2]["message_id"] == "10"
+    assert actions.calls[2][2]["message_id"] == 10
+    assert actions.calls[2][2]["attachment"] == "photo"
+    assert actions.calls[2][2]["attachments"] == ["file"]
+    assert actions.calls[4][2]["message_ids"] == [10]
+    assert actions.calls[6][2]["message_id"] == "10"
 
 
 @pytest.mark.asyncio
@@ -112,26 +133,20 @@ async def test_unbound_message_raises_helpful_runtime_errors() -> None:
         await Message.model_validate(message_payload(10, 100)).answer("x")
 
     with pytest.raises(RuntimeError, match="chat_id"):
-        await (
-            Message.model_validate(message_payload(10, None))
-            .bind(MessageActions())
-            .answer("x")
-        )
+        await Message.model_validate(message_payload(10, None)).bind(MessageActions()).answer("x")
 
 
 @pytest.mark.asyncio
 async def test_chat_bound_methods_delegate_by_chat_type() -> None:
     messages = MessageActions()
     chats = ChatActions()
-    group = Chat.model_validate(chat_payload(100, "CHAT")).bind(
-        messages, chats
-    )
-    channel = Chat.model_validate(chat_payload(200, "CHANNEL")).bind(
-        messages, chats
-    )
+    group = Chat.model_validate(chat_payload(100, "CHAT")).bind(messages, chats)
+    channel = Chat.model_validate(chat_payload(200, "CHANNEL")).bind(messages, chats)
 
     assert await group.answer("hello") == "sent"
     assert await group.history(backward=1) == ["history"]
+    assert await group.get_message(10) == "message"
+    assert await group.get_messages([10, 11]) == ["messages"]
     await group.leave()
     await channel.leave()
     assert await group.invite([1, 2]) == "group"
@@ -148,11 +163,26 @@ async def test_chat_bound_methods_delegate_by_chat_type() -> None:
     assert channel.is_channel is True
 
 
+def test_chat_bind_also_binds_nested_messages() -> None:
+    messages = MessageActions()
+    chats = ChatActions()
+    payload = {
+        **chat_payload(100, "CHAT"),
+        "lastMessage": message_payload(10, 100),
+        "pinnedMessage": message_payload(11, 100),
+    }
+
+    chat = Chat.model_validate(payload).bind(messages, chats)
+
+    assert chat.last_message is not None
+    assert chat.pinned_message is not None
+    assert chat.last_message._actions is messages
+    assert chat.pinned_message._actions is messages
+
+
 @pytest.mark.asyncio
 async def test_dialog_leave_and_unbound_chat_raise_errors() -> None:
-    dialog = Chat.model_validate(chat_payload(1, "DIALOG")).bind(
-        MessageActions(), ChatActions()
-    )
+    dialog = Chat.model_validate(chat_payload(1, "DIALOG")).bind(MessageActions(), ChatActions())
 
     with pytest.raises(RuntimeError, match="Cannot leave dialog"):
         await dialog.leave()

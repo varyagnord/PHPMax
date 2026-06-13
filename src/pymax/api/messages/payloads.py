@@ -12,6 +12,21 @@ from pymax.api.uploads.payloads import (
 from .enums import ItemType, ReadAction
 
 
+class GetMessagesPayload(CamelModel):
+    chat_id: int
+    message_ids: list[int]
+
+
+class EditMessagePayload(CamelModel):
+    chat_id: int
+    message_id: int
+    text: str
+    elements: list[Any]
+    attachments: list[AttachPhotoPayload | VideoAttachPayload | AttachFilePayload] = Field(
+        default_factory=list
+    )
+
+
 class ReplyLink(CamelModel):
     type: str = "REPLY"  # TODO: enum?
     message_id: int
@@ -92,5 +107,5 @@ class RemoveReactionPayload(CamelModel):
 class ReadMessagesPayload(CamelModel):
     type: ReadAction
     chat_id: int
-    message_id: str
+    message_id: str | int  # Сокет просит int а вс str
     mark: int

@@ -54,8 +54,7 @@ class WebClient(BaseClient["WebClient"]):
         self._config = self._build_config(
             phone=None,
             user_agent=(
-                self.extra_config.user_agent
-                or self.extra_config.generate_web_user_agent()
+                self.extra_config.user_agent or self.extra_config.generate_web_user_agent()
             ),
         )
 

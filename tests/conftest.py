@@ -57,9 +57,7 @@ class FakeDispatcher:
 
     def on_internal(self, event: Any, *filters: Any):
         def decorator(handler: Any) -> Any:
-            self.internal_handlers.setdefault(event, []).append(
-                (handler, filters)
-            )
+            self.internal_handlers.setdefault(event, []).append((handler, filters))
             return handler
 
         return decorator
@@ -77,9 +75,7 @@ class FakeUploads:
             video_id=20,
             token="video-token",
         )
-        self.file_result: AttachFilePayload | None = AttachFilePayload(
-            file_id=30
-        )
+        self.file_result: AttachFilePayload | None = AttachFilePayload(file_id=30)
         self.calls: list[tuple[str, Any]] = []
 
     async def upload_photo(self, photo: Any) -> AttachPhotoPayload | None:
@@ -101,15 +97,11 @@ def mobile_user_agent(
     kwargs: dict[str, Any] = {
         "device_type": device_type,
         "app_version": "26.14.1",
-        "os_version": (
-            "Android 14" if device_type != DeviceType.WEB else "Linux"
-        ),
+        "os_version": ("Android 14" if device_type != DeviceType.WEB else "Linux"),
         "timezone": "Europe/Moscow",
         "screen": "1080x2400",
         "locale": "ru",
-        "device_name": (
-            "Pixel Test" if device_type != DeviceType.WEB else "Chrome"
-        ),
+        "device_name": ("Pixel Test" if device_type != DeviceType.WEB else "Chrome"),
         "device_locale": "ru",
     }
     if device_type != DeviceType.WEB:
@@ -197,24 +189,18 @@ def frame(
     cmd: int = Command.RESPONSE,
     seq: int | None = 1,
 ) -> InboundFrame:
-    return InboundFrame(
-        opcode=opcode, cmd=cmd, seq=seq, payload=payload, raw=payload
-    )
+    return InboundFrame(opcode=opcode, cmd=cmd, seq=seq, payload=payload, raw=payload)
 
 
 def user_payload(user_id: int = 1, name: str = "Test User") -> dict[str, Any]:
     return {"id": user_id, "names": [{"name": name, "type": "NICK"}]}
 
 
-def profile_payload(
-    user_id: int = 1, options: list[int] | None = None
-) -> dict[str, Any]:
+def profile_payload(user_id: int = 1, options: list[int] | None = None) -> dict[str, Any]:
     return {"contact": user_payload(user_id), "profileOptions": options}
 
 
-def chat_payload(
-    chat_id: int = 100, chat_type: str = "CHAT"
-) -> dict[str, Any]:
+def chat_payload(chat_id: int = 100, chat_type: str = "CHAT") -> dict[str, Any]:
     return {
         "id": chat_id,
         "type": chat_type,

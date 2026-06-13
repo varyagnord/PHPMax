@@ -30,8 +30,6 @@ class UnknownAttachment(CamelModel):
 
         attachment_type = value.get("_type", value.get("type"))
         if attachment_type in KNOWN_ATTACHMENT_TYPES:
-            raise ValueError(
-                "Known attachment type should be parsed by its own model"
-            )
+            raise ValueError("Known attachment type should be parsed by its own model")
 
         return value

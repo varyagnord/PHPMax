@@ -110,9 +110,7 @@ def test_tcp_framer_handles_short_and_incomplete_packets() -> None:
 
 def test_msgpack_codec_serializes_enums_and_decoder_normalizes_keys() -> None:
     codec = MsgpackPayloadCodec()
-    encoded = codec.encode(
-        {1: {b"name": ItemType.DELAYED}, "list": [ItemType.REGULAR]}
-    )
+    encoded = codec.encode({1: {b"name": ItemType.DELAYED}, "list": [ItemType.REGULAR]})
     decoded = TcpPayloadDecoder(serializer=codec).decode(encoded)
 
     assert decoded == {

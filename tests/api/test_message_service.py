@@ -5,7 +5,7 @@ import pytest
 from pymax.api.messages.enums import ItemType, MessagePayloadKey
 from pymax.api.uploads.payloads import AttachPhotoPayload
 from pymax.exceptions import UploadError
-from pymax.files import File, Photo
+from pymax.files import File, Photo, Video
 from pymax.protocol import Opcode
 from tests.conftest import FakeApp, frame, message_payload
 
@@ -61,9 +61,7 @@ async def test_upload_attachments_handles_file_video_and_empty_lists() -> None:
     app = FakeApp()
     assert await app.api.messages._upload_attachments(None) == []
 
-    result = await app.api.messages._upload_attachments(
-        [File(raw=b"abc", name="doc.txt")]
-    )
+    result = await app.api.messages._upload_attachments([File(raw=b"abc", name="doc.txt")])
 
     assert result[0].file_id == 30
     assert app.api.uploads.calls[0][0] == "file"
@@ -97,10 +95,167 @@ async def test_fetch_history_builds_payload_and_parses_messages(
     )
 
     assert [message.id for message in messages or []] == [1, 2]
+    assert messages is not None
+    assert all(message._actions is app.api.messages for message in messages)
     assert app.calls[0].opcode == Opcode.CHAT_HISTORY
     assert app.calls[0].payload["from"] == 123
     assert app.calls[0].payload["itemType"] == ItemType.DELAYED
     assert app.calls[0].payload["getChat"] is True
+
+
+@pytest.mark.asyncio
+async def test_get_messages_and_get_message_bind_results_and_restore_chat_id() -> None:
+    app = FakeApp(
+        [
+            frame(
+                {
+                    MessagePayloadKey.MESSAGES.value: [
+                        message_payload(
+                            116739188629507992,
+                            None,
+                            "one",
+                        ),
+                        message_payload(
+                            116739188629507993,
+                            None,
+                            "two",
+                        ),
+                    ]
+                }
+            ),
+            frame(
+                {
+                    MessagePayloadKey.MESSAGES.value: [
+                        message_payload(
+                            116739188629507992,
+                            None,
+                            "one",
+                        )
+                    ]
+                }
+            ),
+            frame({MessagePayloadKey.MESSAGES.value: []}),
+        ]
+    )
+
+    messages = await app.api.messages.get_messages(
+        239067070,
+        [116739188629507992, 116739188629507993],
+    )
+    message = await app.api.messages.get_message(
+        239067070,
+        116739188629507992,
+    )
+    missing = await app.api.messages.get_message(239067070, 1)
+
+    assert [item.id for item in messages] == [
+        116739188629507992,
+        116739188629507993,
+    ]
+    assert all(item.chat_id == 239067070 for item in messages)
+    assert all(item._actions is app.api.messages for item in messages)
+    assert message is not None
+    assert message.id == 116739188629507992
+    assert message.chat_id == 239067070
+    assert message._actions is app.api.messages
+    assert missing is None
+    assert app.calls[0].opcode == Opcode.MSG_GET
+    assert app.calls[0].payload == {
+        "chatId": 239067070,
+        "messageIds": [116739188629507992, 116739188629507993],
+    }
+    assert app.calls[1].payload["messageIds"] == [116739188629507992]
+
+
+@pytest.mark.asyncio
+async def test_edit_message_formats_text_and_parses_bound_message() -> None:
+    app = FakeApp(
+        [
+            frame(
+                {
+                    MessagePayloadKey.MESSAGE.value: {
+                        **message_payload(
+                            116739188629507992,
+                            None,
+                            "edited",
+                            status="EDITED",
+                        ),
+                        "sender": 255000689,
+                        "updateTime": 1781298658480,
+                        "cid": -1781298654603,
+                        "attaches": [],
+                    }
+                }
+            )
+        ]
+    )
+
+    message = await app.api.messages.edit_message(
+        239067070,
+        116739188629507992,
+        "edited **text**",
+    )
+
+    assert message.id == 116739188629507992
+    assert message.chat_id == 239067070
+    assert message.status == "EDITED"
+    assert message._actions is app.api.messages
+    assert app.calls[0].opcode == Opcode.MSG_EDIT
+    assert app.calls[0].payload == {
+        "chatId": 239067070,
+        "messageId": 116739188629507992,
+        "text": "edited text",
+        "elements": [
+            {
+                "type": "STRONG",
+                "from": 7,
+                "length": 4,
+            }
+        ],
+        "attachments": [],
+    }
+
+
+@pytest.mark.asyncio
+async def test_edit_message_uploads_single_and_multiple_attachments() -> None:
+    response_message = {
+        MessagePayloadKey.MESSAGE.value: message_payload(
+            116739188629507992,
+            None,
+            "edited",
+            status="EDITED",
+        )
+    }
+    app = FakeApp([frame(response_message), frame(response_message)])
+    photo = Photo(raw=b"image", name="image.jpg")
+    ignored_photo = Photo(raw=b"ignored", name="ignored.jpg")
+    file = File(raw=b"file", name="file.txt")
+    video = Video(raw=b"video", name="video.mp4")
+
+    await app.api.messages.edit_message(
+        239067070,
+        116739188629507992,
+        "photo",
+        attachment=photo,
+    )
+    await app.api.messages.edit_message(
+        239067070,
+        116739188629507992,
+        "files",
+        attachment=ignored_photo,
+        attachments=[file, video],
+    )
+
+    assert app.api.uploads.calls == [
+        ("photo", photo),
+        ("file", file),
+        ("video", video),
+    ]
+    assert app.calls[0].payload["attachments"] == [{"_type": "PHOTO", "photoToken": "photo-token"}]
+    assert app.calls[1].payload["attachments"] == [
+        {"_type": "FILE", "fileId": 30},
+        {"_type": "VIDEO", "videoId": 20, "token": "video-token"},
+    ]
 
 
 @pytest.mark.asyncio
@@ -109,24 +264,31 @@ async def test_delete_pin_and_read_message_send_expected_opcodes(
 ) -> None:
     monkeypatch.setattr("pymax.api.messages.service.time.time", lambda: 3000.0)
     app = FakeApp(
-        [frame({}), frame({}), frame({"unread": 0, "mark": 3000000})]
+        [
+            frame({}),
+            frame({}),
+            frame({"unread": 0, "mark": 3000000}),
+            frame({"unread": 0, "mark": 3000000}),
+        ]
     )
 
-    assert (
-        await app.api.messages.delete_message(100, [1, 2], for_me=True) is True
-    )
+    assert await app.api.messages.delete_message(100, [1, 2], for_me=True) is True
     assert await app.api.messages.pin_message(100, 2, notify_pin=False) is True
     read_state = await app.api.messages.read_message(2, 100)
+    web_read_state = await app.api.messages.read_message("3", 100)
 
     assert read_state.mark == 3000000
+    assert web_read_state.mark == 3000000
     assert [call.opcode for call in app.calls] == [
         Opcode.MSG_DELETE,
         Opcode.CHAT_UPDATE,
         Opcode.CHAT_MARK,
+        Opcode.CHAT_MARK,
     ]
     assert app.calls[0].payload["forMe"] is True
     assert app.calls[1].payload["pinMessageId"] == 2
-    assert app.calls[2].payload["messageId"] == "2"
+    assert app.calls[2].payload["messageId"] == 2
+    assert app.calls[3].payload["messageId"] == "3"
 
 
 @pytest.mark.asyncio

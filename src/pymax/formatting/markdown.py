@@ -2,6 +2,10 @@ from pymax.types.domain.element import Element, ElementAttributes
 
 
 class Formatter:
+    # Characters above this value are encoded as surrogate pairs in UTF-16,
+    # occupying 2 code units instead of 1.
+    BMP_MAX = 0xFFFF
+
     MARKERS = {
         "```": "CODE",
         "**": "STRONG",
@@ -13,6 +17,10 @@ class Formatter:
     }
 
     MARKER_ORDER = ["```", "**", "__", "~~", "`", "_", "*"]
+
+    @staticmethod
+    def _code_units_len(text: str) -> int:
+        return len(text.encode("utf-16-le")) // 2
 
     @staticmethod
     def _parse_link(
@@ -64,15 +72,16 @@ class Formatter:
                 label, url, next_i = parsed_link
 
                 start = clean_pos
+                utf16_label_len = Formatter._code_units_len(label)
 
                 clean_text += label
-                clean_pos += len(label)
+                clean_pos += utf16_label_len
 
                 entities.append(
                     Element(
                         type="LINK",
                         from_=start,
-                        length=len(label),
+                        length=utf16_label_len,
                         attributes=ElementAttributes(url=url),
                     )
                 )
@@ -93,9 +102,10 @@ class Formatter:
                     start = clean_pos
 
                     while i < len(text) and text[i] != "\n":
-                        clean_text += text[i]
+                        ch = text[i]
+                        clean_text += ch
                         i += 1
-                        clean_pos += 1
+                        clean_pos += 2 if ord(ch) > Formatter.BMP_MAX else 1
 
                     length = clean_pos - start
 
@@ -123,9 +133,10 @@ class Formatter:
                 start = clean_pos
 
                 while i < len(text) and text[i] != "\n":
-                    clean_text += text[i]
+                    ch = text[i]
+                    clean_text += ch
                     i += 1
-                    clean_pos += 1
+                    clean_pos += 2 if ord(ch) > Formatter.BMP_MAX else 1
 
                 length = clean_pos - start
 
@@ -151,10 +162,7 @@ class Formatter:
                     if marker == "```":
                         closing_index = text.find(marker, i + marker_len)
 
-                        if (
-                            closing_index == -1
-                            or closing_index == i + marker_len
-                        ):
+                        if closing_index == -1 or closing_index == i + marker_len:
                             clean_text += marker
                             clean_pos += marker_len
                             i += marker_len
@@ -211,10 +219,11 @@ class Formatter:
                 line_start = False
                 continue
 
-            clean_text += text[i]
-            line_start = text[i] == "\n"
+            ch = text[i]
+            clean_text += ch
+            line_start = ch == "\n"
 
             i += 1
-            clean_pos += 1
+            clean_pos += 2 if ord(ch) > Formatter.BMP_MAX else 1
 
         return clean_text, entities

@@ -22,7 +22,15 @@ if TYPE_CHECKING:
         StartDecorator,
     )
     from pymax.protocol import InboundFrame
-    from pymax.types import Chat, MessageDeleteEvent, User
+    from pymax.types import (
+        Chat,
+        MessageDeleteEvent,
+        MessageReadEvent,
+        PresenceEvent,
+        ReactionUpdateEvent,
+        TypingEvent,
+        User,
+    )
     from pymax.types.domain import Message, Profile
 
 logger = get_logger(__name__)
@@ -83,6 +91,7 @@ class BaseClient(BaseMixin, ABC, Generic[ClientT]):
             sync=self.extra_config.sync,
             store=self.extra_config.store,
             proxy=self.extra_config.proxy,
+            registration_config=self.extra_config.registration_config,
             device=DeviceConfig(
                 mt_instance_id=self.extra_config.mt_instance_id,
                 device_id=self.extra_config.device_id or str(uuid4()),
@@ -185,6 +194,34 @@ class BaseClient(BaseMixin, ABC, Generic[ClientT]):
     ) -> HandlerDecorator[MessageDeleteEvent, ClientT]:
         """Регистрирует обработчик удаления сообщений."""
         return self._router.on_message_delete(*filters)
+
+    def on_message_read(
+        self,
+        *filters: FilterCallback[MessageReadEvent],
+    ) -> HandlerDecorator[MessageReadEvent, ClientT]:
+        """Регистрирует обработчик изменения отметки прочтения."""
+        return self._router.on_message_read(*filters)
+
+    def on_typing(
+        self,
+        *filters: FilterCallback[TypingEvent],
+    ) -> HandlerDecorator[TypingEvent, ClientT]:
+        """Регистрирует обработчик набора текста."""
+        return self._router.on_typing(*filters)
+
+    def on_presence(
+        self,
+        *filters: FilterCallback[PresenceEvent],
+    ) -> HandlerDecorator[PresenceEvent, ClientT]:
+        """Регистрирует обработчик изменения присутствия пользователя."""
+        return self._router.on_presence(*filters)
+
+    def on_reaction_update(
+        self,
+        *filters: FilterCallback[ReactionUpdateEvent],
+    ) -> HandlerDecorator[ReactionUpdateEvent, ClientT]:
+        """Регистрирует обработчик обновления реакций сообщения."""
+        return self._router.on_reaction_update(*filters)
 
     def on_chat_update(
         self,

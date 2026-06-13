@@ -3,11 +3,19 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
+from pymax.api.binding import bind_api_model
 from pymax.protocol import InboundFrame, Opcode
 from pymax.protocol.enums import Command
 from pymax.types import Chat, MessageDeleteEvent
 from pymax.types.domain import Message
-from pymax.types.events import FileUploadSignal, VideoUploadSignal
+from pymax.types.events import (
+    FileUploadSignal,
+    MessageReadEvent,
+    PresenceEvent,
+    ReactionUpdateEvent,
+    TypingEvent,
+    VideoUploadSignal,
+)
 
 from .enums import EventType
 from .resolvers import (
@@ -15,6 +23,10 @@ from .resolvers import (
     resolve_chat,
     resolve_message,
     resolve_message_delete,
+    resolve_message_read,
+    resolve_presence,
+    resolve_reaction_update,
+    resolve_typing,
 )
 
 if TYPE_CHECKING:
@@ -28,6 +40,10 @@ EVENT_MAP: dict[Opcode, Resolver] = {
     Opcode.NOTIF_CHAT: resolve_chat,
     Opcode.NOTIF_MSG_DELETE: resolve_message_delete,
     Opcode.NOTIF_ATTACH: resolve_attach,
+    Opcode.NOTIF_TYPING: resolve_typing,
+    Opcode.NOTIF_MARK: resolve_message_read,
+    Opcode.NOTIF_PRESENCE: resolve_presence,
+    Opcode.NOTIF_MSG_REACTIONS_CHANGED: resolve_reaction_update,
 }
 
 
@@ -58,21 +74,28 @@ class EventMapper:
 
         if frame.payload:
             if event_type in (EventType.MESSAGE_NEW, EventType.MESSAGE_EDIT):
-                return Message.model_validate(frame.payload).bind(
-                    self.app.api.messages
+                return bind_api_model(
+                    self.app,
+                    Message.model_validate(frame.payload),
                 )
             elif event_type == EventType.CHAT_UPDATE:
-                return Chat.model_validate(frame.payload["chat"]).bind(
-                    self.app.api.messages,
-                    self.app.api.chats,
+                return bind_api_model(
+                    self.app,
+                    Chat.model_validate(frame.payload["chat"]),
                 )
             elif event_type == EventType.MESSAGE_DELETE:
-                model = MessageDeleteEvent.model_validate(frame.payload)
-                model.chat.bind(
-                    self.app.api.messages,
-                    self.app.api.chats,
+                return bind_api_model(
+                    self.app,
+                    MessageDeleteEvent.model_validate(frame.payload),
                 )
-                return model
+            elif event_type == EventType.MESSAGE_READ:
+                return MessageReadEvent.model_validate(frame.payload)
+            elif event_type == EventType.TYPING:
+                return TypingEvent.model_validate(frame.payload)
+            elif event_type == EventType.PRESENCE:
+                return PresenceEvent.model_validate(frame.payload)
+            elif event_type == EventType.REACTION_UPDATE:
+                return ReactionUpdateEvent.model_validate(frame.payload)
             elif event_type == EventType.VIDEO_READY:
                 return VideoUploadSignal.model_validate(frame.payload)
             elif event_type == EventType.FILE_READY:

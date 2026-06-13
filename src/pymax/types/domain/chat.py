@@ -19,7 +19,8 @@ class Chat(CamelModel):
 
     Объекты чатов, полученные через клиент, обычно уже привязаны к сервисам
     сообщений и чатов. После этого можно вызывать удобные методы объекта:
-    :meth:`answer`, :meth:`history`, :meth:`leave`, :meth:`invite`,
+    :meth:`answer`, :meth:`history`, :meth:`get_message`,
+    :meth:`get_messages`, :meth:`leave`, :meth:`invite`,
     :meth:`remove_users`, :meth:`pin_message`, :meth:`update_settings` и
     :meth:`rework_invite_link`.
 
@@ -147,6 +148,10 @@ class Chat(CamelModel):
         """
         self._message_actions = message_actions
         self._chat_actions = chat_actions
+        if self.last_message is not None:
+            self.last_message.bind(message_actions)
+        if self.pinned_message is not None:
+            self.pinned_message.bind(message_actions)
         return self
 
     async def answer(
@@ -240,6 +245,38 @@ class Chat(CamelModel):
             get_chat=get_chat,
             get_messages=get_messages,
             interactive=interactive,
+        )
+
+    async def get_message(self, message_id: int) -> Message | None:
+        """Возвращает сообщение этого чата по ID.
+
+        :param message_id: ID сообщения.
+        :type message_id: int
+        :returns: Сообщение или ``None``, если сервер его не вернул.
+        :rtype: Message | None
+        :raises RuntimeError: Если чат не привязан к клиенту.
+        """
+        actions, _ = self._bound()
+
+        return await actions.get_message(
+            chat_id=self.id,
+            message_id=message_id,
+        )
+
+    async def get_messages(self, message_ids: list[int]) -> list[Message]:
+        """Возвращает сообщения этого чата по ID.
+
+        :param message_ids: ID сообщений.
+        :type message_ids: list[int]
+        :returns: Список найденных сообщений.
+        :rtype: list[Message]
+        :raises RuntimeError: Если чат не привязан к клиенту.
+        """
+        actions, _ = self._bound()
+
+        return await actions.get_messages(
+            chat_id=self.id,
+            message_ids=message_ids,
         )
 
     async def leave(self) -> None:

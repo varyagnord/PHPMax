@@ -57,9 +57,7 @@ def test_markdown_formatter_extracts_functional_entities() -> None:
     )
 
     assert clean == "Title\nQuote\nHello bold and site"
-    assert [
-        (entity.type, entity.from_, entity.length) for entity in entities
-    ] == [
+    assert [(entity.type, entity.from_, entity.length) for entity in entities] == [
         ("HEADING", 0, 5),
         ("QUOTE", 6, 5),
         ("STRONG", 18, 4),

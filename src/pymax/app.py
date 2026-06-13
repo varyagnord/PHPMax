@@ -205,8 +205,10 @@ class App(Generic[ClientT]):
             payload_keys,
         )
         logger.debug("Request data=%s", frame.model_dump())
+
         request_timeout = self.config.request_timeout if timeout is None else timeout
         response = await self.connection.request(frame, timeout=request_timeout)
+
         response_keys = sorted(response.payload.keys()) if response.payload else []
         logger.debug(
             "response opcode=%s cmd=%s seq=%s payload_keys=%s",

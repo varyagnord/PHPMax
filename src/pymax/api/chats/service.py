@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING
 
+from pymax.api.binding import bind_api_model
 from pymax.api.response import (
     parse_payload_item_model,
     parse_payload_list,
@@ -46,7 +47,7 @@ class ChatService:
         self.app = app
 
     def _bind_chat(self, chat: Chat) -> Chat:
-        return chat.bind(self.app.api.messages, self)
+        return bind_api_model(self.app, chat)
 
     def _cache_chat(self, chat: Chat) -> Chat:
         chat = self._bind_chat(chat)
@@ -72,14 +73,18 @@ class ChatService:
         if self.app.chats is None:
             return
 
-        self.app.chats = [
-            chat for chat in self.app.chats if chat.id != chat_id
-        ]
+        self.app.chats = [chat for chat in self.app.chats if chat.id != chat_id]
 
     @staticmethod
     def _process_chat_join_link(link: str) -> str | None:
         idx = link.find(ChatLinkPrefix.JOIN)
         return link[idx:] if idx != -1 else None
+
+    async def _join_chat(self, link: str) -> Chat:
+        frame = JoinChatPayload(link=link)
+        response = await self.app.invoke(Opcode.CHAT_JOIN, frame.to_payload())
+        chat = require_payload_item_model(response, ChatPayloadKey.CHAT, Chat)
+        return self._cache_chat(chat)
 
     async def create_group(
         self,
@@ -112,8 +117,9 @@ class ChatService:
             return None
 
         chat = self._cache_chat(chat)
-        message = require_payload_model(response, Message).bind(
-            self.app.api.messages
+        message = bind_api_model(
+            self.app,
+            require_payload_model(response, Message),
         )
         return chat, message
 
@@ -145,9 +151,7 @@ class ChatService:
         user_ids: list[int],
         show_history: bool = True,
     ) -> Chat | None:
-        return await self.invite_users_to_group(
-            chat_id, user_ids, show_history
-        )
+        return await self.invite_users_to_group(chat_id, user_ids, show_history)
 
     async def remove_users_from_group(
         self,
@@ -191,9 +195,7 @@ class ChatService:
             ),
         )
 
-        response = await self.app.invoke(
-            Opcode.CHAT_UPDATE, frame.to_payload()
-        )
+        response = await self.app.invoke(Opcode.CHAT_UPDATE, frame.to_payload())
         chat = parse_payload_item_model(response, ChatPayloadKey.CHAT, Chat)
         if chat:
             self._cache_chat(chat)
@@ -210,9 +212,7 @@ class ChatService:
             description=description,
         )
 
-        response = await self.app.invoke(
-            Opcode.CHAT_UPDATE, frame.to_payload()
-        )
+        response = await self.app.invoke(Opcode.CHAT_UPDATE, frame.to_payload())
         chat = parse_payload_item_model(response, ChatPayloadKey.CHAT, Chat)
         if chat:
             self._cache_chat(chat)
@@ -222,10 +222,12 @@ class ChatService:
         if proceed_link is None:
             raise ValueError("Invalid group link")
 
-        frame = JoinChatPayload(link=proceed_link)
-        response = await self.app.invoke(Opcode.CHAT_JOIN, frame.to_payload())
-        chat = require_payload_item_model(response, ChatPayloadKey.CHAT, Chat)
-        return self._cache_chat(chat)
+        return await self._join_chat(proceed_link)
+
+    async def join_channel(self, link: str) -> Chat:
+        proceed_link = self._process_chat_join_link(link)
+
+        return await self._join_chat(proceed_link or link)
 
     async def resolve_group_by_link(self, link: str) -> Chat | None:
         proceed_link = self._process_chat_join_link(link)
@@ -242,9 +244,7 @@ class ChatService:
 
     async def rework_invite_link(self, chat_id: int) -> Chat:
         frame = ReworkInviteLinkPayload(chat_id=chat_id)
-        response = await self.app.invoke(
-            Opcode.CHAT_UPDATE, frame.to_payload()
-        )
+        response = await self.app.invoke(Opcode.CHAT_UPDATE, frame.to_payload())
         chat = require_payload_item_model(response, ChatPayloadKey.CHAT, Chat)
         return self._cache_chat(chat)
 
@@ -254,18 +254,12 @@ class ChatService:
             for chat_id in chat_ids
             if (chat := self._get_cached_chat(chat_id)) is not None
         }
-        missed_chat_ids = [
-            chat_id for chat_id in chat_ids if chat_id not in cached
-        ]
+        missed_chat_ids = [chat_id for chat_id in chat_ids if chat_id not in cached]
 
         if missed_chat_ids:
             frame = GetChatInfoPayload(chat_ids=missed_chat_ids)
-            response = await self.app.invoke(
-                Opcode.CHAT_INFO, frame.to_payload()
-            )
-            for chat in parse_payload_list(
-                response, ChatPayloadKey.CHATS, Chat
-            ):
+            response = await self.app.invoke(Opcode.CHAT_INFO, frame.to_payload())
+            for chat in parse_payload_list(response, ChatPayloadKey.CHATS, Chat):
                 chat = self._cache_chat(chat)
                 cached[chat.id] = chat
 
@@ -292,22 +286,19 @@ class ChatService:
 
         chats = [
             self._cache_chat(chat)
-            for chat in parse_payload_list(
-                response, ChatPayloadKey.CHATS, Chat
-            )
+            for chat in parse_payload_list(response, ChatPayloadKey.CHATS, Chat)
         ]
         return chats
 
-    async def get_join_requests(
-        self, chat_id: int, count: int = 100
-    ) -> list[Member]:
+    async def get_join_requests(self, chat_id: int, count: int = 100) -> list[Member]:
         frame = FetchJoinRequests(chat_id=chat_id, count=count)
 
-        response = await self.app.invoke(
-            Opcode.CHAT_MEMBERS, frame.to_payload()
-        )
+        response = await self.app.invoke(Opcode.CHAT_MEMBERS, frame.to_payload())
 
-        return parse_payload_list(response, ChatPayloadKey.MEMBERS, Member)
+        return bind_api_model(
+            self.app,
+            parse_payload_list(response, ChatPayloadKey.MEMBERS, Member),
+        )
 
     async def confirm_join_requests(
         self,
@@ -322,9 +313,7 @@ class ChatService:
             operation=ChatMemberOperation.ADD,
         )
 
-        response = await self.app.invoke(
-            Opcode.CHAT_MEMBERS_UPDATE, frame.to_payload()
-        )
+        response = await self.app.invoke(Opcode.CHAT_MEMBERS_UPDATE, frame.to_payload())
 
         chat = parse_payload_item_model(response, ChatPayloadKey.CHAT, Chat)
         if chat:
@@ -356,9 +345,7 @@ class ChatService:
             operation=ChatMemberOperation.REMOVE,
         )
 
-        response = await self.app.invoke(
-            Opcode.CHAT_MEMBERS_UPDATE, frame.to_payload()
-        )
+        response = await self.app.invoke(Opcode.CHAT_MEMBERS_UPDATE, frame.to_payload())
 
         chat = parse_payload_item_model(response, ChatPayloadKey.CHAT, Chat)
         if chat:

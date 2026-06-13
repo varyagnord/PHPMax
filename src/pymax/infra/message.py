@@ -1,5 +1,5 @@
 from pymax.api.messages.enums import ItemType
-from pymax.api.messages.service import SendAttachments
+from pymax.api.messages.service import SendAttachment, SendAttachments
 from pymax.types import (
     FileRequest,
     Message,
@@ -41,6 +41,73 @@ class MessageMixin(IClientProtocol):
             reply_to,
             attachments,
             notify=notify,
+        )
+
+    async def get_message(
+        self,
+        chat_id: int,
+        message_id: int,
+    ) -> Message | None:
+        """Возвращает сообщение по ID.
+
+        Args:
+            chat_id: ID чата.
+            message_id: ID сообщения.
+
+        Returns:
+            Сообщение или ``None``, если сервер его не вернул.
+        """
+        return await self._app.api.messages.get_message(
+            chat_id=chat_id,
+            message_id=message_id,
+        )
+
+    async def get_messages(
+        self,
+        chat_id: int,
+        message_ids: list[int],
+    ) -> list[Message]:
+        """Возвращает сообщения по ID.
+
+        Args:
+            chat_id: ID чата.
+            message_ids: ID сообщений.
+
+        Returns:
+            Список найденных сообщений.
+        """
+        return await self._app.api.messages.get_messages(
+            chat_id=chat_id,
+            message_ids=message_ids,
+        )
+
+    async def edit_message(
+        self,
+        chat_id: int,
+        message_id: int,
+        text: str,
+        attachment: SendAttachment | None = None,
+        attachments: SendAttachments = None,
+    ) -> Message:
+        """Редактирует текст и вложения сообщения.
+
+        Args:
+            chat_id: ID чата.
+            message_id: ID сообщения.
+            text: Новый текст сообщения с поддержкой markdown.
+            attachment: Одно новое вложение.
+            attachments: Список новых вложений. Имеет приоритет над
+                ``attachment``.
+
+        Returns:
+            Отредактированное сообщение.
+        """
+        return await self._app.api.messages.edit_message(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=text,
+            attachment=attachment,
+            attachments=attachments,
         )
 
     async def fetch_history(
@@ -236,11 +303,15 @@ class MessageMixin(IClientProtocol):
             message_id=message_id,
         )
 
-    async def read_message(self, message_id: int, chat_id: int) -> ReadState:
+    async def read_message(self, message_id: int | str, chat_id: int) -> ReadState:
         """Отмечает сообщение как прочитанное.
 
+        У Max различается wire-формат ``message_id`` для отметки прочтения:
+        TCP-клиент ожидает ``int``, WebSocket-клиент - ``str``.
+
         Args:
-            message_id: ID сообщения.
+            message_id: ID сообщения. Передавайте ``int`` для ``Client`` и
+                ``str`` для ``WebClient``.
             chat_id: ID чата.
 
         Returns:

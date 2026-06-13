@@ -183,7 +183,9 @@ class ConnectionManager:
         except Exception as e:
             exc = ConnectionError(f"Connection error: {e}")
             logger.exception("connection receive loop failed")
+
             self.requests.cancel_all(exc=exc)
+
             self._connection_lost = True
             self._mark_closed(exc)
             raise e

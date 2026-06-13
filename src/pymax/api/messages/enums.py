@@ -12,6 +12,7 @@ class ReadAction(str, Enum):
 
 
 class MessagePayloadKey(str, Enum):
+    MESSAGE = "message"
     MESSAGES = "messages"
     REACTION_INFO = "reactionInfo"
     MESSAGES_REACTIONS = "messagesReactions"

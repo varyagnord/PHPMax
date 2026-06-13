@@ -7,7 +7,15 @@ from pymax.api.session.enums import DeviceType
 from pymax.protocol import Opcode
 from pymax.session.models import SessionInfo
 from pymax.types.domain.sync import SyncState
-from tests.conftest import FakeApp, frame, mobile_user_agent, profile_payload
+from tests.conftest import (
+    FakeApp,
+    chat_payload,
+    frame,
+    message_payload,
+    mobile_user_agent,
+    profile_payload,
+    user_payload,
+)
 
 
 class StaticEmailProvider:
@@ -51,14 +59,20 @@ async def test_request_and_send_code_parse_auth_responses() -> None:
 
 
 @pytest.mark.asyncio
-async def test_mobile_login_sends_sync_payload_and_persists_updated_session() -> (
-    None
-):
+async def test_mobile_login_sends_sync_payload_and_persists_updated_session() -> None:
     app = FakeApp(
         [
             frame(
                 {
                     "profile": profile_payload(42),
+                    "chats": [
+                        {
+                            **chat_payload(100),
+                            "pinnedMessage": message_payload(10, 100),
+                        }
+                    ],
+                    "messages": {"100": [message_payload(11, 100)]},
+                    "contacts": [user_payload(43)],
                     "token": "server-token",
                     "time": 777,
                     "config": {"hash": "cfg-hash"},
@@ -70,9 +84,7 @@ async def test_mobile_login_sends_sync_payload_and_persists_updated_session() ->
         token="local-token",
         device_id="device-test",
         phone="+79990000000",
-        sync=SyncState(
-            chats_sync=1, contacts_sync=2, drafts_sync=3, presence_sync=4
-        ),
+        sync=SyncState(chats_sync=1, contacts_sync=2, drafts_sync=3, presence_sync=4),
     )
 
     response = await app.api.auth.mobile_login()
@@ -80,9 +92,7 @@ async def test_mobile_login_sends_sync_payload_and_persists_updated_session() ->
     assert response.token == "server-token"
     assert app.calls[0].opcode == Opcode.LOGIN
     assert app.calls[0].payload["token"] == "local-token"
-    assert (
-        app.calls[0].payload["userAgent"]["deviceType"] == DeviceType.ANDROID
-    )
+    assert app.calls[0].payload["userAgent"]["deviceType"] == DeviceType.ANDROID
     assert app.session is not None
     assert app.session.mt_instance_id == "mt-test"
     assert app.session.sync.chats_sync == 777
@@ -91,6 +101,13 @@ async def test_mobile_login_sends_sync_payload_and_persists_updated_session() ->
     assert app.session.sync.presence_sync == 777
     assert app.session.sync.config_hash == "cfg-hash"
     assert app.store.saved_sessions == [app.session]
+    assert response.profile.contact._actions is app.api.users
+    assert response.chats[0]._message_actions is app.api.messages
+    assert response.chats[0].pinned_message is not None
+    assert response.chats[0].pinned_message._actions is app.api.messages
+    assert response.messages[100][0]._actions is app.api.messages
+    assert response.contacts[0] is not None
+    assert response.contacts[0]._actions is app.api.users
 
 
 @pytest.mark.asyncio
@@ -186,9 +203,7 @@ async def test_remove_2fa_checks_password_then_removes_factor() -> None:
         Opcode.AUTH_SET_2FA,
     ]
     assert app.calls[2].payload["remove2fa"] is True
-    assert app.calls[2].payload["expectedCapabilities"] == [
-        TwoFactorAction.REMOVE_2FA
-    ]
+    assert app.calls[2].payload["expectedCapabilities"] == [TwoFactorAction.REMOVE_2FA]
 
 
 @pytest.mark.asyncio
@@ -227,6 +242,38 @@ async def test_qr_auth_service_methods_send_expected_payloads() -> None:
     ]
     assert app.calls[1].payload == {"trackId": "track"}
     assert app.calls[3].payload == {"qrLink": "max://qr"}
+
+
+@pytest.mark.asyncio
+async def test_confirm_registration_sends_profile_and_parses_token() -> None:
+    app = FakeApp(
+        [
+            frame(
+                {
+                    "userToken": 42,
+                    "profile": profile_payload(42),
+                    "tokenType": "REGISTER",
+                    "token": "registered-token",
+                }
+            )
+        ]
+    )
+
+    result = await app.api.auth.confirm_registration(
+        first_name="Max",
+        last_name="User",
+        token="register-token",
+    )
+
+    assert result.token == "registered-token"
+    assert result.profile.contact.id == 42
+    assert app.calls[0].opcode == Opcode.AUTH_CONFIRM
+    assert app.calls[0].payload == {
+        "firstName": "Max",
+        "lastName": "User",
+        "token": "register-token",
+        "tokenType": "REGISTER",
+    }
 
 
 @pytest.mark.asyncio

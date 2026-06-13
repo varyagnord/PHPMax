@@ -3,10 +3,12 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, TypeAlias
 
+from pymax.api.binding import bind_api_model, bind_api_models
 from pymax.api.response import (
     parse_payload_list,
     parse_payload_model,
     payload_item,
+    require_payload_item_model,
     require_payload_model,
 )
 from pymax.api.uploads.payloads import (
@@ -32,7 +34,9 @@ from .payloads import (
     AddReactionPayload,
     ChatHistoryPayload,
     DeleteMessagePayload,
+    EditMessagePayload,
     GetFilePayload,
+    GetMessagesPayload,
     GetReactionsPayload,
     GetVideoPayload,
     PinMessagePayload,
@@ -69,17 +73,13 @@ class MessageService:
     async def _upload_attachments(
         self, attachments: SendAttachments
     ) -> list[AttachPhotoPayload | VideoAttachPayload | AttachFilePayload]:
-        result: list[
-            AttachPhotoPayload | VideoAttachPayload | AttachFilePayload
-        ] = []
+        result: list[AttachPhotoPayload | VideoAttachPayload | AttachFilePayload] = []
         if not attachments:
             return result
 
         for attachment in attachments:
             if isinstance(attachment, Photo):
-                upload_result = await self.app.api.uploads.upload_photo(
-                    attachment
-                )
+                upload_result = await self.app.api.uploads.upload_photo(attachment)
                 if not upload_result:
                     logger.error("Photo uploading failed")
                     raise UploadError("Photo uploading failed")
@@ -87,9 +87,7 @@ class MessageService:
                 result.append(upload_result)
 
             elif isinstance(attachment, Video):
-                upload_result = await self.app.api.uploads.upload_video(
-                    attachment
-                )
+                upload_result = await self.app.api.uploads.upload_video(attachment)
                 if not upload_result:
                     logger.error("Video uploading failed")
                     raise UploadError("Video uploading failed")
@@ -97,9 +95,7 @@ class MessageService:
                 result.append(upload_result)
 
             elif isinstance(attachment, File):
-                upload_result = await self.app.api.uploads.upload_file(
-                    attachment
-                )
+                upload_result = await self.app.api.uploads.upload_file(attachment)
                 if not upload_result:
                     logger.error("File uploading failed")
                     raise UploadError("File uploading failed")
@@ -117,9 +113,7 @@ class MessageService:
         *,
         notify: bool = True,
     ) -> Message | None:
-        logger.info(
-            "sending message chat_id=%s text_len=%s", chat_id, len(text)
-        )
+        logger.info("sending message chat_id=%s text_len=%s", chat_id, len(text))
 
         clean_text, elements = Formatter.format_markdown(text)
 
@@ -137,9 +131,74 @@ class MessageService:
 
         response = await self.app.invoke(Opcode.MSG_SEND, frame.to_payload())
 
-        message = require_payload_model(response, Message).bind(self)
+        message = bind_api_model(
+            self.app,
+            require_payload_model(response, Message),
+        )
         logger.info("message sent chat_id=%s", chat_id)
         return message
+
+    async def get_messages(
+        self,
+        chat_id: int,
+        message_ids: list[int],
+    ) -> list[Message]:
+        frame = GetMessagesPayload(
+            chat_id=chat_id,
+            message_ids=message_ids,
+        )
+
+        response = await self.app.invoke(Opcode.MSG_GET, frame.to_payload())
+        messages = parse_payload_list(response, MessagePayloadKey.MESSAGES, Message)
+        for message in messages:
+            if message.chat_id is None:
+                message.chat_id = chat_id
+
+        return bind_api_models(self.app, messages)
+
+    async def get_message(
+        self,
+        chat_id: int,
+        message_id: int,
+    ) -> Message | None:
+        messages = await self.get_messages(chat_id, [message_id])
+        return messages[0] if messages else None
+
+    async def edit_message(
+        self,
+        chat_id: int,
+        message_id: int,
+        text: str,
+        attachment: SendAttachment | None = None,
+        attachments: SendAttachments = None,
+    ) -> Message:
+        if attachment is not None and attachments:
+            logger.warning("both attachment and attachments provided; using attachments")
+            attachment = None
+
+        edit_attachments = attachments
+        if attachment is not None:
+            edit_attachments = [attachment]
+
+        clean_text, elements = Formatter.format_markdown(text)
+        frame = EditMessagePayload(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=clean_text,
+            elements=elements,
+            attachments=await self._upload_attachments(edit_attachments),
+        )
+
+        response = await self.app.invoke(Opcode.MSG_EDIT, frame.to_payload())
+        message = require_payload_item_model(
+            response,
+            MessagePayloadKey.MESSAGE,
+            Message,
+        )
+        if message.chat_id is None:
+            message.chat_id = chat_id
+
+        return bind_api_model(self.app, message)
 
     async def fetch_history(
         self,
@@ -171,10 +230,11 @@ class MessageService:
             Opcode.CHAT_HISTORY,
             payload=frame.to_payload(),
         )
-        return (
-            parse_payload_list(response, MessagePayloadKey.MESSAGES, Message)
-            or None
+        messages = bind_api_models(
+            self.app,
+            parse_payload_list(response, MessagePayloadKey.MESSAGES, Message),
         )
+        return messages or None
 
     async def delete_message(
         self,
@@ -195,9 +255,7 @@ class MessageService:
         )
 
         await self.app.invoke(Opcode.MSG_DELETE, frame.to_payload())
-        logger.info(
-            "messages deleted chat_id=%s count=%s", chat_id, len(message_ids)
-        )
+        logger.info("messages deleted chat_id=%s count=%s", chat_id, len(message_ids))
         return True
 
     async def pin_message(
@@ -219,9 +277,7 @@ class MessageService:
         )
 
         await self.app.invoke(Opcode.CHAT_UPDATE, frame.to_payload())
-        logger.info(
-            "message pinned chat_id=%s message_id=%s", chat_id, message_id
-        )
+        logger.info("message pinned chat_id=%s message_id=%s", chat_id, message_id)
         return True
 
     async def get_video_by_id(
@@ -263,9 +319,7 @@ class MessageService:
             file_id=file_id,
         )
 
-        response = await self.app.invoke(
-            Opcode.FILE_DOWNLOAD, frame.to_payload()
-        )
+        response = await self.app.invoke(Opcode.FILE_DOWNLOAD, frame.to_payload())
         return parse_payload_model(response, FileRequest)
 
     async def add_reaction(
@@ -286,9 +340,7 @@ class MessageService:
             reaction=ReactionInfoPayload(id=reaction),
         )
 
-        response = await self.app.invoke(
-            Opcode.MSG_REACTION, frame.to_payload()
-        )
+        response = await self.app.invoke(Opcode.MSG_REACTION, frame.to_payload())
         reaction_info = payload_item(response, MessagePayloadKey.REACTION_INFO)
         if reaction_info:
             return ReactionInfo.model_validate(reaction_info)
@@ -345,7 +397,7 @@ class MessageService:
 
         return None
 
-    async def read_message(self, message_id: int, chat_id: int) -> ReadState:
+    async def read_message(self, message_id: int | str, chat_id: int) -> ReadState:
         logger.info(
             "marking message as read chat_id=%s message_id=%s",
             chat_id,
@@ -354,7 +406,7 @@ class MessageService:
         frame = ReadMessagesPayload(
             type=ReadAction.READ_MESSAGE,
             chat_id=chat_id,
-            message_id=str(message_id),
+            message_id=message_id,
             mark=int(time.time() * 1000),
         )
 
