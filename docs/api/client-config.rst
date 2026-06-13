@@ -8,4 +8,7 @@ Client Config
 .. autoclass:: ExtraConfig
    :members:
 
+.. autoclass:: RegistrationConfig
+   :members:
+
 .. autofunction:: configure_logging

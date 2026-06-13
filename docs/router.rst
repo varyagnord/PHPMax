@@ -175,6 +175,18 @@ Raw events
    async def raw(frame: InboundFrame, client: Client) -> None:
        print(frame.opcode, frame.payload)
 
+Другие события
+--------------
+
+Кроме новых и измененных сообщений, доступны специализированные декораторы:
+
+* ``on_message_delete()`` и ``on_message_read()``;
+* ``on_typing()`` и ``on_presence()``;
+* ``on_reaction_update()`` и ``on_chat_update()``.
+
+Все они поддерживают те же sync/async-фильтры и сигнатуру
+``handler(event, client)``.
+
 Частые ошибки
 -------------
 

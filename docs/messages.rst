@@ -30,7 +30,27 @@ Messages
 
    @client.on_message_delete()
    async def on_delete(event: MessageDeleteEvent, client: Client) -> None:
-       print("deleted in chat:", event.chat.id)
+       print("deleted in chat:", event.chat_id)
+
+Получать и редактировать сообщения
+----------------------------------
+
+.. code-block:: python
+
+   message = await client.get_message(
+       chat_id=123456,
+       message_id=987654,
+   )
+   messages = await client.get_messages(
+       chat_id=123456,
+       message_ids=[987654, 987655],
+   )
+
+   if message is not None:
+       await message.edit("Обновленный текст")
+
+Через клиент то же редактирование доступно как
+``client.edit_message(chat_id, message_id, text, ...)``.
 
 Отправлять сообщения
 --------------------
@@ -75,6 +95,38 @@ Messages
    для отметки прочтения TCP-клиент ожидает ``message_id`` как ``int``, а
    WebSocket-клиент - как ``str``. Если вызываете метод напрямую, выбирайте
    тип по клиенту.
+
+Служебные события
+-----------------
+
+В ``2.2.0`` доступны отдельные обработчики набора текста, присутствия,
+прочтения и реакций:
+
+.. code-block:: python
+
+   from pymax import (
+       Client,
+       MessageReadEvent,
+       PresenceEvent,
+       ReactionUpdateEvent,
+       TypingEvent,
+   )
+
+   @client.on_typing()
+   async def typing(event: TypingEvent, client: Client) -> None:
+       print(event.chat_id, event.user_id)
+
+   @client.on_presence()
+   async def presence(event: PresenceEvent, client: Client) -> None:
+       print(event.user_id, event.presence.status)
+
+   @client.on_message_read()
+   async def read(event: MessageReadEvent, client: Client) -> None:
+       print(event.chat_id, event.mark)
+
+   @client.on_reaction_update()
+   async def reactions(event: ReactionUpdateEvent, client: Client) -> None:
+       print(event.message_id, event.total_count)
 
 История сообщений
 -----------------
