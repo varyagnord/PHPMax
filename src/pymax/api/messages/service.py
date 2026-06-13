@@ -138,26 +138,31 @@ class MessageService:
         logger.info("message sent chat_id=%s", chat_id)
         return message
 
+    async def get_messages(
+        self,
+        chat_id: int,
+        message_ids: list[int],
+    ) -> list[Message]:
+        frame = GetMessagesPayload(
+            chat_id=chat_id,
+            message_ids=message_ids,
+        )
+
+        response = await self.app.invoke(Opcode.MSG_GET, frame.to_payload())
+        messages = parse_payload_list(response, MessagePayloadKey.MESSAGES, Message)
+        for message in messages:
+            if message.chat_id is None:
+                message.chat_id = chat_id
+
+        return bind_api_models(self.app, messages)
+
     async def get_message(
         self,
         chat_id: int,
         message_id: int,
     ) -> Message | None:
-        frame = GetMessagesPayload(
-            chat_id=chat_id,
-            message_ids=[message_id],
-        )
-
-        response = await self.app.invoke(Opcode.MSG_GET, frame.to_payload())
-        messages = parse_payload_list(response, MessagePayloadKey.MESSAGES, Message)
-        if not messages:
-            return None
-
-        message = messages[0]
-        if message.chat_id is None:
-            message.chat_id = chat_id
-
-        return bind_api_model(self.app, message)
+        messages = await self.get_messages(chat_id, [message_id])
+        return messages[0] if messages else None
 
     async def edit_message(
         self,

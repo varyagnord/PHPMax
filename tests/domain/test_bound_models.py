@@ -18,6 +18,10 @@ class MessageActions:
         self.calls.append(("get_message", args, kwargs))
         return "message"
 
+    async def get_messages(self, *args, **kwargs):
+        self.calls.append(("get_messages", args, kwargs))
+        return ["messages"]
+
     async def edit_message(self, *args, **kwargs):
         self.calls.append(("edit_message", args, kwargs))
         return "edited"
@@ -142,6 +146,7 @@ async def test_chat_bound_methods_delegate_by_chat_type() -> None:
     assert await group.answer("hello") == "sent"
     assert await group.history(backward=1) == ["history"]
     assert await group.get_message(10) == "message"
+    assert await group.get_messages([10, 11]) == ["messages"]
     await group.leave()
     await channel.leave()
     assert await group.invite([1, 2]) == "group"

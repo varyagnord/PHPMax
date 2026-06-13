@@ -62,6 +62,25 @@ class MessageMixin(IClientProtocol):
             message_id=message_id,
         )
 
+    async def get_messages(
+        self,
+        chat_id: int,
+        message_ids: list[int],
+    ) -> list[Message]:
+        """Возвращает сообщения по ID.
+
+        Args:
+            chat_id: ID чата.
+            message_ids: ID сообщений.
+
+        Returns:
+            Список найденных сообщений.
+        """
+        return await self._app.api.messages.get_messages(
+            chat_id=chat_id,
+            message_ids=message_ids,
+        )
+
     async def edit_message(
         self,
         chat_id: int,
