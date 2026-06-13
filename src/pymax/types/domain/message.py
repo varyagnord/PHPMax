@@ -92,7 +92,7 @@ class Message(CamelModel):
 
     Сообщения, полученные через клиент, обычно уже привязаны к сервису
     сообщений. После этого можно вызывать удобные методы объекта:
-    :meth:`reply`, :meth:`answer`, :meth:`pin`, :meth:`delete`,
+    :meth:`reply`, :meth:`answer`, :meth:`edit`, :meth:`pin`, :meth:`delete`,
     :meth:`read`, :meth:`react`, :meth:`unreact` и :meth:`get_reactions`.
 
     Используйте ``Message`` в обработчиках ``on_message`` и при работе с
@@ -259,6 +259,36 @@ class Message(CamelModel):
             chat_id=chat_id,
             message_id=self.id,
             notify_pin=notify_pin,
+        )
+
+    async def edit(
+        self,
+        text: str,
+        attachment: SendAttachment | None = None,
+        attachments: SendAttachments = None,
+    ) -> Message:
+        """Редактирует текст и вложения этого сообщения.
+
+        :param text: Новый текст сообщения с поддержкой markdown.
+        :type text: str
+        :param attachment: Одно новое вложение.
+        :type attachment: SendAttachment | None
+        :param attachments: Список новых вложений. Имеет приоритет над
+            ``attachment``.
+        :type attachments: SendAttachments
+        :returns: Отредактированное сообщение.
+        :rtype: Message
+        :raises RuntimeError: Если сообщение не привязано к сервису или не
+            содержит ``chat_id``.
+        """
+        actions, chat_id = self._bound()
+
+        return await actions.edit_message(
+            chat_id=chat_id,
+            message_id=self.id,
+            text=text,
+            attachment=attachment,
+            attachments=attachments,
         )
 
     async def delete(self, for_me: bool = False) -> bool:

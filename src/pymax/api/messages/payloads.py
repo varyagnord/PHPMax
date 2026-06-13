@@ -17,6 +17,16 @@ class GetMessagesPayload(CamelModel):
     message_ids: list[int]
 
 
+class EditMessagePayload(CamelModel):
+    chat_id: int
+    message_id: int
+    text: str
+    elements: list[Any]
+    attachments: list[AttachPhotoPayload | VideoAttachPayload | AttachFilePayload] = Field(
+        default_factory=list
+    )
+
+
 class ReplyLink(CamelModel):
     type: str = "REPLY"  # TODO: enum?
     message_id: int

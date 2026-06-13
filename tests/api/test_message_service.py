@@ -5,7 +5,7 @@ import pytest
 from pymax.api.messages.enums import ItemType, MessagePayloadKey
 from pymax.api.uploads.payloads import AttachPhotoPayload
 from pymax.exceptions import UploadError
-from pymax.files import File, Photo
+from pymax.files import File, Photo, Video
 from pymax.protocol import Opcode
 from tests.conftest import FakeApp, frame, message_payload
 
@@ -138,6 +138,97 @@ async def test_get_message_returns_bound_message_and_restores_chat_id() -> None:
         "chatId": 239067070,
         "messageIds": [116739188629507992],
     }
+
+
+@pytest.mark.asyncio
+async def test_edit_message_formats_text_and_parses_bound_message() -> None:
+    app = FakeApp(
+        [
+            frame(
+                {
+                    MessagePayloadKey.MESSAGE.value: {
+                        **message_payload(
+                            116739188629507992,
+                            None,
+                            "edited",
+                            status="EDITED",
+                        ),
+                        "sender": 255000689,
+                        "updateTime": 1781298658480,
+                        "cid": -1781298654603,
+                        "attaches": [],
+                    }
+                }
+            )
+        ]
+    )
+
+    message = await app.api.messages.edit_message(
+        239067070,
+        116739188629507992,
+        "edited **text**",
+    )
+
+    assert message.id == 116739188629507992
+    assert message.chat_id == 239067070
+    assert message.status == "EDITED"
+    assert message._actions is app.api.messages
+    assert app.calls[0].opcode == Opcode.MSG_EDIT
+    assert app.calls[0].payload == {
+        "chatId": 239067070,
+        "messageId": 116739188629507992,
+        "text": "edited text",
+        "elements": [
+            {
+                "type": "STRONG",
+                "from": 7,
+                "length": 4,
+            }
+        ],
+        "attachments": [],
+    }
+
+
+@pytest.mark.asyncio
+async def test_edit_message_uploads_single_and_multiple_attachments() -> None:
+    response_message = {
+        MessagePayloadKey.MESSAGE.value: message_payload(
+            116739188629507992,
+            None,
+            "edited",
+            status="EDITED",
+        )
+    }
+    app = FakeApp([frame(response_message), frame(response_message)])
+    photo = Photo(raw=b"image", name="image.jpg")
+    ignored_photo = Photo(raw=b"ignored", name="ignored.jpg")
+    file = File(raw=b"file", name="file.txt")
+    video = Video(raw=b"video", name="video.mp4")
+
+    await app.api.messages.edit_message(
+        239067070,
+        116739188629507992,
+        "photo",
+        attachment=photo,
+    )
+    await app.api.messages.edit_message(
+        239067070,
+        116739188629507992,
+        "files",
+        attachment=ignored_photo,
+        attachments=[file, video],
+    )
+
+    assert app.api.uploads.calls == [
+        ("photo", photo),
+        ("file", file),
+        ("video", video),
+    ]
+    assert app.calls[0].payload["attachments"] == [{"_type": "PHOTO", "photoToken": "photo-token"}]
+    assert app.calls[1].payload["attachments"] == [
+        {"_type": "FILE", "fileId": 30},
+        {"_type": "VIDEO", "videoId": 20, "token": "video-token"},
+    ]
 
 
 @pytest.mark.asyncio

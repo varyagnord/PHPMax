@@ -8,6 +8,7 @@ from pymax.api.response import (
     parse_payload_list,
     parse_payload_model,
     payload_item,
+    require_payload_item_model,
     require_payload_model,
 )
 from pymax.api.uploads.payloads import (
@@ -33,6 +34,7 @@ from .payloads import (
     AddReactionPayload,
     ChatHistoryPayload,
     DeleteMessagePayload,
+    EditMessagePayload,
     GetFilePayload,
     GetMessagesPayload,
     GetReactionsPayload,
@@ -152,6 +154,42 @@ class MessageService:
             return None
 
         message = messages[0]
+        if message.chat_id is None:
+            message.chat_id = chat_id
+
+        return bind_api_model(self.app, message)
+
+    async def edit_message(
+        self,
+        chat_id: int,
+        message_id: int,
+        text: str,
+        attachment: SendAttachment | None = None,
+        attachments: SendAttachments = None,
+    ) -> Message:
+        if attachment is not None and attachments:
+            logger.warning("both attachment and attachments provided; using attachments")
+            attachment = None
+
+        edit_attachments = attachments
+        if attachment is not None:
+            edit_attachments = [attachment]
+
+        clean_text, elements = Formatter.format_markdown(text)
+        frame = EditMessagePayload(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=clean_text,
+            elements=elements,
+            attachments=await self._upload_attachments(edit_attachments),
+        )
+
+        response = await self.app.invoke(Opcode.MSG_EDIT, frame.to_payload())
+        message = require_payload_item_model(
+            response,
+            MessagePayloadKey.MESSAGE,
+            Message,
+        )
         if message.chat_id is None:
             message.chat_id = chat_id
 
