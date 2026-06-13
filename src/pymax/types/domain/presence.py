@@ -7,9 +7,9 @@ class Presence(CamelModel):
     :ivar seen: Время последней активности в формате Unix time, если оно
         передано сервером.
     :vartype seen: int | None
-    :ivar status: Код статуса присутствия Max.
-    :vartype status: int
+    :ivar status: Код статуса присутствия Max, если он передан сервером.
+    :vartype status: int | None
     """
 
     seen: int | None = None
-    status: int
+    status: int | None = None

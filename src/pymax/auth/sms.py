@@ -85,11 +85,7 @@ class SmsAuthFlow(AuthFlow):
             )
         elif result.register_token:
             if not app.config.registration_config:
-                logger.error(
-                    "Registration token received, but registration config is missing "
-                    "(client.extra_config.registration_config)"
-                )
-                token = None
+                raise RuntimeError("RegistrationConfig is required to register a new account")
             else:
                 registration_config = app.config.registration_config
                 response = await app.api.auth.confirm_registration(

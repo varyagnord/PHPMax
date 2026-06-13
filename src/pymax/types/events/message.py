@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from logging import getLogger
 from typing import TYPE_CHECKING, Any
 
 from pydantic import PrivateAttr, model_validator
 
+from pymax.logging import get_logger
 from pymax.types.domain import Chat
 from pymax.types.domain.base import CamelModel
 from pymax.types.domain.message import Message
@@ -12,7 +12,7 @@ from pymax.types.domain.message import Message
 if TYPE_CHECKING:
     from pymax.api.messages import MessageService
 
-logger = getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class MessageDeleteEvent(CamelModel):
@@ -21,10 +21,14 @@ class MessageDeleteEvent(CamelModel):
     Handler ``on_message_delete`` получает этот объект, когда Max сообщает об
     удалении одного или нескольких сообщений в чате.
 
-    :ivar chat: Чат, в котором удалены сообщения.
-    :vartype chat: Chat
     :ivar message_ids: ID удаленных сообщений.
     :vartype message_ids: list[int]
+    :ivar chat_id: ID чата.
+    :vartype chat_id: int
+    :ivar chat: Чат, если Max прислал полный объект.
+    :vartype chat: Chat | None
+    :ivar message: Удаленное сообщение для WebSocket-события.
+    :vartype message: Message | None
     :ivar ttl: Признак удаления из-за TTL, если Max его прислал.
     :vartype ttl: bool
     """
@@ -49,20 +53,31 @@ class MessageDeleteEvent(CamelModel):
 
         if "chat" in data:  # case opcode == 142
             chat = data["chat"]
+            chat_id = chat.get("id") if isinstance(chat, dict) else getattr(chat, "id", None)
+            message_ids = data.get("messageIds", data.get("message_ids"))
+            if chat_id is None or message_ids is None:
+                return data
 
             return {
                 "chat": chat,
-                "ttl": data.get("ttl"),
-                "messageIds": data["messageIds"],
-                "chatId": chat["id"],
+                "ttl": data.get("ttl", False),
+                "messageIds": message_ids,
+                "chatId": chat_id,
             }
         if "message" in data:  # case opcode == 128
             message = data["message"]
+            message_id = (
+                message.get("id") if isinstance(message, dict) else getattr(message, "id", None)
+            )
+            chat_id = data.get("chatId", data.get("chat_id"))
+            if chat_id is None or message_id is None:
+                return data
+
             return {
-                "chatId": data["chatId"],
+                "chatId": chat_id,
                 "message": message,
-                "ttl": data["ttl"],
-                "messageIds": [message["id"]],
+                "ttl": data.get("ttl", False),
+                "messageIds": [message_id],
             }
 
         logger.warning("Illegal state during MessageDeleteEvent validation. Starting fallback")

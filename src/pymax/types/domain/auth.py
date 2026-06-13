@@ -73,7 +73,7 @@ class CheckCodeResponse(CamelModel):
     :vartype password_challenge: PasswordChallenge | None
     """
 
-    token_attrs: TokenAttrs = Field(default_factory=TokenAttrs)
+    token_attrs: TokenAttrs = Field(default_factory=lambda: TokenAttrs.model_validate({}))
     password_challenge: PasswordChallenge | None = None
 
     @property
@@ -106,7 +106,7 @@ class CheckPasswordResponse(CamelModel):
     :vartype error: str | None
     """
 
-    token_attrs: TokenAttrs = Field(default_factory=TokenAttrs)
+    token_attrs: TokenAttrs = Field(default_factory=lambda: TokenAttrs.model_validate({}))
     error: str | None = None
 
     @property
@@ -165,6 +165,18 @@ class CheckQrResponse(CamelModel):
 
 
 class ConfirmRegistrationResponse(CamelModel):
+    """Ответ Max после регистрации нового аккаунта.
+
+    :ivar user_token: Внутренний ID зарегистрированного пользователя.
+    :vartype user_token: int
+    :ivar profile: Профиль зарегистрированного аккаунта.
+    :vartype profile: Profile
+    :ivar token_type: Тип выданного токена.
+    :vartype token_type: AuthType
+    :ivar token: Токен входа для новой сессии.
+    :vartype token: str
+    """
+
     user_token: int
     profile: Profile
     token_type: AuthType

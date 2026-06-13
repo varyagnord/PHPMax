@@ -245,6 +245,38 @@ async def test_qr_auth_service_methods_send_expected_payloads() -> None:
 
 
 @pytest.mark.asyncio
+async def test_confirm_registration_sends_profile_and_parses_token() -> None:
+    app = FakeApp(
+        [
+            frame(
+                {
+                    "userToken": 42,
+                    "profile": profile_payload(42),
+                    "tokenType": "REGISTER",
+                    "token": "registered-token",
+                }
+            )
+        ]
+    )
+
+    result = await app.api.auth.confirm_registration(
+        first_name="Max",
+        last_name="User",
+        token="register-token",
+    )
+
+    assert result.token == "registered-token"
+    assert result.profile.contact.id == 42
+    assert app.calls[0].opcode == Opcode.AUTH_CONFIRM
+    assert app.calls[0].payload == {
+        "firstName": "Max",
+        "lastName": "User",
+        "token": "register-token",
+        "tokenType": "REGISTER",
+    }
+
+
+@pytest.mark.asyncio
 async def test_check_2fa_reads_profile_options() -> None:
     app = FakeApp()
 

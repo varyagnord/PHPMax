@@ -406,7 +406,7 @@ class MessageService:
         frame = ReadMessagesPayload(
             type=ReadAction.READ_MESSAGE,
             chat_id=chat_id,
-            message_id=str(message_id),
+            message_id=message_id,
             mark=int(time.time() * 1000),
         )
 

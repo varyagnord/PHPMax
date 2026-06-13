@@ -89,7 +89,6 @@ async def test_dispatcher_maps_chat_delete_and_internal_attach_events() -> None:
             {
                 "chat": chat_payload(5),
                 "messageIds": [1, 2],
-                "ttl": False,
             },
             opcode=Opcode.NOTIF_MSG_DELETE,
             cmd=Command.REQUEST,
@@ -138,7 +137,6 @@ async def test_dispatcher_maps_web_removed_message_to_delete_event() -> None:
                     "text": "deleted",
                     "attaches": [],
                 },
-                "ttl": False,
                 "unread": 0,
                 "mark": 1781292158321,
             },
@@ -285,6 +283,38 @@ async def test_dispatcher_maps_presence_event() -> None:
     )
 
     assert seen == [(17620943, 1, 1781354531)]
+
+
+@pytest.mark.asyncio
+async def test_dispatcher_maps_partial_presence_event_without_status() -> None:
+    app = FakeApp()
+    router: Router[str] = Router()
+    dispatcher: Dispatcher[str] = Dispatcher(app, router)
+    dispatcher.bind_client("client")
+    seen: list[tuple[int, int | None, int | None]] = []
+
+    @router.on_presence()
+    async def on_presence(event, _client):
+        seen.append(
+            (
+                event.user_id,
+                event.presence.status,
+                event.presence.seen,
+            )
+        )
+
+    await dispatcher.dispatch(
+        frame(
+            {
+                "presence": {"seen": 1781360047},
+                "userId": 17620943,
+            },
+            opcode=Opcode.NOTIF_PRESENCE,
+            cmd=Command.REQUEST,
+        )
+    )
+
+    assert seen == [(17620943, None, 1781360047)]
 
 
 @pytest.mark.asyncio

@@ -85,6 +85,16 @@ class DeviceConfig(BaseModel):
 
 
 class RegistrationConfig(BaseModel):
+    """Данные профиля для регистрации нового аккаунта по SMS.
+
+    Передайте объект через ``ExtraConfig.registration_config``. Он используется
+    только если после подтверждения SMS-кода Max вернул токен регистрации.
+
+    Args:
+        first_name: Имя нового пользователя.
+        last_name: Фамилия нового пользователя.
+    """
+
     first_name: str
     last_name: str | None = None
 
@@ -126,6 +136,8 @@ class ExtraConfig(BaseModel):
 
     Args:
         token: Готовый token для создания сессии без SMS/QR.
+        registration_config: Имя и фамилия для автоматического завершения
+            регистрации нового аккаунта по SMS.
         host: TCP host Max API.
         port: TCP port Max API.
         url: WebSocket URL для ``WebClient``.
