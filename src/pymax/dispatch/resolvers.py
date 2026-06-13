@@ -20,8 +20,16 @@ def resolve_message_delete(_: InboundFrame) -> EventType | None:
     return EventType.MESSAGE_DELETE
 
 
+def resolve_message_read(_: InboundFrame) -> EventType | None:
+    return EventType.MESSAGE_READ
+
+
 def resolve_typing(_: InboundFrame) -> EventType | None:
     return EventType.TYPING
+
+
+def resolve_presence(_: InboundFrame) -> EventType | None:
+    return EventType.PRESENCE
 
 
 def resolve_reaction_update(_: InboundFrame) -> EventType | None:

@@ -218,6 +218,76 @@ async def test_dispatcher_maps_reaction_update_event() -> None:
 
 
 @pytest.mark.asyncio
+async def test_dispatcher_maps_message_read_event() -> None:
+    app = FakeApp()
+    router: Router[str] = Router()
+    dispatcher: Dispatcher[str] = Dispatcher(app, router)
+    dispatcher.bind_client("client")
+    seen: list[tuple[bool, int, int, int]] = []
+
+    @router.on_message_read()
+    async def on_message_read(event, _client):
+        seen.append(
+            (
+                event.set_as_unread,
+                event.chat_id,
+                event.user_id,
+                event.mark,
+            )
+        )
+
+    await dispatcher.dispatch(
+        frame(
+            {
+                "setAsUnread": False,
+                "chatId": 239067070,
+                "userId": 17620943,
+                "mark": 1781354533949,
+            },
+            opcode=Opcode.NOTIF_MARK,
+            cmd=Command.REQUEST,
+        )
+    )
+
+    assert seen == [(False, 239067070, 17620943, 1781354533949)]
+
+
+@pytest.mark.asyncio
+async def test_dispatcher_maps_presence_event() -> None:
+    app = FakeApp()
+    router: Router[str] = Router()
+    dispatcher: Dispatcher[str] = Dispatcher(app, router)
+    dispatcher.bind_client("client")
+    seen: list[tuple[int, int, int | None]] = []
+
+    @router.on_presence()
+    async def on_presence(event, _client):
+        seen.append(
+            (
+                event.user_id,
+                event.presence.status,
+                event.presence.seen,
+            )
+        )
+
+    await dispatcher.dispatch(
+        frame(
+            {
+                "presence": {
+                    "seen": 1781354531,
+                    "status": 1,
+                },
+                "userId": 17620943,
+            },
+            opcode=Opcode.NOTIF_PRESENCE,
+            cmd=Command.REQUEST,
+        )
+    )
+
+    assert seen == [(17620943, 1, 1781354531)]
+
+
+@pytest.mark.asyncio
 async def test_dispatcher_requires_bound_client_for_callbacks() -> None:
     dispatcher: Dispatcher[str] = Dispatcher(FakeApp())
 

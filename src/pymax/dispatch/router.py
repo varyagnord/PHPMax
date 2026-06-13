@@ -14,7 +14,12 @@ if TYPE_CHECKING:
     from pymax.protocol import InboundFrame
     from pymax.types import Chat
     from pymax.types.domain import Message
-    from pymax.types.events import ReactionUpdateEvent, TypingEvent
+    from pymax.types.events import (
+        MessageReadEvent,
+        PresenceEvent,
+        ReactionUpdateEvent,
+        TypingEvent,
+    )
 
 
 _EventT = TypeVar("_EventT")
@@ -187,12 +192,26 @@ class Router(Generic[ClientT]):
         """
         return self.on(EventType.MESSAGE_DELETE, *filters)
 
+    def on_message_read(
+        self,
+        *filters: FilterCallback[MessageReadEvent],
+    ) -> HandlerDecorator[MessageReadEvent, ClientT]:
+        """Регистрирует обработчик изменения отметки прочтения."""
+        return self.on(EventType.MESSAGE_READ, *filters)
+
     def on_typing(
         self,
         *filters: FilterCallback[TypingEvent],
     ) -> HandlerDecorator[TypingEvent, ClientT]:
         """Регистрирует обработчик набора текста."""
         return self.on(EventType.TYPING, *filters)
+
+    def on_presence(
+        self,
+        *filters: FilterCallback[PresenceEvent],
+    ) -> HandlerDecorator[PresenceEvent, ClientT]:
+        """Регистрирует обработчик изменения присутствия пользователя."""
+        return self.on(EventType.PRESENCE, *filters)
 
     def on_reaction_update(
         self,
