@@ -104,6 +104,43 @@ async def test_fetch_history_builds_payload_and_parses_messages(
 
 
 @pytest.mark.asyncio
+async def test_get_message_returns_bound_message_and_restores_chat_id() -> None:
+    app = FakeApp(
+        [
+            frame(
+                {
+                    MessagePayloadKey.MESSAGES.value: [
+                        message_payload(
+                            116739188629507992,
+                            None,
+                            "message",
+                        )
+                    ]
+                }
+            ),
+            frame({MessagePayloadKey.MESSAGES.value: []}),
+        ]
+    )
+
+    message = await app.api.messages.get_message(
+        239067070,
+        116739188629507992,
+    )
+    missing = await app.api.messages.get_message(239067070, 1)
+
+    assert message is not None
+    assert message.id == 116739188629507992
+    assert message.chat_id == 239067070
+    assert message._actions is app.api.messages
+    assert missing is None
+    assert app.calls[0].opcode == Opcode.MSG_GET
+    assert app.calls[0].payload == {
+        "chatId": 239067070,
+        "messageIds": [116739188629507992],
+    }
+
+
+@pytest.mark.asyncio
 async def test_delete_pin_and_read_message_send_expected_opcodes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

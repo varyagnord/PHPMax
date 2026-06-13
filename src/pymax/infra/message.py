@@ -43,6 +43,25 @@ class MessageMixin(IClientProtocol):
             notify=notify,
         )
 
+    async def get_message(
+        self,
+        chat_id: int,
+        message_id: int,
+    ) -> Message | None:
+        """Возвращает сообщение по ID.
+
+        Args:
+            chat_id: ID чата.
+            message_id: ID сообщения.
+
+        Returns:
+            Сообщение или ``None``, если сервер его не вернул.
+        """
+        return await self._app.api.messages.get_message(
+            chat_id=chat_id,
+            message_id=message_id,
+        )
+
     async def fetch_history(
         self,
         chat_id: int,

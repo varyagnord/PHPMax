@@ -19,9 +19,9 @@ class Chat(CamelModel):
 
     Объекты чатов, полученные через клиент, обычно уже привязаны к сервисам
     сообщений и чатов. После этого можно вызывать удобные методы объекта:
-    :meth:`answer`, :meth:`history`, :meth:`leave`, :meth:`invite`,
-    :meth:`remove_users`, :meth:`pin_message`, :meth:`update_settings` и
-    :meth:`rework_invite_link`.
+    :meth:`answer`, :meth:`history`, :meth:`get_message`, :meth:`leave`,
+    :meth:`invite`, :meth:`remove_users`, :meth:`pin_message`,
+    :meth:`update_settings` и :meth:`rework_invite_link`.
 
     Используйте ``Chat`` для работы с конкретным диалогом, группой или каналом.
     ``client.chats`` содержит чаты из login/sync, а недостающие чаты можно
@@ -244,6 +244,22 @@ class Chat(CamelModel):
             get_chat=get_chat,
             get_messages=get_messages,
             interactive=interactive,
+        )
+
+    async def get_message(self, message_id: int) -> Message | None:
+        """Возвращает сообщение этого чата по ID.
+
+        :param message_id: ID сообщения.
+        :type message_id: int
+        :returns: Сообщение или ``None``, если сервер его не вернул.
+        :rtype: Message | None
+        :raises RuntimeError: Если чат не привязан к клиенту.
+        """
+        actions, _ = self._bound()
+
+        return await actions.get_message(
+            chat_id=self.id,
+            message_id=message_id,
         )
 
     async def leave(self) -> None:

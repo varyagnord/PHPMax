@@ -14,6 +14,10 @@ class MessageActions:
         self.calls.append(("send_message", args, kwargs))
         return "sent"
 
+    async def get_message(self, *args, **kwargs):
+        self.calls.append(("get_message", args, kwargs))
+        return "message"
+
     async def pin_message(self, *args, **kwargs):
         self.calls.append(("pin_message", args, kwargs))
         return True
@@ -122,6 +126,7 @@ async def test_chat_bound_methods_delegate_by_chat_type() -> None:
 
     assert await group.answer("hello") == "sent"
     assert await group.history(backward=1) == ["history"]
+    assert await group.get_message(10) == "message"
     await group.leave()
     await channel.leave()
     assert await group.invite([1, 2]) == "group"

@@ -12,6 +12,11 @@ from pymax.api.uploads.payloads import (
 from .enums import ItemType, ReadAction
 
 
+class GetMessagesPayload(CamelModel):
+    chat_id: int
+    message_ids: list[int]
+
+
 class ReplyLink(CamelModel):
     type: str = "REPLY"  # TODO: enum?
     message_id: int
