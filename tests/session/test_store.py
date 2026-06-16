@@ -46,3 +46,23 @@ async def test_session_store_saves_loads_updates_and_deletes_session(
 
     await store.close()
     assert store.conn is None
+
+
+@pytest.mark.asyncio
+async def test_session_store_deletes_all_sessions(tmp_path) -> None:
+    store = SessionStore(str(tmp_path), "test-session.db")
+    first = SessionInfo(token="token-1", device_id="device-1", phone="+79990000001")
+    second = SessionInfo(token="token-2", device_id="device-2", phone="")
+
+    await store.save_session(first)
+    await store.save_session(second)
+
+    await store.delete_all_sessions()
+
+    assert await store.load_session() is None
+    assert await store.load_session_by_device_id("device-1") is None
+    assert await store.load_session_by_device_id("device-2") is None
+    assert await store.load_session_by_phone("+79990000001") is None
+    assert await store.load_session_by_phone("") is None
+
+    await store.close()

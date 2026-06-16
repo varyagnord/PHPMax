@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
 from pymax.types import MessageDeleteEvent
@@ -10,7 +11,8 @@ from pymax.types import MessageDeleteEvent
 from .enums import EventType
 
 if TYPE_CHECKING:
-    from pymax.client import Client
+    from pymax import Client
+    from pymax.base import BaseClient
     from pymax.protocol import InboundFrame
     from pymax.types import Chat
     from pymax.types.domain import Message
@@ -22,8 +24,13 @@ if TYPE_CHECKING:
     )
 
 
+class ErrorScope(str, Enum):
+    GLOBAL = "global"
+    LOCAL = "local"
+
+
 _EventT = TypeVar("_EventT")
-ClientT = TypeVar("ClientT")
+ClientT = TypeVar("ClientT", bound="BaseClient")
 
 HandlerCallback: TypeAlias = Callable[
     [_EventT, ClientT],
@@ -48,9 +55,38 @@ StartDecorator: TypeAlias = Callable[
 
 
 @dataclass(slots=True)
+class ErrorContext(Generic[ClientT]):
+    client: ClientT
+    event_type: EventType
+    event: Any
+    handler: HandlerEntry[Any, ClientT] | StartCallback | None
+    router: Router[ClientT]
+
+
+ErrorCallback: TypeAlias = Callable[
+    [Exception, ErrorContext[ClientT]],
+    Awaitable[Any] | Any,
+]
+
+ErrorDecorator: TypeAlias = Callable[
+    [ErrorCallback[ClientT]],
+    ErrorCallback[ClientT],
+]
+
+
+@dataclass(slots=True)
 class HandlerEntry(Generic[_EventT, ClientT]):
     callback: HandlerCallback[_EventT, ClientT]
     filters: tuple[FilterCallback[_EventT], ...] = ()
+
+
+@dataclass(slots=True)
+class ErrorEntry(Generic[ClientT]):
+    callback: ErrorCallback[ClientT]
+    scope: ErrorScope = ErrorScope.GLOBAL
+
+
+ErrorSource: TypeAlias = HandlerEntry[Any, ClientT] | StartCallback[ClientT]
 
 
 class Router(Generic[ClientT]):
@@ -86,6 +122,17 @@ class Router(Generic[ClientT]):
 
         self.children: list[Router[ClientT]] = []
         self.on_start_handler: StartCallback[ClientT] | None = None
+        self.error_handlers: list[ErrorEntry[ClientT]] = []
+
+    def on_error(
+        self,
+        scope: ErrorScope = ErrorScope.GLOBAL,
+    ) -> ErrorDecorator[ClientT]:
+        def decorator(callback: ErrorCallback[ClientT]) -> ErrorCallback[ClientT]:
+            self.error_handlers.append(ErrorEntry(callback=callback, scope=scope))
+            return callback
+
+        return decorator
 
     def on(
         self,

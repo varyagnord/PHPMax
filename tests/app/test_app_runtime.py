@@ -8,6 +8,8 @@ import pytest
 
 from pymax.app import App
 from pymax.auth.models import AuthResult
+from pymax.base import BaseClient
+from pymax.dispatch import EventType, Router
 from pymax.exceptions import ApiError
 from pymax.protocol import Command, InboundFrame, Opcode
 from pymax.session.models import SessionInfo
@@ -18,6 +20,8 @@ class RuntimeStore:
     def __init__(self, loaded: SessionInfo | None = None) -> None:
         self.loaded = loaded
         self.saved: list[SessionInfo] = []
+        self.deleted: list[str] = []
+        self.deleted_all = False
         self.closed = False
 
     async def load_session(self) -> SessionInfo | None:
@@ -30,6 +34,15 @@ class RuntimeStore:
     async def update_token(self, old_token: str, new_token: str) -> None:
         if self.loaded and self.loaded.token == old_token:
             self.loaded = self.loaded.model_copy(update={"token": new_token})
+
+    async def delete_session(self, token: str) -> None:
+        self.deleted.append(token)
+        if self.loaded and self.loaded.token == token:
+            self.loaded = None
+
+    async def delete_all_sessions(self) -> None:
+        self.deleted_all = True
+        self.loaded = None
 
     async def close(self) -> None:
         self.closed = True
@@ -81,6 +94,23 @@ class StaticAuthFlow:
         return AuthResult(token="auth-token")
 
 
+class RuntimeClient(BaseClient["RuntimeClient"]):
+    def __init__(self, app: App["RuntimeClient"], router: Router["RuntimeClient"]) -> None:
+        self._app = app
+        self._connection = app.connection
+        self._router = router
+        self._config = app.config
+        self._auth_flow = app.auth_flow
+        self.extra_config = SimpleNamespace(
+            reconnect=False,
+            reconnect_delay=0,
+            token=app.config.token,
+        )
+
+    def _build_connection(self) -> RuntimeConnection:
+        return self._connection
+
+
 @pytest.mark.asyncio
 async def test_app_start_with_config_token_handshakes_logs_in_and_saves_session(
     monkeypatch: pytest.MonkeyPatch,
@@ -121,6 +151,149 @@ async def test_app_start_with_config_token_handshakes_logs_in_and_saves_session(
     await app.close()
     assert connection.closed is True
     assert store.closed is True
+
+
+@pytest.mark.asyncio
+async def test_app_start_emits_login_errors_to_root_router(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def idle_ping_loop(self):
+        await asyncio.Event().wait()
+
+    monkeypatch.setattr(App, "_ping_loop", idle_ping_loop)
+    store = RuntimeStore()
+    config = make_config().model_copy(update={"token": "config-token", "store": store})
+    connection = RuntimeConnection(
+        [
+            frame({}),
+            InboundFrame(
+                opcode=Opcode.LOGIN,
+                cmd=Command.ERROR,
+                seq=1,
+                payload={
+                    "error": "login_failed",
+                    "title": "Login failed",
+                    "message": "Login failed",
+                    "localizedMessage": "Login failed",
+                },
+            ),
+        ]
+    )
+    root_router: Router[object] = Router()
+    app: App[object] = App(connection, config, StaticAuthFlow(), root_router)
+    client = object()
+    app.dispatcher.bind_client(client)
+    seen = []
+
+    @root_router.on_error()
+    async def on_error(exc, ctx):
+        seen.append((exc, ctx))
+
+    await app.start()
+
+    assert len(seen) == 1
+    exc, ctx = seen[0]
+    assert isinstance(exc, ApiError)
+    assert ctx.client is client
+    assert ctx.event_type is EventType.ON_START
+    assert ctx.event is None
+    assert ctx.router is root_router
+    assert ctx.handler is None
+    assert app.started is False
+    assert connection.closed is True
+    assert store.closed is True
+
+    await app.close()
+
+
+@pytest.mark.asyncio
+async def test_client_start_does_not_emit_on_start_after_handled_login_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def idle_ping_loop(self):
+        await asyncio.Event().wait()
+
+    monkeypatch.setattr(App, "_ping_loop", idle_ping_loop)
+    store = RuntimeStore()
+    config = make_config().model_copy(update={"token": "config-token", "store": store})
+    connection = RuntimeConnection(
+        [
+            frame({}),
+            InboundFrame(
+                opcode=Opcode.LOGIN,
+                cmd=Command.ERROR,
+                seq=1,
+                payload={
+                    "error": "login_failed",
+                    "title": "Login failed",
+                    "message": "Login failed",
+                    "localizedMessage": "Login failed",
+                },
+            ),
+        ]
+    )
+    root_router: Router[RuntimeClient] = Router()
+    app: App[RuntimeClient] = App(connection, config, StaticAuthFlow(), root_router)
+    client = RuntimeClient(app, root_router)
+    app.dispatcher.bind_client(client)
+    errors: list[Exception] = []
+    started = False
+
+    @root_router.on_error()
+    async def on_error(exc, ctx):
+        errors.append(exc)
+
+    @root_router.on_start()
+    async def on_start(_client):
+        nonlocal started
+        started = True
+
+    await client.start()
+
+    assert len(errors) == 1
+    assert isinstance(errors[0], ApiError)
+    assert started is False
+    assert app.started is False
+    assert connection.closed is True
+    assert store.closed is True
+
+
+@pytest.mark.asyncio
+async def test_client_relogin_deletes_loaded_session_only() -> None:
+    session = SessionInfo(token="token", device_id="dev", phone="")
+    store = RuntimeStore(session)
+    config = make_config().model_copy(update={"store": store, "token": "config-token"})
+    connection = RuntimeConnection([])
+    root_router: Router[RuntimeClient] = Router()
+    app: App[RuntimeClient] = App(connection, config, StaticAuthFlow(), root_router)
+    app.session = session
+    client = RuntimeClient(app, root_router)
+    app.dispatcher.bind_client(client)
+
+    await client.relogin(start=False)
+
+    assert store.deleted == ["token"]
+    assert store.deleted_all is False
+    assert store.loaded is None
+    assert client.extra_config.token is None
+    assert client._config.token is None
+
+
+@pytest.mark.asyncio
+async def test_client_relogin_requires_loaded_session() -> None:
+    store = RuntimeStore()
+    config = make_config().model_copy(update={"store": store})
+    connection = RuntimeConnection([])
+    root_router: Router[RuntimeClient] = Router()
+    app: App[RuntimeClient] = App(connection, config, StaticAuthFlow(), root_router)
+    client = RuntimeClient(app, root_router)
+    app.dispatcher.bind_client(client)
+
+    with pytest.raises(RuntimeError, match="Cannot relogin before session is loaded"):
+        await client.relogin(start=False)
+
+    assert store.deleted == []
+    assert store.deleted_all is False
 
 
 @pytest.mark.asyncio
