@@ -124,6 +124,43 @@ async def test_leave_group_removes_cached_chat() -> None:
 
 
 @pytest.mark.asyncio
+async def test_chat_mixin_delete_chat_uses_last_event_time_and_removes_cached_chat() -> None:
+    from pymax.infra.chat import ChatMixin
+    from pymax.types.domain import Chat
+
+    class Client(ChatMixin):
+        def __init__(self, app: FakeApp) -> None:
+            self._app = app
+
+    app = FakeApp([frame({})])
+    chat = Chat.model_validate(
+        {
+            **chat_payload(10),
+            "lastEventTime": 456,
+        }
+    ).bind(app.api.messages, app.api.chats)
+    app.chats = [
+        chat,
+        Chat.model_validate(chat_payload(11)).bind(app.api.messages, app.api.chats),
+    ]
+    client = Client(app)
+
+    await client.delete_chat(
+        chat.id,
+        last_event_time=chat.last_event_time,
+        for_all=False,
+    )
+
+    assert [chat.id for chat in app.chats or []] == [11]
+    assert app.calls[0].opcode == Opcode.CHAT_DELETE
+    assert app.calls[0].payload == {
+        "chatId": 10,
+        "lastEventTime": 456,
+        "forAll": False,
+    }
+
+
+@pytest.mark.asyncio
 async def test_group_mutation_methods_update_cache_and_parse_optional_chats() -> None:
     app = FakeApp(
         [
@@ -267,6 +304,41 @@ async def test_user_service_get_user_add_contact_sessions_and_chat_id() -> None:
         Opcode.CONTACT_UPDATE,
         Opcode.SESSIONS_INFO,
     ]
+
+
+@pytest.mark.asyncio
+async def test_user_mixin_import_contacts_delegates_to_user_service() -> None:
+    from pymax.infra.user import UserMixin
+    from pymax.types import ContactInfo
+
+    class Client(UserMixin):
+        def __init__(self, app: FakeApp) -> None:
+            self._app = app
+
+    app = FakeApp([frame({"contacts": [user_payload(7)]})])
+    client = Client(app)
+
+    contacts = await client.import_contacts(
+        [
+            ContactInfo(
+                phone="+79990000007",
+                first_name="Ada",
+                last_name=None,
+            )
+        ]
+    )
+
+    assert [contact.id for contact in contacts] == [7]
+    assert app.users[7] is contacts[0]
+    assert contacts[0]._actions is app.api.users
+    assert app.calls[0].opcode == Opcode.SYNC
+    assert app.calls[0].payload == {
+        "contactList": {
+            "+79990000007": {
+                "firstName": "Ada",
+            }
+        }
+    }
 
 
 @pytest.mark.asyncio
