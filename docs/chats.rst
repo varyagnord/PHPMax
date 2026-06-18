@@ -142,6 +142,22 @@ login/sync, а также методы для загрузки, создания
 ``leave()`` зависит от типа чата: для группы вызывает выход из группы, для
 канала - выход из канала. Из личного диалога выйти нельзя.
 
+Удалить чат
+-----------
+
+.. code-block:: python
+
+   await client.delete_chat(chat_id=123456)
+
+Через объект ``Chat`` PyMax использует ``chat.last_event_time``:
+
+.. code-block:: python
+
+   chat = await client.get_chat(123456)
+   await chat.delete(for_all=True)
+
+После успешного удаления чат убирается из локального кеша ``client.chats``.
+
 Invite-ссылки
 -------------
 

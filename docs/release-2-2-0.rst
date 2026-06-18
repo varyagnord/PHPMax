@@ -52,8 +52,6 @@ PyMax 2.2.0
   ``event.chat.id``: ``event.chat`` может отсутствовать в ``WebClient``.
 * При прямом вызове ``read_message()`` передавайте ``int`` в ``Client`` и
   ``str`` в ``WebClient``.
-* В ``edit_message()`` и ``Message.edit()`` используйте ``attachments=[...]``.
-  Параметр ``attachment`` удален.
 * Для регистрации нового номера задайте
   ``ExtraConfig(registration_config=RegistrationConfig(...))``. Для уже
   существующих аккаунтов настройка не нужна.

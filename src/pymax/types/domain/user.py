@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class ContactInfo(CamelModel):  # TODO: move to another file
+    """Контакт телефонной книги для ``import_contacts``."""
+
     phone: str
     first_name: str
     last_name: str | None = None

@@ -37,6 +37,9 @@ Types
 ``User`` и ``Profile``
    Пользователи и профиль текущего аккаунта.
 
+``ContactInfo``
+   Контакт телефонной книги для ``import_contacts()``.
+
 ``PhotoAttachment``, ``VideoAttachment``, ``FileAttachment`` и другие
    Входящие вложения в ``message.attaches``.
 
@@ -95,6 +98,7 @@ API reference
    element
    name
    user
+   contact_info
    profile
    session
    folder

@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 
 
 class ErrorScope(str, Enum):
+    """Область действия error-handler-а."""
+
     GLOBAL = "global"
     LOCAL = "local"
 
@@ -56,6 +58,8 @@ StartDecorator: TypeAlias = Callable[
 
 @dataclass(slots=True)
 class ErrorContext(Generic[ClientT]):
+    """Контекст ошибки, передаваемый в ``on_error`` callback."""
+
     client: ClientT
     event_type: EventType
     event: Any
@@ -139,6 +143,12 @@ class Router(Generic[ClientT]):
         self,
         scope: ErrorScope = ErrorScope.GLOBAL,
     ) -> ErrorDecorator[ClientT]:
+        """Регистрирует обработчик ошибок для текущего router-а.
+
+        ``GLOBAL``-handler видит ошибки всего дерева подключенных router-ов.
+        ``LOCAL``-handler видит только ошибки своего router-а.
+        """
+
         def decorator(callback: ErrorCallback[ClientT]) -> ErrorCallback[ClientT]:
             self.error_handlers.append(ErrorEntry(callback=callback, scope=scope))
             return callback

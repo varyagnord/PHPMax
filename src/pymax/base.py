@@ -250,6 +250,7 @@ class BaseClient(BaseMixin, ABC, Generic[ClientT]):
         return self._router.on_raw(*filters)
 
     def on_error(self, scope: ErrorScope = ErrorScope.GLOBAL) -> ErrorDecorator[ClientT]:
+        """Регистрирует обработчик ошибок dispatch-а и запуска клиента."""
         return self._router.on_error(scope)
 
     def on_disconnect(self) -> DisconnectDecorator:
@@ -261,6 +262,12 @@ class BaseClient(BaseMixin, ABC, Generic[ClientT]):
         self._router.include_router(router)
 
     async def relogin(self: ClientT, drop_config_token: bool = True, start: bool = True) -> None:  # noqa: PYI019
+        """Удаляет текущую локальную сессию и запускает авторизацию заново.
+
+        Args:
+            drop_config_token: Сбросить token, переданный через ``ExtraConfig``.
+            start: Сразу запустить клиента после сброса runtime.
+        """
         store = self._app.store
         session = self._app.session
 

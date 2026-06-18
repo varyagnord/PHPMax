@@ -71,6 +71,25 @@ PyMax хранит контакты, которые Max вернул на login/
        await user.add_contact()
        await user.remove_contact()
 
+Импортировать контакты из телефонной книги:
+
+.. code-block:: python
+
+   from pymax.types import ContactInfo
+
+   contacts = await client.import_contacts(
+       [
+           ContactInfo(
+               phone="+79990000000",
+               first_name="Ada",
+               last_name="Lovelace",
+           )
+       ]
+   )
+
+``last_name`` хранится в ``ContactInfo``, но текущий payload импорта Max
+использует только телефон и имя.
+
 Личный чат
 ----------
 
