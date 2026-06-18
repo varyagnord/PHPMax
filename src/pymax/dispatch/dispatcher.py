@@ -187,15 +187,11 @@ class Dispatcher(Generic[ClientT]):
     async def emit_start(self, client: ClientT) -> None:
         tasks: list[asyncio.Task[Any]] = []
 
-        for router in self.iter_routers():
-            handler = router.on_start_handler
-
-            if handler is None:
-                continue
-
-            task = asyncio.create_task(self._run_start_handler(router, handler, client))
-            task.add_done_callback(_log_task_error)
-            tasks.append(task)
+        for router in self.iter_routers():  # TODO: create iter_on_start_handlers
+            for handler in router.on_start_handlers:
+                task = asyncio.create_task(self._run_start_handler(router, handler, client))
+                task.add_done_callback(_log_task_error)
+                tasks.append(task)
 
         self.startup_tasks.extend(tasks)
 

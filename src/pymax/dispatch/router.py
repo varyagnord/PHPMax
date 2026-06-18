@@ -131,7 +131,7 @@ class Router(Generic[ClientT]):
         ] = defaultdict(list)
 
         self.children: list[Router[ClientT]] = []
-        self.on_start_handler: StartCallback[ClientT] | None = None
+        self.on_start_handlers: list[StartCallback[ClientT]] = []
         self.error_handlers: list[ErrorEntry[ClientT]] = []
         self.disconnect_handlers: list[DisconnectCallback] = []
 
@@ -216,7 +216,7 @@ class Router(Generic[ClientT]):
         """
 
         def decorator(handler: StartCallback) -> StartCallback:
-            self.on_start_handler = handler
+            self.on_start_handlers.append(handler)
             return handler
 
         return decorator
