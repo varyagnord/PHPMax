@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from uuid import uuid4
 
 from pymax.dispatch import ErrorScope, Router
-from pymax.dispatch.router import ErrorDecorator
+from pymax.dispatch.router import DisconnectDecorator, ErrorDecorator
 from pymax.infra import BaseMixin
 from pymax.logging import get_logger
 
@@ -143,14 +143,21 @@ class BaseClient(BaseMixin, ABC, Generic[ClientT]):
                 EOFError,
                 OSError,
                 TimeoutError,
-            ):
+            ) as e:
                 await self.close()
+                await self._app.dispatcher.emit_disconnect(
+                    e,
+                    self.extra_config.reconnect,
+                    self.extra_config.reconnect_delay,
+                )
+
                 if not self.extra_config.reconnect:
                     raise
 
-                logger.exception(
+                logger.debug(
                     "client connection failed; reconnecting in %s seconds",
                     self.extra_config.reconnect_delay,
+                    exc_info=True,
                 )
                 await asyncio.sleep(self.extra_config.reconnect_delay)
                 self._reset_runtime()
@@ -244,6 +251,10 @@ class BaseClient(BaseMixin, ABC, Generic[ClientT]):
 
     def on_error(self, scope: ErrorScope = ErrorScope.GLOBAL) -> ErrorDecorator[ClientT]:
         return self._router.on_error(scope)
+
+    def on_disconnect(self) -> DisconnectDecorator:
+        """Регистрирует обработчик сетевого отключения перед reconnect."""
+        return self._router.on_disconnect()
 
     def include_router(self, router: Router[ClientT]) -> None:
         """Подключает дочерний router к root router клиента."""

@@ -19,6 +19,8 @@ from pymax.types.events import (
 from .enums import EventType
 from .mapping import EventMapper, EventResolver
 from .router import (
+    DisconnectCallback,
+    DisconnectDecorator,
     ErrorContext,
     ErrorDecorator,
     ErrorEntry,
@@ -87,6 +89,10 @@ class Dispatcher(Generic[ClientT]):
 
     def on_error(self, scope: ErrorScope = ErrorScope.GLOBAL) -> ErrorDecorator[ClientT]:
         return self.root_router.on_error(scope)
+
+    def on_disconnect(self) -> DisconnectDecorator:
+        """Регистрирует обработчик сетевого отключения на root router."""
+        return self.root_router.on_disconnect()
 
     def on_message(
         self,
@@ -162,6 +168,11 @@ class Dispatcher(Generic[ClientT]):
         for router in self.iter_routers():
             for entry in router.error_handlers:
                 yield router, entry
+
+    def iter_disconnect_handlers(self) -> Generator[DisconnectCallback, Any, None]:
+        """Итерирует обработчики disconnect по root router и его детям."""
+        for router in self.iter_routers():
+            yield from router.disconnect_handlers
 
     def iter_error_handlers(
         self,
@@ -306,7 +317,7 @@ class Dispatcher(Generic[ClientT]):
         handled = False
 
         if client is None:
-            raise RuntimeError("client is not bind to dispatcher")
+            raise RuntimeError("client is not bound to dispatcher")
 
         ctx = ErrorContext[ClientT](
             client=client,
@@ -327,6 +338,29 @@ class Dispatcher(Generic[ClientT]):
                 return False
 
         return handled
+
+    async def emit_disconnect(
+        self,
+        exception: Exception,
+        reconnect: bool,
+        delay: float,
+    ) -> None:
+        """Вызывает обработчики потери соединения.
+
+        Ошибки внутри disconnect-handler-ов логируются и не прерывают reconnect.
+        """
+
+        if self.client is None:
+            raise RuntimeError("client is not bound to dispatcher")
+
+        for handler in self.iter_disconnect_handlers():
+            try:
+                result = handler(exception, reconnect, delay)
+
+                if inspect.isawaitable(result):
+                    await result
+            except Exception as e:
+                logger.exception("Error during disconnect handling: %s", e)
 
 
 def _callback_name(callback: Any) -> str:

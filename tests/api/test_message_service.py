@@ -228,7 +228,6 @@ async def test_edit_message_uploads_single_and_multiple_attachments() -> None:
     }
     app = FakeApp([frame(response_message), frame(response_message)])
     photo = Photo(raw=b"image", name="image.jpg")
-    ignored_photo = Photo(raw=b"ignored", name="ignored.jpg")
     file = File(raw=b"file", name="file.txt")
     video = Video(raw=b"video", name="video.mp4")
 
@@ -236,13 +235,12 @@ async def test_edit_message_uploads_single_and_multiple_attachments() -> None:
         239067070,
         116739188629507992,
         "photo",
-        attachment=photo,
+        attachments=[photo],
     )
     await app.api.messages.edit_message(
         239067070,
         116739188629507992,
         "files",
-        attachment=ignored_photo,
         attachments=[file, video],
     )
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Annotated, Any, TypeAlias
 
 from pydantic import Field, PrivateAttr, model_validator
@@ -42,7 +43,7 @@ KnownAttachment: TypeAlias = Annotated[
 ]
 Attachment: TypeAlias = KnownAttachment | UnknownAttachment
 SendAttachment: TypeAlias = Photo | File | Video
-SendAttachments: TypeAlias = list[SendAttachment] | None
+SendAttachments: TypeAlias = Sequence[SendAttachment] | None
 
 
 class ReactionCounter(CamelModel):
@@ -264,17 +265,13 @@ class Message(CamelModel):
     async def edit(
         self,
         text: str,
-        attachment: SendAttachment | None = None,
         attachments: SendAttachments = None,
     ) -> Message:
         """Редактирует текст и вложения этого сообщения.
 
         :param text: Новый текст сообщения с поддержкой markdown.
         :type text: str
-        :param attachment: Одно новое вложение.
-        :type attachment: SendAttachment | None
-        :param attachments: Список новых вложений. Имеет приоритет над
-            ``attachment``.
+        :param attachments: Новые файлы, фотографии или видео для сообщения.
         :type attachments: SendAttachments
         :returns: Отредактированное сообщение.
         :rtype: Message
@@ -287,7 +284,6 @@ class Message(CamelModel):
             chat_id=chat_id,
             message_id=self.id,
             text=text,
-            attachment=attachment,
             attachments=attachments,
         )
 

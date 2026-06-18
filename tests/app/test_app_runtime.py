@@ -9,7 +9,7 @@ import pytest
 from pymax.app import App
 from pymax.auth.models import AuthResult
 from pymax.base import BaseClient
-from pymax.dispatch import EventType, Router
+from pymax.dispatch import Dispatcher, EventType, Router
 from pymax.exceptions import ApiError
 from pymax.protocol import Command, InboundFrame, Opcode
 from pymax.session.models import SessionInfo
@@ -256,6 +256,73 @@ async def test_client_start_does_not_emit_on_start_after_handled_login_error(
     assert app.started is False
     assert connection.closed is True
     assert store.closed is True
+
+
+@pytest.mark.asyncio
+async def test_client_start_emits_disconnect_before_reraising_without_reconnect(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def idle_ping_loop(self):
+        await asyncio.Event().wait()
+
+    async def fail_wait_closed() -> None:
+        raise ConnectionError("Connection lost")
+
+    monkeypatch.setattr(App, "_ping_loop", idle_ping_loop)
+    store = RuntimeStore()
+    config = make_config().model_copy(update={"token": "config-token", "store": store})
+    connection = RuntimeConnection(
+        [
+            frame({}),
+            frame(
+                {
+                    "profile": profile_payload(77),
+                    "token": "login-token",
+                    "contacts": [profile_payload(77)["contact"]],
+                    "chats": [],
+                    "messages": {},
+                }
+            ),
+        ]
+    )
+    connection.wait_closed = fail_wait_closed
+    root_router: Router[RuntimeClient] = Router()
+    app: App[RuntimeClient] = App(connection, config, StaticAuthFlow(), root_router)
+    client = RuntimeClient(app, root_router)
+    app.dispatcher.bind_client(client)
+    seen: list[tuple[str, bool, float]] = []
+
+    @root_router.on_disconnect()
+    async def on_disconnect(exc, reconnect, delay):
+        seen.append((str(exc), reconnect, delay))
+
+    with pytest.raises(ConnectionError, match="Connection lost"):
+        await client.start()
+
+    assert seen == [("Connection lost", False, 0)]
+    assert connection.closed is True
+    assert store.closed is True
+
+
+@pytest.mark.asyncio
+async def test_emit_disconnect_logs_handler_errors_without_raising() -> None:
+    app = SimpleNamespace()
+    router: Router[object] = Router()
+    dispatcher: Dispatcher[object] = Dispatcher(app, router)
+    dispatcher.bind_client(object())
+    seen: list[str] = []
+
+    @router.on_disconnect()
+    async def broken(_exc, _reconnect, _delay):
+        raise RuntimeError("handler failed")
+
+    @router.on_disconnect()
+    async def next_handler(exc, reconnect, delay):
+        seen.append(f"{exc}:{reconnect}:{delay}")
+
+    await dispatcher.emit_disconnect(ConnectionError("lost"), True, 1.5)
+
+    assert seen == ["lost:True:1.5"]
 
 
 @pytest.mark.asyncio

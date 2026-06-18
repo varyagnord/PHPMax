@@ -109,7 +109,6 @@ async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> Non
     assert (
         await message.edit(
             "edited",
-            attachment="photo",
             attachments=["file"],
         )
         == "edited"
@@ -124,7 +123,6 @@ async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> Non
     assert actions.calls[0][2]["reply_to"] == 10
     assert actions.calls[1][2]["reply_to"] == 9
     assert actions.calls[2][2]["message_id"] == 10
-    assert actions.calls[2][2]["attachment"] == "photo"
     assert actions.calls[2][2]["attachments"] == ["file"]
     assert actions.calls[4][2]["message_ids"] == [10]
     assert actions.calls[6][2]["message_id"] == "10"

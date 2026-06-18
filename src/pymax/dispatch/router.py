@@ -73,6 +73,16 @@ ErrorDecorator: TypeAlias = Callable[
     ErrorCallback[ClientT],
 ]
 
+DisconnectCallback: TypeAlias = Callable[
+    [Exception, bool, float],
+    Awaitable[Any] | Any,
+]
+
+DisconnectDecorator: TypeAlias = Callable[
+    [DisconnectCallback],
+    DisconnectCallback,
+]
+
 
 @dataclass(slots=True)
 class HandlerEntry(Generic[_EventT, ClientT]):
@@ -123,6 +133,7 @@ class Router(Generic[ClientT]):
         self.children: list[Router[ClientT]] = []
         self.on_start_handler: StartCallback[ClientT] | None = None
         self.error_handlers: list[ErrorEntry[ClientT]] = []
+        self.disconnect_handlers: list[DisconnectCallback] = []
 
     def on_error(
         self,
@@ -130,6 +141,19 @@ class Router(Generic[ClientT]):
     ) -> ErrorDecorator[ClientT]:
         def decorator(callback: ErrorCallback[ClientT]) -> ErrorCallback[ClientT]:
             self.error_handlers.append(ErrorEntry(callback=callback, scope=scope))
+            return callback
+
+        return decorator
+
+    def on_disconnect(self) -> DisconnectDecorator:
+        """Регистрирует обработчик потери соединения.
+
+        Callback вызывается как ``handler(exception, reconnect, delay)``:
+        исходная ошибка, будет ли reconnect и задержка перед ним.
+        """
+
+        def decorator(callback: DisconnectCallback) -> DisconnectCallback:
+            self.disconnect_handlers.append(callback)
             return callback
 
         return decorator

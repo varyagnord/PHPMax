@@ -1,9 +1,18 @@
 from .dispatcher import Dispatcher
 from .enums import EventType
-from .router import ClientRouter, ErrorContext, ErrorScope, Router
+from .router import (
+    ClientRouter,
+    DisconnectCallback,
+    DisconnectDecorator,
+    ErrorContext,
+    ErrorScope,
+    Router,
+)
 
 __all__ = (
     "ClientRouter",
+    "DisconnectCallback",
+    "DisconnectDecorator",
     "Dispatcher",
     "ErrorContext",
     "ErrorScope",
