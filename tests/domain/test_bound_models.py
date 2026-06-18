@@ -84,6 +84,9 @@ class ChatActions:
         self.calls.append(("rework_invite_link", args, kwargs))
         return "new-link"
 
+    async def delete_chat(self, *args, **kwargs):
+        self.calls.append(("delete_chat", args, kwargs))
+
 
 class UserActions:
     async def add_contact(self, user_id):
@@ -106,7 +109,6 @@ async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> Non
     assert (
         await message.edit(
             "edited",
-            attachment="photo",
             attachments=["file"],
         )
         == "edited"
@@ -121,7 +123,6 @@ async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> Non
     assert actions.calls[0][2]["reply_to"] == 10
     assert actions.calls[1][2]["reply_to"] == 9
     assert actions.calls[2][2]["message_id"] == 10
-    assert actions.calls[2][2]["attachment"] == "photo"
     assert actions.calls[2][2]["attachments"] == ["file"]
     assert actions.calls[4][2]["message_ids"] == [10]
     assert actions.calls[6][2]["message_id"] == "10"
@@ -140,7 +141,12 @@ async def test_unbound_message_raises_helpful_runtime_errors() -> None:
 async def test_chat_bound_methods_delegate_by_chat_type() -> None:
     messages = MessageActions()
     chats = ChatActions()
-    group = Chat.model_validate(chat_payload(100, "CHAT")).bind(messages, chats)
+    group = Chat.model_validate(
+        {
+            **chat_payload(100, "CHAT"),
+            "lastEventTime": 555,
+        }
+    ).bind(messages, chats)
     channel = Chat.model_validate(chat_payload(200, "CHANNEL")).bind(messages, chats)
 
     assert await group.answer("hello") == "sent"
@@ -155,10 +161,19 @@ async def test_chat_bound_methods_delegate_by_chat_type() -> None:
     assert await group.pin_message(10) is True
     await group.update_settings(all_can_pin_message=True)
     assert await group.rework_invite_link() == "new-link"
+    await group.delete(for_all=False)
 
     assert messages.calls[0][2]["chat_id"] == 100
     assert chats.calls[0][0] == "leave_group"
     assert chats.calls[1][0] == "leave_channel"
+    assert chats.calls[-1] == (
+        "delete_chat",
+        (100,),
+        {
+            "last_event_time": 555,
+            "for_all": False,
+        },
+    )
     assert group.is_group is True
     assert channel.is_channel is True
 

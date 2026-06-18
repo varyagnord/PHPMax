@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, TypeAlias
 
 from pymax.api.binding import bind_api_model, bind_api_models
@@ -52,7 +53,7 @@ if TYPE_CHECKING:
     from pymax.app import App
 
 SendAttachment: TypeAlias = Photo | File | Video
-SendAttachments: TypeAlias = list[SendAttachment] | None
+SendAttachments: TypeAlias = Sequence[SendAttachment] | None
 
 logger = get_logger(__name__)
 
@@ -169,24 +170,15 @@ class MessageService:
         chat_id: int,
         message_id: int,
         text: str,
-        attachment: SendAttachment | None = None,
         attachments: SendAttachments = None,
     ) -> Message:
-        if attachment is not None and attachments:
-            logger.warning("both attachment and attachments provided; using attachments")
-            attachment = None
-
-        edit_attachments = attachments
-        if attachment is not None:
-            edit_attachments = [attachment]
-
         clean_text, elements = Formatter.format_markdown(text)
         frame = EditMessagePayload(
             chat_id=chat_id,
             message_id=message_id,
             text=clean_text,
             elements=elements,
-            attachments=await self._upload_attachments(edit_attachments),
+            attachments=await self._upload_attachments(attachments),
         )
 
         response = await self.app.invoke(Opcode.MSG_EDIT, frame.to_payload())

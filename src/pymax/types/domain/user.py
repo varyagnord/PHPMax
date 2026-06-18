@@ -11,6 +11,14 @@ if TYPE_CHECKING:
     from pymax.api.users.service import UserService
 
 
+class ContactInfo(CamelModel):  # TODO: move to another file
+    """Контакт телефонной книги для ``import_contacts``."""
+
+    phone: str
+    first_name: str
+    last_name: str | None = None
+
+
 class User(CamelModel):
     """Контакт или пользователь Max.
 

@@ -1,5 +1,5 @@
 from pymax.api.messages.enums import ItemType
-from pymax.api.messages.service import SendAttachment, SendAttachments
+from pymax.api.messages.service import SendAttachments
 from pymax.types import (
     FileRequest,
     Message,
@@ -86,7 +86,6 @@ class MessageMixin(IClientProtocol):
         chat_id: int,
         message_id: int,
         text: str,
-        attachment: SendAttachment | None = None,
         attachments: SendAttachments = None,
     ) -> Message:
         """Редактирует текст и вложения сообщения.
@@ -95,9 +94,7 @@ class MessageMixin(IClientProtocol):
             chat_id: ID чата.
             message_id: ID сообщения.
             text: Новый текст сообщения с поддержкой markdown.
-            attachment: Одно новое вложение.
-            attachments: Список новых вложений. Имеет приоритет над
-                ``attachment``.
+            attachments: Новые файлы, фотографии или видео для сообщения.
 
         Returns:
             Отредактированное сообщение.
@@ -106,7 +103,6 @@ class MessageMixin(IClientProtocol):
             chat_id=chat_id,
             message_id=message_id,
             text=text,
-            attachment=attachment,
             attachments=attachments,
         )
 
