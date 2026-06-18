@@ -372,7 +372,9 @@ class ChatService:
     ) -> None:
         frame = DeleteChatPayload(
             chat_id=chat_id,
-            last_event_time=last_event_time or int(time.time() * 1000),
+            last_event_time=(
+                last_event_time if last_event_time is not None else int(time.time() * 1000)
+            ),
             for_all=for_all,
         )
 

@@ -148,6 +148,7 @@ class Router(Generic[ClientT]):
         ``GLOBAL``-handler видит ошибки всего дерева подключенных router-ов.
         ``LOCAL``-handler видит только ошибки своего router-а.
         """
+        scope = ErrorScope(scope)
 
         def decorator(callback: ErrorCallback[ClientT]) -> ErrorCallback[ClientT]:
             self.error_handlers.append(ErrorEntry(callback=callback, scope=scope))

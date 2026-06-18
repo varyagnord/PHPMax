@@ -18,8 +18,7 @@ PyMax 2.3.0
 * ``delete_chat()`` на клиенте и ``Chat.delete()`` на bound-объекте чата.
 * ``import_contacts()`` и ``ContactInfo`` для импорта контактов из телефонной
   книги.
-* ``SessionStore.delete_all_sessions()`` и соответствующий метод в
-  ``StoreProtocol``.
+* ``SessionStore.delete_all_sessions()`` для очистки встроенного SQLite-store.
 
 Изменилось
 ----------
