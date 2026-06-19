@@ -36,6 +36,9 @@ from .payloads import (
     ChatHistoryPayload,
     DeleteMessagePayload,
     EditMessagePayload,
+    ForwardLink,
+    ForwardMessagePayload,
+    ForwardMessagePayloadMessage,
     GetFilePayload,
     GetMessagesPayload,
     GetReactionsPayload,
@@ -137,6 +140,42 @@ class MessageService:
             require_payload_model(response, Message),
         )
         logger.info("message sent chat_id=%s", chat_id)
+        return message
+
+    async def forward_message(
+        self,
+        chat_id: int,
+        message_id: int | str,
+        source_chat_id: int | None = None,
+        *,
+        notify: bool = True,
+    ) -> Message | None:
+        source_chat_id = chat_id if source_chat_id is None else source_chat_id
+        logger.info(
+            "forwarding message source_chat_id=%s chat_id=%s message_id=%s",
+            source_chat_id,
+            chat_id,
+            message_id,
+        )
+
+        frame = ForwardMessagePayload(
+            chat_id=chat_id,
+            message=ForwardMessagePayloadMessage(
+                cid=-self._next_cid(),
+                link=ForwardLink(
+                    message_id=str(message_id),
+                    chat_id=source_chat_id,
+                ),
+            ),
+            notify=notify,
+        )
+
+        response = await self.app.invoke(Opcode.MSG_SEND, frame.to_payload())
+        message = bind_api_model(
+            self.app,
+            require_payload_model(response, Message),
+        )
+        logger.info("message forwarded source_chat_id=%s chat_id=%s", source_chat_id, chat_id)
         return message
 
     async def get_messages(
