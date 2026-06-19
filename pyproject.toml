@@ -1,6 +1,6 @@
 [project]
 name = "maxapi-python"
-version = "2.3.0"
+version = "2.3.1"
 description = "Python wrapper для API мессенджера Max"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,6 +31,7 @@ dependencies = [
   "python-socks[asyncio]>=2.8.1",
   "qrcode>=8.2",
   "websockets>=16.0",
+  "zstandard>=0.25.0",
 ]
 
 [project.urls]

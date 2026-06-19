@@ -57,6 +57,48 @@ async def test_send_message_raises_when_attachment_upload_fails() -> None:
 
 
 @pytest.mark.asyncio
+async def test_forward_message_builds_payload_and_binds_result(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("pymax.api.messages.service.time.time", lambda: 1000.0)
+    app = FakeApp([frame(message_payload(55, 200, "forwarded"))])
+
+    result = await app.api.messages.forward_message(
+        chat_id=200,
+        message_id=116742887450236083,
+        source_chat_id=100,
+        notify=False,
+    )
+
+    assert result is not None
+    assert result.id == 55
+    assert result._actions is app.api.messages
+    assert app.calls[0].opcode == Opcode.MSG_SEND
+    assert app.calls[0].payload == {
+        "chatId": 200,
+        "message": {
+            "cid": -1000001,
+            "link": {
+                "type": "FORWARD",
+                "messageId": "116742887450236083",
+                "chatId": 100,
+            },
+            "attaches": [],
+        },
+        "notify": False,
+    }
+
+
+@pytest.mark.asyncio
+async def test_forward_message_defaults_source_to_target_chat() -> None:
+    app = FakeApp([frame(message_payload(55, 200, "forwarded"))])
+
+    await app.api.messages.forward_message(chat_id=200, message_id="55")
+
+    assert app.calls[0].payload["message"]["link"]["chatId"] == 200
+
+
+@pytest.mark.asyncio
 async def test_upload_attachments_handles_file_video_and_empty_lists() -> None:
     app = FakeApp()
     assert await app.api.messages._upload_attachments(None) == []

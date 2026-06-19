@@ -14,6 +14,10 @@ class MessageActions:
         self.calls.append(("send_message", args, kwargs))
         return "sent"
 
+    async def forward_message(self, *args, **kwargs):
+        self.calls.append(("forward_message", args, kwargs))
+        return "forwarded"
+
     async def get_message(self, *args, **kwargs):
         self.calls.append(("get_message", args, kwargs))
         return "message"
@@ -106,6 +110,7 @@ async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> Non
 
     assert await message.reply("reply") == "sent"
     assert await message.answer("answer", reply_to=9) == "sent"
+    assert await message.forward(200, notify=False) == "forwarded"
     assert (
         await message.edit(
             "edited",
@@ -122,10 +127,16 @@ async def test_message_bound_methods_delegate_with_chat_and_message_ids() -> Non
 
     assert actions.calls[0][2]["reply_to"] == 10
     assert actions.calls[1][2]["reply_to"] == 9
-    assert actions.calls[2][2]["message_id"] == 10
-    assert actions.calls[2][2]["attachments"] == ["file"]
-    assert actions.calls[4][2]["message_ids"] == [10]
-    assert actions.calls[6][2]["message_id"] == "10"
+    assert actions.calls[2][2] == {
+        "chat_id": 200,
+        "message_id": 10,
+        "source_chat_id": 100,
+        "notify": False,
+    }
+    assert actions.calls[3][2]["message_id"] == 10
+    assert actions.calls[3][2]["attachments"] == ["file"]
+    assert actions.calls[5][2]["message_ids"] == [10]
+    assert actions.calls[7][2]["message_id"] == "10"
 
 
 @pytest.mark.asyncio

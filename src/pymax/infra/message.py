@@ -62,6 +62,33 @@ class MessageMixin(IClientProtocol):
             message_id=message_id,
         )
 
+    async def forward_message(
+        self,
+        chat_id: int,
+        message_id: int | str,
+        source_chat_id: int | None = None,
+        *,
+        notify: bool = True,
+    ) -> Message | None:
+        """Пересылает существующее сообщение в чат.
+
+        Args:
+            chat_id: ID целевого чата.
+            message_id: ID пересылаемого сообщения.
+            source_chat_id: ID исходного чата. Если не указан, используется
+                целевой чат.
+            notify: Отправить ли получателям push-уведомление.
+
+        Returns:
+            Пересланное сообщение или ``None``, если сервер не вернул его.
+        """
+        return await self._app.api.messages.forward_message(
+            chat_id=chat_id,
+            message_id=message_id,
+            source_chat_id=source_chat_id,
+            notify=notify,
+        )
+
     async def get_messages(
         self,
         chat_id: int,

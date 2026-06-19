@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import msgpack
 import pytest
+import zstandard
 
 from pymax.api.messages.enums import ItemType
 from pymax.protocol import Command, InboundFrame, Opcode, OutboundFrame
-from pymax.protocol.tcp.compression import Lz4BlockCompression
+from pymax.protocol.tcp.compression import Lz4BlockCompression, ZstdCompression
 from pymax.protocol.tcp.framing import TcpPacketFramer
 from pymax.protocol.tcp.payload import MsgpackPayloadCodec, TcpPayloadDecoder
 from pymax.protocol.tcp.protocol import TcpProtocol
@@ -126,6 +127,49 @@ def test_msgpack_codec_uses_first_dict_when_stream_has_extra_data() -> None:
     )
 
     assert codec.decode(encoded) == {"ok": True}
+
+
+def test_tcp_payload_decoder_decompresses_lz4_for_compression_factor_four() -> None:
+    # This is a raw LZ4 block produced by the official-compatible compressor.
+    # Its first byte is 0xF4, which MsgPack reads as -12 when decompression is
+    # incorrectly skipped for cof=4.
+    compressed = bytes.fromhex(
+        "f40a84a6707265666978a27878a464617461b0664a73436c4b437508008f"
+        "a47461696cd92a79010016dfa6726570656174d9684142434404004c5044"
+        "41424344"
+    )
+    decoder = TcpPayloadDecoder(
+        serializer=MsgpackPayloadCodec(),
+        compression=Lz4BlockCompression(),
+    )
+
+    decoded = decoder.decode(compressed, flags=4)
+
+    assert decoded == {
+        "prefix": "xx",
+        "data": "fJsClKCufJsClKCu",
+        "tail": "y" * 42,
+        "repeat": "ABCD" * 26,
+    }
+
+
+def test_tcp_payload_decoder_decompresses_zstd() -> None:
+    expected = {"error": "FAIL_LOGIN_TOKEN", "message": "Token expired"}
+    compressed = zstandard.ZstdCompressor().compress(msgpack.packb(expected, use_bin_type=True))
+    decoder = TcpPayloadDecoder(
+        serializer=MsgpackPayloadCodec(),
+        compression=Lz4BlockCompression(),
+        zstd_compression=ZstdCompression(),
+    )
+
+    assert decoder.decode(compressed, flags=0xFF) == expected
+
+
+def test_zstd_decompression_rejects_oversized_output() -> None:
+    compressed = zstandard.ZstdCompressor().compress(b"x" * 128)
+
+    with pytest.raises(ValueError, match="output too large"):
+        ZstdCompression().decompress(compressed, max_output=64)
 
 
 def test_lz4_decompresses_literals_and_rejects_invalid_blocks() -> None:

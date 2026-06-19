@@ -70,6 +70,18 @@ Messages
    async def on_message(message: Message, client: Client) -> None:
        await message.answer("Ответ в тот же чат")
        await message.reply("Ответ реплаем")
+       await message.forward(chat_id=654321)
+
+Переслать сообщение напрямую через клиент можно с указанием исходного и
+целевого чатов:
+
+.. code-block:: python
+
+   await client.forward_message(
+       chat_id=654321,
+       message_id=987654,
+       source_chat_id=123456,
+   )
 
 Ответ, реакции, удаление и прочтение
 ----------------------------------------
