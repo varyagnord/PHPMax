@@ -49,11 +49,11 @@ class User(CamelModel):
     :ivar description: Описание профиля.
     :vartype description: str | None
     :ivar gender: Пол пользователя.
-    :vartype gender: str | None
+    :vartype gender: str | int | None
     :ivar link: Ссылка на профиль.
     :vartype link: str | None
     :ivar web_app: Данные связанного web-приложения, если есть.
-    :vartype web_app: dict[str, Any] | None
+    :vartype web_app: dict[str, Any] | str | None
     :ivar menu_button: Данные кнопки меню профиля, если есть.
     :vartype menu_button: dict[str, Any] | None
     """
@@ -71,9 +71,11 @@ class User(CamelModel):
     phone: int | None = None
     status: str | None = None
     description: str | None = None
-    gender: str | None = None
+    # Bots may send ``gender`` as a numeric code and ``web_app`` as a URL
+    # string instead of an object; accept these so profile parsing won't fail.
+    gender: str | int | None = None
     link: str | None = None
-    web_app: dict[str, Any] | None = None
+    web_app: dict[str, Any] | str | None = None
     menu_button: dict[str, Any] | None = None
 
     _actions: UserService | None = PrivateAttr(default=None)
