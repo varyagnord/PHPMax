@@ -1,4 +1,4 @@
-name: Publish
+name: Release ZIP
 
 on:
   release:
@@ -13,52 +13,47 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  package:
-    name: Build package
+  release-zip:
+    name: Build PHPMax release ZIP
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.1.0
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          enable-cache: true
+          php-version: "7.4"
+          extensions: json, openssl, zip, pdo_sqlite
+          coverage: none
+          tools: composer:v2
 
-      - name: Build package distributions
-        run: uv build
+      - name: Install just
+        uses: extractions/setup-just@v3
 
-      - name: Validate package distributions
-        run: uv run twine check dist/*
+      - name: Run PHPMax pre-publish gate
+        run: just pre-publish-check
 
-      - name: Upload package distributions
+      - name: Build release ZIP
+        shell: bash
+        run: |
+          just release-zip
+          archive="dist/phpmax-${GITHUB_REF_NAME//\//-}.zip"
+          cp dist/phpmax-dev.zip "$archive"
+          echo "archive=$archive" >> "$GITHUB_ENV"
+
+      - name: Upload release ZIP artifact
         uses: actions/upload-artifact@v4
         with:
-          name: package-distributions
-          path: dist/
+          name: phpmax-release-zip
+          path: ${{ env.archive }}
 
-  publish:
-    name: Publish to PyPI
-    runs-on: ubuntu-latest
-    needs: [package]
-
-    environment:
-      name: pypi
-
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Download package distributions
-        uses: actions/download-artifact@v4
+      - name: Attach ZIP to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
         with:
-          name: package-distributions
-          path: dist/
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.1.0
-
-      - name: Publish package to PyPI
-        run: uv publish
+          files: ${{ env.archive }}

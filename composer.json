@@ -1,0 +1,41 @@
+{
+  "name": "varyagnord/phpmax",
+  "description": "PHP 7.4+ SDK port of PyMax for the unofficial Max internal API.",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=7.4",
+    "ext-json": "*",
+    "ext-openssl": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.6",
+    "phpstan/phpstan": "^1.12"
+  },
+  "suggest": {
+    "ext-msgpack": "Use native MessagePack encoding/decoding when available.",
+    "ext-zstd": "Decode Zstd-compressed TCP payloads when available.",
+    "ext-curl": "Stream file/video uploads without buffering large request bodies into strings.",
+    "ext-pdo_sqlite": "Use the optional SQLite session store for durable multi-session persistence."
+  },
+  "autoload": {
+    "psr-4": {
+      "PHPMax\\": "src/PHPMax/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "PHPMax\\Tests\\": "tests-php/"
+    }
+  },
+  "scripts": {
+    "test": "php tools/run-php-tests.php",
+    "phpstan": "phpstan analyse src/PHPMax tests-php"
+  },
+  "config": {
+    "platform": {
+      "php": "7.4.33"
+    },
+    "sort-packages": true
+  }
+}

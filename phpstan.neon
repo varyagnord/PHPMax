@@ -1,0 +1,6 @@
+parameters:
+  level: 5
+  paths:
+    - src/PHPMax
+    - tests-php
+  phpVersion: 70400

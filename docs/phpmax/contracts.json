@@ -1,0 +1,3678 @@
+{
+    "generated_from": {
+        "pymax_version": "2.3.1",
+        "pymax_commit": "8c40b71e57db1e6d6c95fa345000c2a07f8ed161",
+        "reference_paths": [
+            "src/pymax/protocol/enums.py",
+            "src/pymax/dispatch/enums.py",
+            "src/pymax/dispatch/mapping.py",
+            "src/pymax/api/*/enums.py",
+            "src/pymax/types/domain/enums.py",
+            "src/pymax/types/domain/attachments/enums.py",
+            "src/pymax/api/*/payloads.py",
+            "src/pymax/api/*/service.py",
+            "src/pymax/infra/*.py",
+            "src/pymax/types/domain/*.py",
+            "src/pymax/types/domain/attachments/**/*.py",
+            "src/pymax/types/events/*.py"
+        ]
+    },
+    "commands": {
+        "ERROR": 3,
+        "EVENT": 2,
+        "REQUEST": 0,
+        "RESPONSE": 1
+    },
+    "opcodes": {
+        "ASSETS_ADD": 29,
+        "ASSETS_GET": 26,
+        "ASSETS_GET_BY_IDS": 28,
+        "ASSETS_LIST_MODIFY": 261,
+        "ASSETS_MOVE": 260,
+        "ASSETS_REMOVE": 259,
+        "ASSETS_UPDATE": 27,
+        "AUDIO_PLAY": 301,
+        "AUTH": 18,
+        "AUTH_2FA_DETAILS": 104,
+        "AUTH_CHECK_EMAIL": 110,
+        "AUTH_CHECK_PASSWORD": 113,
+        "AUTH_CONFIRM": 23,
+        "AUTH_CREATE_TRACK": 112,
+        "AUTH_LOGIN_CHECK_PASSWORD": 115,
+        "AUTH_LOGIN_PROFILE_DELETE": 116,
+        "AUTH_LOGIN_RESTORE_PASSWORD": 101,
+        "AUTH_QR_APPROVE": 290,
+        "AUTH_REQUEST": 17,
+        "AUTH_SET_2FA": 111,
+        "AUTH_VALIDATE_HINT": 108,
+        "AUTH_VALIDATE_PASSWORD": 107,
+        "AUTH_VERIFY_EMAIL": 109,
+        "BANNERS_GET": 302,
+        "BOT_INFO": 145,
+        "CALLS_TOKEN": 158,
+        "CHATS_LIST": 53,
+        "CHAT_BOT_COMMANDS": 144,
+        "CHAT_CHECK_LINK": 56,
+        "CHAT_CLEAR": 54,
+        "CHAT_COMPLAIN": 117,
+        "CHAT_CREATE": 63,
+        "CHAT_DELETE": 52,
+        "CHAT_HIDE": 196,
+        "CHAT_HISTORY": 49,
+        "CHAT_INFO": 48,
+        "CHAT_JOIN": 57,
+        "CHAT_LEAVE": 58,
+        "CHAT_LIVESTREAM_INFO": 62,
+        "CHAT_MARK": 50,
+        "CHAT_MEDIA": 51,
+        "CHAT_MEMBERS": 59,
+        "CHAT_MEMBERS_UPDATE": 77,
+        "CHAT_PERSONAL_CONFIG": 61,
+        "CHAT_PIN_SET_VISIBILITY": 86,
+        "CHAT_REACTIONS_SETTINGS_SET": 257,
+        "CHAT_SEARCH": 68,
+        "CHAT_SEARCH_COMMON_PARTICIPANTS": 198,
+        "CHAT_SUBSCRIBE": 75,
+        "CHAT_SUGGEST": 300,
+        "CHAT_UPDATE": 55,
+        "COMPLAIN": 161,
+        "COMPLAIN_REASONS_GET": 162,
+        "CONFIG": 22,
+        "CONTACT_ADD": 33,
+        "CONTACT_INFO": 32,
+        "CONTACT_INFO_BY_PHONE": 46,
+        "CONTACT_LIST": 36,
+        "CONTACT_MUTUAL": 38,
+        "CONTACT_PHOTOS": 39,
+        "CONTACT_PRESENCE": 35,
+        "CONTACT_SEARCH": 37,
+        "CONTACT_SORT": 40,
+        "CONTACT_UPDATE": 34,
+        "CONTACT_VERIFY": 42,
+        "DEBUG": 2,
+        "DRAFT_DISCARD": 177,
+        "DRAFT_SAVE": 176,
+        "EXTERNAL_CALLBACK": 105,
+        "FILE_DOWNLOAD": 88,
+        "FILE_UPLOAD": 87,
+        "FOLDERS_DELETE": 276,
+        "FOLDERS_GET": 272,
+        "FOLDERS_GET_BY_ID": 273,
+        "FOLDERS_REORDER": 275,
+        "FOLDERS_UPDATE": 274,
+        "GET_INBOUND_CALLS": 103,
+        "GET_LAST_MENTIONS": 127,
+        "GET_POLL_UPDATES": 306,
+        "GET_QR": 288,
+        "GET_QR_STATUS": 289,
+        "LINK_INFO": 89,
+        "LOCATION_REQUEST": 126,
+        "LOCATION_SEND": 125,
+        "LOCATION_STOP": 124,
+        "LOG": 5,
+        "LOGIN": 19,
+        "LOGIN_BY_QR": 291,
+        "LOGOUT": 20,
+        "MSG_CANCEL_REACTION": 179,
+        "MSG_DELETE": 66,
+        "MSG_DELETE_RANGE": 92,
+        "MSG_DELIVERY": 303,
+        "MSG_EDIT": 67,
+        "MSG_GET": 71,
+        "MSG_GET_DETAILED_REACTIONS": 181,
+        "MSG_GET_REACTIONS": 180,
+        "MSG_GET_STAT": 74,
+        "MSG_REACTION": 178,
+        "MSG_SEARCH": 73,
+        "MSG_SEARCH_TOUCH": 72,
+        "MSG_SEND": 64,
+        "MSG_SEND_CALLBACK": 118,
+        "MSG_SHARE_PREVIEW": 70,
+        "MSG_TYPING": 65,
+        "NOTIF_ASSETS_UPDATE": 150,
+        "NOTIF_ATTACH": 136,
+        "NOTIF_BANNERS": 292,
+        "NOTIF_CALLBACK_ANSWER": 143,
+        "NOTIF_CALL_START": 137,
+        "NOTIF_CHAT": 135,
+        "NOTIF_CONFIG": 134,
+        "NOTIF_CONTACT": 131,
+        "NOTIF_CONTACT_SORT": 139,
+        "NOTIF_DRAFT": 152,
+        "NOTIF_DRAFT_DISCARD": 153,
+        "NOTIF_FOLDERS": 277,
+        "NOTIF_LOCATION": 147,
+        "NOTIF_LOCATION_REQUEST": 148,
+        "NOTIF_MARK": 130,
+        "NOTIF_MESSAGE": 128,
+        "NOTIF_MSG_DELAYED": 154,
+        "NOTIF_MSG_DELETE": 142,
+        "NOTIF_MSG_DELETE_RANGE": 140,
+        "NOTIF_MSG_REACTIONS_CHANGED": 155,
+        "NOTIF_MSG_YOU_REACTED": 156,
+        "NOTIF_PRESENCE": 132,
+        "NOTIF_PROFILE": 159,
+        "NOTIF_TRANSCRIPTION": 293,
+        "NOTIF_TYPING": 129,
+        "ORG_INFO": 256,
+        "PHONE_BIND_CONFIRM": 99,
+        "PHONE_BIND_REQUEST": 98,
+        "PHOTO_UPLOAD": 80,
+        "PING": 1,
+        "PRESET_AVATARS": 25,
+        "PROFILE": 16,
+        "PROFILE_DELETE": 199,
+        "PROFILE_DELETE_TIME": 200,
+        "PUBLIC_SEARCH": 60,
+        "REACTIONS_SETTINGS_GET_BY_CHAT_ID": 258,
+        "RECONNECT": 3,
+        "REMOVE_CONTACT_PHOTO": 43,
+        "SEARCH_FEEDBACK": 31,
+        "SEND_VOTE": 304,
+        "SESSIONS_CLOSE": 97,
+        "SESSIONS_INFO": 96,
+        "SESSION_INIT": 6,
+        "STICKER_CREATE": 193,
+        "STICKER_SUGGEST": 194,
+        "STICKER_UPLOAD": 81,
+        "SUSPEND_BOT": 119,
+        "SYNC": 21,
+        "TRANSCRIBE_MEDIA": 202,
+        "VIDEO_CHAT_CREATE_JOIN_LINK": 84,
+        "VIDEO_CHAT_HISTORY": 79,
+        "VIDEO_CHAT_JOIN": 166,
+        "VIDEO_CHAT_MEMBERS": 195,
+        "VIDEO_CHAT_START": 76,
+        "VIDEO_CHAT_START_ACTIVE": 78,
+        "VIDEO_PLAY": 83,
+        "VIDEO_UPLOAD": 82,
+        "VOTERS_LIST_BY_ANSWER": 305,
+        "WEB_APP_INIT_DATA": 160
+    },
+    "event_types": {
+        "CHAT_UPDATE": "chat_update",
+        "FILE_READY": "file_ready",
+        "MESSAGE_DELETE": "message_delete",
+        "MESSAGE_EDIT": "message_edit",
+        "MESSAGE_NEW": "message_new",
+        "MESSAGE_READ": "message_read",
+        "ON_START": "on_start",
+        "PRESENCE": "presence",
+        "RAW": "raw",
+        "REACTION_UPDATE": "reaction_update",
+        "TYPING": "typing",
+        "USER_UPDATE": "user_update",
+        "VIDEO_READY": "video_ready"
+    },
+    "domain_enums": {
+        "AccessType": {
+            "PRIVATE": "PRIVATE",
+            "PUBLIC": "PUBLIC",
+            "SECRET": "SECRET"
+        },
+        "AttachmentType": {
+            "AUDIO": "AUDIO",
+            "CALL": "CALL",
+            "CONTACT": "CONTACT",
+            "CONTROL": "CONTROL",
+            "FILE": "FILE",
+            "INLINE_KEYBOARD": "INLINE_KEYBOARD",
+            "PHOTO": "PHOTO",
+            "SHARE": "SHARE",
+            "STICKER": "STICKER",
+            "UNKNOWN": "UNKNOWN",
+            "VIDEO": "VIDEO"
+        },
+        "ChatType": {
+            "CHANNEL": "CHANNEL",
+            "CHAT": "CHAT",
+            "DIALOG": "DIALOG"
+        },
+        "MessageStatus": {
+            "EDITED": "EDITED",
+            "REMOVED": "REMOVED"
+        },
+        "TranscriptionStatus": {
+            "FAILED": "FAILED",
+            "MEDIA_NOT_READY": "MEDIA_NOT_READY",
+            "NOT_SUPPORTED": "NOT_SUPPORTED",
+            "PROCESSING": "PROCESSING",
+            "SUCCESS": "SUCCESS",
+            "UNKNOWN": "UNKNOWN"
+        }
+    },
+    "api_enums": {
+        "auth.AuthType": {
+            "CHECK_CODE": "CHECK_CODE",
+            "REGISTER": "REGISTER",
+            "RESEND": "RESEND",
+            "START_AUTH": "START_AUTH"
+        },
+        "auth.ProfileOptions": {
+            "ESIA_VERIFIED_FLAG": 1,
+            "SECOND_FACTOR_HAS_EMAIL": 3,
+            "SECOND_FACTOR_HAS_HINT": 4,
+            "SECOND_FACTOR_PASSWORD_ENABLED": 2
+        },
+        "auth.TwoFactorAction": {
+            "EMAIL": 4,
+            "HINT": 3,
+            "REMOVE_2FA": 5,
+            "RESTORE_PASSWORD": 2,
+            "SET_PASSWORD": 0,
+            "UPDATE_PASSWORD": 1
+        },
+        "chats.ChatLinkPrefix": {
+            "JOIN": "join/"
+        },
+        "chats.ChatMemberOperation": {
+            "ADD": "add",
+            "REMOVE": "remove"
+        },
+        "chats.ChatOption": {
+            "ALL_CAN_PIN_MESSAGE": "ALL_CAN_PIN_MESSAGE",
+            "MEMBERS_CAN_SEE_PRIVATE_LINK": "MEMBERS_CAN_SEE_PRIVATE_LINK",
+            "ONLY_ADMIN_CAN_ADD_MEMBER": "ONLY_ADMIN_CAN_ADD_MEMBER",
+            "ONLY_ADMIN_CAN_CALL": "ONLY_ADMIN_CAN_CALL",
+            "ONLY_OWNER_CAN_CHANGE_ICON_TITLE": "ONLY_OWNER_CAN_CHANGE_ICON_TITLE"
+        },
+        "chats.ChatPayloadKey": {
+            "CHAT": "chat",
+            "CHATS": "chats",
+            "MEMBERS": "members"
+        },
+        "chats.ControlEvent": {
+            "NEW": "new"
+        },
+        "messages.ItemType": {
+            "DELAYED": "DELAYED",
+            "REGULAR": "REGULAR"
+        },
+        "messages.MessagePayloadKey": {
+            "MESSAGE": "message",
+            "MESSAGES": "messages",
+            "MESSAGES_REACTIONS": "messagesReactions",
+            "REACTION_INFO": "reactionInfo"
+        },
+        "messages.ReadAction": {
+            "READ_MESSAGE": "READ_MESSAGE",
+            "READ_REACTION": "READ_REACTION"
+        },
+        "self.AvatarType": {
+            "USER_AVATAR": "USER_AVATAR"
+        },
+        "self.SelfPayloadKey": {
+            "PROFILE": "profile",
+            "TOKEN": "token",
+            "URL": "url"
+        },
+        "session.DeviceType": {
+            "ANDROID": "ANDROID",
+            "DESKTOP": "DESKTOP",
+            "IOS": "IOS",
+            "WEB": "WEB"
+        },
+        "users.ContactAction": {
+            "ADD": "ADD",
+            "REMOVE": "REMOVE"
+        },
+        "users.UserPayloadKey": {
+            "CONTACT": "contact",
+            "CONTACTS": "contacts",
+            "SESSIONS": "sessions"
+        }
+    },
+    "event_map": {
+        "MSG_EDIT": "resolve_message",
+        "NOTIF_ATTACH": "resolve_attach",
+        "NOTIF_CHAT": "resolve_chat",
+        "NOTIF_MARK": "resolve_message_read",
+        "NOTIF_MESSAGE": "resolve_message",
+        "NOTIF_MSG_DELETE": "resolve_message_delete",
+        "NOTIF_MSG_REACTIONS_CHANGED": "resolve_reaction_update",
+        "NOTIF_PRESENCE": "resolve_presence",
+        "NOTIF_TYPING": "resolve_typing"
+    },
+    "payload_models": {
+        "auth.ApproveQrLoginPayload": {
+            "fields": [
+                "qr_link"
+            ],
+            "payload_keys": {
+                "qr_link": "qrLink"
+            }
+        },
+        "auth.CheckPasswordChallengePayload": {
+            "fields": [
+                "track_id",
+                "password"
+            ],
+            "payload_keys": {
+                "track_id": "trackId",
+                "password": "password"
+            }
+        },
+        "auth.CheckQrPayload": {
+            "fields": [
+                "track_id"
+            ],
+            "payload_keys": {
+                "track_id": "trackId"
+            }
+        },
+        "auth.ConfirmQrPayload": {
+            "fields": [
+                "track_id"
+            ],
+            "payload_keys": {
+                "track_id": "trackId"
+            }
+        },
+        "auth.ConfirmRegistrationPayload": {
+            "fields": [
+                "first_name",
+                "last_name",
+                "token",
+                "token_type"
+            ],
+            "payload_keys": {
+                "first_name": "firstName",
+                "last_name": "lastName",
+                "token": "token",
+                "token_type": "tokenType"
+            }
+        },
+        "auth.CreateAuthTrackPayload": {
+            "fields": [
+                "type"
+            ],
+            "payload_keys": {
+                "type": "type"
+            }
+        },
+        "auth.Exp": {
+            "fields": [
+                "chats_count_groups"
+            ],
+            "payload_keys": {
+                "chats_count_groups": "chatsCountGroups"
+            }
+        },
+        "auth.RemoveTwoFactorPayload": {
+            "fields": [
+                "track_id",
+                "remove2fa",
+                "expected_capabilities"
+            ],
+            "payload_keys": {
+                "track_id": "trackId",
+                "remove2fa": "remove2fa",
+                "expected_capabilities": "expectedCapabilities"
+            }
+        },
+        "auth.RequestCodePayload": {
+            "fields": [
+                "phone",
+                "type",
+                "language"
+            ],
+            "payload_keys": {
+                "phone": "phone",
+                "type": "type",
+                "language": "language"
+            }
+        },
+        "auth.RequestEmailCodePayload": {
+            "fields": [
+                "track_id",
+                "email"
+            ],
+            "payload_keys": {
+                "track_id": "trackId",
+                "email": "email"
+            }
+        },
+        "auth.SendCodePayload": {
+            "fields": [
+                "token",
+                "verify_code",
+                "auth_token_type"
+            ],
+            "payload_keys": {
+                "token": "token",
+                "verify_code": "verifyCode",
+                "auth_token_type": "authTokenType"
+            }
+        },
+        "auth.SendEmailCodePayload": {
+            "fields": [
+                "track_id",
+                "verify_code"
+            ],
+            "payload_keys": {
+                "track_id": "trackId",
+                "verify_code": "verifyCode"
+            }
+        },
+        "auth.SetHintPayload": {
+            "fields": [
+                "track_id",
+                "hint"
+            ],
+            "payload_keys": {
+                "track_id": "trackId",
+                "hint": "hint"
+            }
+        },
+        "auth.SetPasswordPayload": {
+            "fields": [
+                "track_id",
+                "password"
+            ],
+            "payload_keys": {
+                "track_id": "trackId",
+                "password": "password"
+            }
+        },
+        "auth.SetTwoFactorPayload": {
+            "fields": [
+                "expected_capabilities",
+                "track_id",
+                "password",
+                "hint"
+            ],
+            "payload_keys": {
+                "expected_capabilities": "expectedCapabilities",
+                "track_id": "trackId",
+                "password": "password",
+                "hint": "hint"
+            }
+        },
+        "auth.SyncPayload": {
+            "fields": [
+                "user_agent",
+                "token",
+                "chat_hash_fingerprint",
+                "chats_count",
+                "chats_sync",
+                "contacts_sync",
+                "drafts_sync",
+                "interactive",
+                "presence_sync",
+                "exp",
+                "config_hash"
+            ],
+            "payload_keys": {
+                "user_agent": "userAgent",
+                "token": "token",
+                "chat_hash_fingerprint": "chatHashFingerprint",
+                "chats_count": "chatsCount",
+                "chats_sync": "chatsSync",
+                "contacts_sync": "contactsSync",
+                "drafts_sync": "draftsSync",
+                "interactive": "interactive",
+                "presence_sync": "presenceSync",
+                "exp": "exp",
+                "config_hash": "configHash"
+            }
+        },
+        "auth.WebSyncPayload": {
+            "fields": [
+                "token",
+                "chats_count",
+                "interactive",
+                "chats_sync",
+                "contacts_sync",
+                "presence_sync",
+                "drafts_sync"
+            ],
+            "payload_keys": {
+                "token": "token",
+                "chats_count": "chatsCount",
+                "interactive": "interactive",
+                "chats_sync": "chatsSync",
+                "contacts_sync": "contactsSync",
+                "presence_sync": "presenceSync",
+                "drafts_sync": "draftsSync"
+            }
+        },
+        "bots.RequestInitDataPayload": {
+            "fields": [
+                "bot_id",
+                "chat_id",
+                "start_param"
+            ],
+            "payload_keys": {
+                "bot_id": "botId",
+                "chat_id": "chatId",
+                "start_param": "startParam"
+            }
+        },
+        "chats.ChangeGroupProfilePayload": {
+            "fields": [
+                "chat_id",
+                "theme",
+                "description"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "theme": "theme",
+                "description": "description"
+            }
+        },
+        "chats.ChangeGroupSettingsOptions": {
+            "fields": [
+                "only_owner_can_change_icon_title",
+                "all_can_pin_message",
+                "only_admin_can_add_member",
+                "only_admin_can_call",
+                "members_can_see_private_link"
+            ],
+            "payload_keys": {
+                "only_owner_can_change_icon_title": "ONLY_OWNER_CAN_CHANGE_ICON_TITLE",
+                "all_can_pin_message": "ALL_CAN_PIN_MESSAGE",
+                "only_admin_can_add_member": "ONLY_ADMIN_CAN_ADD_MEMBER",
+                "only_admin_can_call": "ONLY_ADMIN_CAN_CALL",
+                "members_can_see_private_link": "MEMBERS_CAN_SEE_PRIVATE_LINK"
+            }
+        },
+        "chats.ChangeGroupSettingsPayload": {
+            "fields": [
+                "chat_id",
+                "options"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "options": "options"
+            }
+        },
+        "chats.CreateGroupAttach": {
+            "fields": [
+                "type",
+                "event",
+                "chat_type",
+                "title",
+                "user_ids"
+            ],
+            "payload_keys": {
+                "type": "_type",
+                "event": "event",
+                "chat_type": "chatType",
+                "title": "title",
+                "user_ids": "userIds"
+            }
+        },
+        "chats.CreateGroupMessage": {
+            "fields": [
+                "cid",
+                "attaches"
+            ],
+            "payload_keys": {
+                "cid": "cid",
+                "attaches": "attaches"
+            }
+        },
+        "chats.CreateGroupPayload": {
+            "fields": [
+                "message",
+                "notify"
+            ],
+            "payload_keys": {
+                "message": "message",
+                "notify": "notify"
+            }
+        },
+        "chats.DeleteChatPayload": {
+            "fields": [
+                "chat_id",
+                "last_event_time",
+                "for_all"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "last_event_time": "lastEventTime",
+                "for_all": "forAll"
+            }
+        },
+        "chats.FetchChatsPayload": {
+            "fields": [
+                "marker"
+            ],
+            "payload_keys": {
+                "marker": "marker"
+            }
+        },
+        "chats.FetchJoinRequests": {
+            "fields": [
+                "chat_id",
+                "type",
+                "count"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "type": "type",
+                "count": "count"
+            }
+        },
+        "chats.GetChatInfoPayload": {
+            "fields": [
+                "chat_ids"
+            ],
+            "payload_keys": {
+                "chat_ids": "chatIds"
+            }
+        },
+        "chats.InviteUsersPayload": {
+            "fields": [
+                "chat_id",
+                "user_ids",
+                "show_history",
+                "operation"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "user_ids": "userIds",
+                "show_history": "showHistory",
+                "operation": "operation"
+            }
+        },
+        "chats.JoinChatPayload": {
+            "fields": [
+                "link"
+            ],
+            "payload_keys": {
+                "link": "link"
+            }
+        },
+        "chats.JoinRequestActionPayload": {
+            "fields": [
+                "chat_id",
+                "user_ids",
+                "type",
+                "show_history",
+                "operation"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "user_ids": "userIds",
+                "type": "type",
+                "show_history": "showHistory",
+                "operation": "operation"
+            }
+        },
+        "chats.LeaveChatPayload": {
+            "fields": [
+                "chat_id"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId"
+            }
+        },
+        "chats.LinkInfoPayload": {
+            "fields": [
+                "link"
+            ],
+            "payload_keys": {
+                "link": "link"
+            }
+        },
+        "chats.RemoveUsersPayload": {
+            "fields": [
+                "chat_id",
+                "user_ids",
+                "operation",
+                "clean_msg_period"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "user_ids": "userIds",
+                "operation": "operation",
+                "clean_msg_period": "cleanMsgPeriod"
+            }
+        },
+        "chats.ReworkInviteLinkPayload": {
+            "fields": [
+                "revoke_private_link",
+                "chat_id"
+            ],
+            "payload_keys": {
+                "revoke_private_link": "revokePrivateLink",
+                "chat_id": "chatId"
+            }
+        },
+        "messages.AddReactionPayload": {
+            "fields": [
+                "chat_id",
+                "message_id",
+                "reaction"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message_id": "messageId",
+                "reaction": "reaction"
+            }
+        },
+        "messages.ChatHistoryPayload": {
+            "fields": [
+                "chat_id",
+                "forward",
+                "backward",
+                "backward_time",
+                "forward_time",
+                "get_chat",
+                "from_",
+                "item_type",
+                "get_messages",
+                "interactive"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "forward": "forward",
+                "backward": "backward",
+                "backward_time": "backwardTime",
+                "forward_time": "forwardTime",
+                "get_chat": "getChat",
+                "from_": "from",
+                "item_type": "itemType",
+                "get_messages": "getMessages",
+                "interactive": "interactive"
+            }
+        },
+        "messages.DeleteMessagePayload": {
+            "fields": [
+                "chat_id",
+                "message_ids",
+                "for_me"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message_ids": "messageIds",
+                "for_me": "forMe"
+            }
+        },
+        "messages.EditMessagePayload": {
+            "fields": [
+                "chat_id",
+                "message_id",
+                "text",
+                "elements",
+                "attachments"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message_id": "messageId",
+                "text": "text",
+                "elements": "elements",
+                "attachments": "attachments"
+            }
+        },
+        "messages.ForwardLink": {
+            "fields": [
+                "type",
+                "message_id",
+                "chat_id"
+            ],
+            "payload_keys": {
+                "type": "type",
+                "message_id": "messageId",
+                "chat_id": "chatId"
+            }
+        },
+        "messages.ForwardMessagePayload": {
+            "fields": [
+                "chat_id",
+                "message",
+                "notify"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message": "message",
+                "notify": "notify"
+            }
+        },
+        "messages.ForwardMessagePayloadMessage": {
+            "fields": [
+                "cid",
+                "link",
+                "attaches"
+            ],
+            "payload_keys": {
+                "cid": "cid",
+                "link": "link",
+                "attaches": "attaches"
+            }
+        },
+        "messages.GetFilePayload": {
+            "fields": [
+                "chat_id",
+                "message_id",
+                "file_id"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message_id": "messageId",
+                "file_id": "fileId"
+            }
+        },
+        "messages.GetMessagesPayload": {
+            "fields": [
+                "chat_id",
+                "message_ids"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message_ids": "messageIds"
+            }
+        },
+        "messages.GetReactionsPayload": {
+            "fields": [
+                "chat_id",
+                "message_ids"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message_ids": "messageIds"
+            }
+        },
+        "messages.GetVideoPayload": {
+            "fields": [
+                "chat_id",
+                "message_id",
+                "video_id"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message_id": "messageId",
+                "video_id": "videoId"
+            }
+        },
+        "messages.PinMessagePayload": {
+            "fields": [
+                "chat_id",
+                "notify_pin",
+                "pin_message_id"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "notify_pin": "notifyPin",
+                "pin_message_id": "pinMessageId"
+            }
+        },
+        "messages.ReactionInfoPayload": {
+            "fields": [
+                "reaction_type",
+                "id"
+            ],
+            "payload_keys": {
+                "reaction_type": "reactionType",
+                "id": "id"
+            }
+        },
+        "messages.ReadMessagesPayload": {
+            "fields": [
+                "type",
+                "chat_id",
+                "message_id",
+                "mark"
+            ],
+            "payload_keys": {
+                "type": "type",
+                "chat_id": "chatId",
+                "message_id": "messageId",
+                "mark": "mark"
+            }
+        },
+        "messages.RemoveReactionPayload": {
+            "fields": [
+                "chat_id",
+                "message_id"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message_id": "messageId"
+            }
+        },
+        "messages.ReplyLink": {
+            "fields": [
+                "type",
+                "message_id"
+            ],
+            "payload_keys": {
+                "type": "type",
+                "message_id": "messageId"
+            }
+        },
+        "messages.SendMessagePayload": {
+            "fields": [
+                "chat_id",
+                "message",
+                "notify"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "message": "message",
+                "notify": "notify"
+            }
+        },
+        "messages.SendMessagePayloadMessage": {
+            "fields": [
+                "text",
+                "cid",
+                "elements",
+                "attaches",
+                "link"
+            ],
+            "payload_keys": {
+                "text": "text",
+                "cid": "cid",
+                "elements": "elements",
+                "attaches": "attaches",
+                "link": "link"
+            }
+        },
+        "self.ChangeProfilePayload": {
+            "fields": [
+                "first_name",
+                "last_name",
+                "description",
+                "photo_token",
+                "avatar_type"
+            ],
+            "payload_keys": {
+                "first_name": "firstName",
+                "last_name": "lastName",
+                "description": "description",
+                "photo_token": "photoToken",
+                "avatar_type": "avatarType"
+            }
+        },
+        "self.CreateFolderPayload": {
+            "fields": [
+                "id",
+                "title",
+                "include",
+                "filters"
+            ],
+            "payload_keys": {
+                "id": "id",
+                "title": "title",
+                "include": "include",
+                "filters": "filters"
+            }
+        },
+        "self.DeleteFolderPayload": {
+            "fields": [
+                "folder_ids"
+            ],
+            "payload_keys": {
+                "folder_ids": "folderIds"
+            }
+        },
+        "self.GetFolderPayload": {
+            "fields": [
+                "folder_sync"
+            ],
+            "payload_keys": {
+                "folder_sync": "folderSync"
+            }
+        },
+        "self.UpdateFolderPayload": {
+            "fields": [
+                "id",
+                "title",
+                "include",
+                "filters",
+                "options"
+            ],
+            "payload_keys": {
+                "id": "id",
+                "title": "title",
+                "include": "include",
+                "filters": "filters",
+                "options": "options"
+            }
+        },
+        "self.UploadPayload": {
+            "fields": [
+                "count",
+                "profile"
+            ],
+            "payload_keys": {
+                "count": "count",
+                "profile": "profile"
+            }
+        },
+        "session.MobileHandshakePayload": {
+            "fields": [
+                "mt_instance_id",
+                "user_agent",
+                "client_session_id",
+                "device_id"
+            ],
+            "payload_keys": {
+                "mt_instance_id": "mt_instanceid",
+                "user_agent": "userAgent",
+                "client_session_id": "clientSessionId",
+                "device_id": "deviceId"
+            }
+        },
+        "session.MobileUserAgentPayload": {
+            "fields": [
+                "device_type",
+                "app_version",
+                "os_version",
+                "timezone",
+                "screen",
+                "push_device_type",
+                "arch",
+                "locale",
+                "build_number",
+                "device_name",
+                "device_locale",
+                "release",
+                "header_user_agent"
+            ],
+            "payload_keys": {
+                "device_type": "deviceType",
+                "app_version": "appVersion",
+                "os_version": "osVersion",
+                "timezone": "timezone",
+                "screen": "screen",
+                "push_device_type": "pushDeviceType",
+                "arch": "arch",
+                "locale": "locale",
+                "build_number": "buildNumber",
+                "device_name": "deviceName",
+                "device_locale": "deviceLocale",
+                "release": "release",
+                "header_user_agent": "headerUserAgent"
+            }
+        },
+        "session.WebHandshakePayload": {
+            "fields": [
+                "user_agent",
+                "device_id"
+            ],
+            "payload_keys": {
+                "user_agent": "userAgent",
+                "device_id": "deviceId"
+            }
+        },
+        "uploads.AttachFilePayload": {
+            "fields": [
+                "type",
+                "file_id"
+            ],
+            "payload_keys": {
+                "type": "_type",
+                "file_id": "fileId"
+            }
+        },
+        "uploads.AttachPhotoPayload": {
+            "fields": [
+                "type",
+                "photo_token"
+            ],
+            "payload_keys": {
+                "type": "_type",
+                "photo_token": "photoToken"
+            }
+        },
+        "uploads.UploadPayload": {
+            "fields": [
+                "count",
+                "profile"
+            ],
+            "payload_keys": {
+                "count": "count",
+                "profile": "profile"
+            }
+        },
+        "uploads.VideoAttachPayload": {
+            "fields": [
+                "type",
+                "video_id",
+                "token"
+            ],
+            "payload_keys": {
+                "type": "_type",
+                "video_id": "videoId",
+                "token": "token"
+            }
+        },
+        "users.ContactActionPayload": {
+            "fields": [
+                "contact_id",
+                "action"
+            ],
+            "payload_keys": {
+                "contact_id": "contactId",
+                "action": "action"
+            }
+        },
+        "users.FetchContactsPayload": {
+            "fields": [
+                "contact_ids"
+            ],
+            "payload_keys": {
+                "contact_ids": "contactIds"
+            }
+        },
+        "users.ImportContactsPayload": {
+            "fields": [
+                "contact_list"
+            ],
+            "payload_keys": {
+                "contact_list": "contactList"
+            }
+        },
+        "users.SearchByPhonePayload": {
+            "fields": [
+                "phone"
+            ],
+            "payload_keys": {
+                "phone": "phone"
+            }
+        },
+        "users._ContactPayload": {
+            "fields": [
+                "first_name"
+            ],
+            "payload_keys": {
+                "first_name": "firstName"
+            }
+        }
+    },
+    "service_methods": {
+        "auth": {
+            "authorize_qr_login": "authorizeQrLogin",
+            "change_password": "changePassword",
+            "check_2fa": "checkTwoFactor",
+            "check_password": "checkPassword",
+            "check_qr": "checkQr",
+            "confirm_qr": "confirmQr",
+            "confirm_registration": "confirmRegistration",
+            "login": "login",
+            "mobile_login": "mobileLogin",
+            "remove_2fa": "removeTwoFactor",
+            "request_code": "requestCode",
+            "request_qr": "requestQr",
+            "send_code": "sendCode",
+            "set_2fa": "setTwoFactor",
+            "web_login": "webLogin"
+        },
+        "bots": {
+            "get_init_data": "getInitData"
+        },
+        "chats": {
+            "change_group_profile": "changeGroupProfile",
+            "change_group_settings": "changeGroupSettings",
+            "confirm_join_request": "confirmJoinRequest",
+            "confirm_join_requests": "confirmJoinRequests",
+            "create_group": "createGroup",
+            "decline_join_request": "declineJoinRequest",
+            "decline_join_requests": "declineJoinRequests",
+            "delete_chat": "deleteChat",
+            "fetch_chats": "fetchChats",
+            "get_chat": "getChat",
+            "get_chats": "getChats",
+            "get_join_requests": "getJoinRequests",
+            "invite_users_to_channel": "inviteUsersToChannel",
+            "invite_users_to_group": "inviteUsersToGroup",
+            "join_channel": "joinChannel",
+            "join_group": "joinGroup",
+            "leave_channel": "leaveChannel",
+            "leave_group": "leaveGroup",
+            "remove_users_from_group": "removeUsersFromGroup",
+            "resolve_group_by_link": "resolveGroupByLink",
+            "rework_invite_link": "reworkInviteLink"
+        },
+        "messages": {
+            "add_reaction": "addReaction",
+            "delete_message": "deleteMessage",
+            "edit_message": "editMessage",
+            "fetch_history": "fetchHistory",
+            "forward_message": "forwardMessage",
+            "get_file_by_id": "getFileById",
+            "get_message": "getMessage",
+            "get_messages": "getMessages",
+            "get_reactions": "getReactions",
+            "get_video_by_id": "getVideoById",
+            "pin_message": "pinMessage",
+            "read_message": "readMessage",
+            "remove_reaction": "removeReaction",
+            "send_message": "sendMessage"
+        },
+        "self": {
+            "change_profile": "changeProfile",
+            "close_all_sessions": "closeAllSessions",
+            "create_folder": "createFolder",
+            "delete_folder": "deleteFolder",
+            "get_folders": "getFolders",
+            "logout": "logout",
+            "request_profile_photo_upload_url": "requestProfilePhotoUploadUrl",
+            "update_folder": "updateFolder"
+        },
+        "session": {
+            "handshake": "handshake",
+            "mobile_handshake": "mobileHandshake",
+            "web_handshake": "webHandshake"
+        },
+        "uploads": {
+            "on_file_attach": "onFileAttach",
+            "on_video_attach": "onVideoAttach",
+            "upload_file": "uploadFile",
+            "upload_photo": "uploadPhoto",
+            "upload_video": "uploadVideo"
+        },
+        "users": {
+            "add_contact": "addContact",
+            "fetch_users": "fetchUsers",
+            "get_cached_user": "getCachedUser",
+            "get_chat_id": "getChatId",
+            "get_sessions": "getSessions",
+            "get_user": "getUser",
+            "get_users": "getUsers",
+            "import_contacts": "importContacts",
+            "remove_contact": "removeContact",
+            "search_by_phone": "searchByPhone"
+        }
+    },
+    "client_methods": {
+        "add_contact": "addContact",
+        "add_reaction": "addReaction",
+        "authorize_qr_login": "authorizeQrLogin",
+        "change_group_profile": "changeGroupProfile",
+        "change_group_settings": "changeGroupSettings",
+        "change_password": "changePassword",
+        "change_profile": "changeProfile",
+        "check_2fa": "checkTwoFactor",
+        "close_all_sessions": "closeAllSessions",
+        "confirm_join_request": "confirmJoinRequest",
+        "confirm_join_requests": "confirmJoinRequests",
+        "create_folder": "createFolder",
+        "create_group": "createGroup",
+        "decline_join_request": "declineJoinRequest",
+        "decline_join_requests": "declineJoinRequests",
+        "delete_chat": "deleteChat",
+        "delete_folder": "deleteFolder",
+        "delete_message": "deleteMessage",
+        "edit_message": "editMessage",
+        "fetch_chats": "fetchChats",
+        "fetch_history": "fetchHistory",
+        "fetch_users": "fetchUsers",
+        "forward_message": "forwardMessage",
+        "get_bot_init_data": "getBotInitData",
+        "get_cached_user": "getCachedUser",
+        "get_chat": "getChat",
+        "get_chat_id": "getChatId",
+        "get_chats": "getChats",
+        "get_file_by_id": "getFileById",
+        "get_folders": "getFolders",
+        "get_join_requests": "getJoinRequests",
+        "get_message": "getMessage",
+        "get_messages": "getMessages",
+        "get_reactions": "getReactions",
+        "get_sessions": "getSessions",
+        "get_user": "getUser",
+        "get_users": "getUsers",
+        "get_video_by_id": "getVideoById",
+        "import_contacts": "importContacts",
+        "invite_users_to_channel": "inviteUsersToChannel",
+        "invite_users_to_group": "inviteUsersToGroup",
+        "join_channel": "joinChannel",
+        "join_group": "joinGroup",
+        "leave_channel": "leaveChannel",
+        "leave_group": "leaveGroup",
+        "logout": "logout",
+        "pin_message": "pinMessage",
+        "read_message": "readMessage",
+        "remove_2fa": "removeTwoFactor",
+        "remove_contact": "removeContact",
+        "remove_reaction": "removeReaction",
+        "remove_users_from_group": "removeUsersFromGroup",
+        "request_profile_photo_upload_url": "requestProfilePhotoUploadUrl",
+        "resolve_group_by_link": "resolveGroupByLink",
+        "rework_invite_link": "reworkInviteLink",
+        "search_by_phone": "searchByPhone",
+        "send_message": "sendMessage",
+        "set_2fa": "setTwoFactor",
+        "update_folder": "updateFolder"
+    },
+    "service_method_params": {
+        "auth": {
+            "authorize_qr_login": {
+                "php_method": "authorizeQrLogin",
+                "params": [
+                    "qr_link"
+                ],
+                "php_params": [
+                    "qrLink"
+                ]
+            },
+            "change_password": {
+                "php_method": "changePassword",
+                "params": [
+                    "password_old",
+                    "password_new"
+                ],
+                "php_params": [
+                    "passwordOld",
+                    "passwordNew"
+                ]
+            },
+            "check_2fa": {
+                "php_method": "checkTwoFactor",
+                "params": [],
+                "php_params": []
+            },
+            "check_password": {
+                "php_method": "checkPassword",
+                "params": [
+                    "track_id",
+                    "password"
+                ],
+                "php_params": [
+                    "trackId",
+                    "password"
+                ]
+            },
+            "check_qr": {
+                "php_method": "checkQr",
+                "params": [
+                    "track_id"
+                ],
+                "php_params": [
+                    "trackId"
+                ]
+            },
+            "confirm_qr": {
+                "php_method": "confirmQr",
+                "params": [
+                    "track_id"
+                ],
+                "php_params": [
+                    "trackId"
+                ]
+            },
+            "confirm_registration": {
+                "php_method": "confirmRegistration",
+                "params": [
+                    "first_name",
+                    "last_name",
+                    "token"
+                ],
+                "php_params": [
+                    "firstName",
+                    "lastName",
+                    "token"
+                ]
+            },
+            "login": {
+                "php_method": "login",
+                "params": [
+                    "user_agent"
+                ],
+                "php_params": [
+                    "userAgent"
+                ]
+            },
+            "mobile_login": {
+                "php_method": "mobileLogin",
+                "params": [],
+                "php_params": []
+            },
+            "remove_2fa": {
+                "php_method": "removeTwoFactor",
+                "params": [
+                    "password"
+                ],
+                "php_params": [
+                    "password"
+                ]
+            },
+            "request_code": {
+                "php_method": "requestCode",
+                "params": [
+                    "phone"
+                ],
+                "php_params": [
+                    "phone"
+                ]
+            },
+            "request_qr": {
+                "php_method": "requestQr",
+                "params": [],
+                "php_params": []
+            },
+            "send_code": {
+                "php_method": "sendCode",
+                "params": [
+                    "token",
+                    "verify_code"
+                ],
+                "php_params": [
+                    "token",
+                    "verifyCode"
+                ]
+            },
+            "set_2fa": {
+                "php_method": "setTwoFactor",
+                "params": [
+                    "password",
+                    "email",
+                    "hint",
+                    "email_code_provider"
+                ],
+                "php_params": [
+                    "password",
+                    "email",
+                    "hint",
+                    "emailCodeProvider"
+                ]
+            },
+            "web_login": {
+                "php_method": "webLogin",
+                "params": [],
+                "php_params": []
+            }
+        },
+        "bots": {
+            "get_init_data": {
+                "php_method": "getInitData",
+                "params": [
+                    "bot_id",
+                    "chat_id",
+                    "start_param"
+                ],
+                "php_params": [
+                    "botId",
+                    "chatId",
+                    "startParam"
+                ]
+            }
+        },
+        "chats": {
+            "change_group_profile": {
+                "php_method": "changeGroupProfile",
+                "params": [
+                    "chat_id",
+                    "name",
+                    "description"
+                ],
+                "php_params": [
+                    "chatId",
+                    "name",
+                    "description"
+                ]
+            },
+            "change_group_settings": {
+                "php_method": "changeGroupSettings",
+                "params": [
+                    "chat_id",
+                    "all_can_pin_message",
+                    "only_owner_can_change_icon_title",
+                    "only_admin_can_add_member",
+                    "only_admin_can_call",
+                    "members_can_see_private_link"
+                ],
+                "php_params": [
+                    "chatId",
+                    "allCanPinMessage",
+                    "onlyOwnerCanChangeIconTitle",
+                    "onlyAdminCanAddMember",
+                    "onlyAdminCanCall",
+                    "membersCanSeePrivateLink"
+                ]
+            },
+            "confirm_join_request": {
+                "php_method": "confirmJoinRequest",
+                "params": [
+                    "chat_id",
+                    "user_id",
+                    "show_history"
+                ],
+                "php_params": [
+                    "chatId",
+                    "userId",
+                    "showHistory"
+                ]
+            },
+            "confirm_join_requests": {
+                "php_method": "confirmJoinRequests",
+                "params": [
+                    "chat_id",
+                    "user_ids",
+                    "show_history"
+                ],
+                "php_params": [
+                    "chatId",
+                    "userIds",
+                    "showHistory"
+                ]
+            },
+            "create_group": {
+                "php_method": "createGroup",
+                "params": [
+                    "name",
+                    "participant_ids",
+                    "notify"
+                ],
+                "php_params": [
+                    "name",
+                    "participantIds",
+                    "notify"
+                ]
+            },
+            "decline_join_request": {
+                "php_method": "declineJoinRequest",
+                "params": [
+                    "chat_id",
+                    "user_id"
+                ],
+                "php_params": [
+                    "chatId",
+                    "userId"
+                ]
+            },
+            "decline_join_requests": {
+                "php_method": "declineJoinRequests",
+                "params": [
+                    "chat_id",
+                    "user_ids"
+                ],
+                "php_params": [
+                    "chatId",
+                    "userIds"
+                ]
+            },
+            "delete_chat": {
+                "php_method": "deleteChat",
+                "params": [
+                    "chat_id",
+                    "last_event_time",
+                    "for_all"
+                ],
+                "php_params": [
+                    "chatId",
+                    "lastEventTime",
+                    "forAll"
+                ]
+            },
+            "fetch_chats": {
+                "php_method": "fetchChats",
+                "params": [
+                    "marker"
+                ],
+                "php_params": [
+                    "marker"
+                ]
+            },
+            "get_chat": {
+                "php_method": "getChat",
+                "params": [
+                    "chat_id"
+                ],
+                "php_params": [
+                    "chatId"
+                ]
+            },
+            "get_chats": {
+                "php_method": "getChats",
+                "params": [
+                    "chat_ids"
+                ],
+                "php_params": [
+                    "chatIds"
+                ]
+            },
+            "get_join_requests": {
+                "php_method": "getJoinRequests",
+                "params": [
+                    "chat_id",
+                    "count"
+                ],
+                "php_params": [
+                    "chatId",
+                    "count"
+                ]
+            },
+            "invite_users_to_channel": {
+                "php_method": "inviteUsersToChannel",
+                "params": [
+                    "chat_id",
+                    "user_ids",
+                    "show_history"
+                ],
+                "php_params": [
+                    "chatId",
+                    "userIds",
+                    "showHistory"
+                ]
+            },
+            "invite_users_to_group": {
+                "php_method": "inviteUsersToGroup",
+                "params": [
+                    "chat_id",
+                    "user_ids",
+                    "show_history"
+                ],
+                "php_params": [
+                    "chatId",
+                    "userIds",
+                    "showHistory"
+                ]
+            },
+            "join_channel": {
+                "php_method": "joinChannel",
+                "params": [
+                    "link"
+                ],
+                "php_params": [
+                    "link"
+                ]
+            },
+            "join_group": {
+                "php_method": "joinGroup",
+                "params": [
+                    "link"
+                ],
+                "php_params": [
+                    "link"
+                ]
+            },
+            "leave_channel": {
+                "php_method": "leaveChannel",
+                "params": [
+                    "chat_id"
+                ],
+                "php_params": [
+                    "chatId"
+                ]
+            },
+            "leave_group": {
+                "php_method": "leaveGroup",
+                "params": [
+                    "chat_id"
+                ],
+                "php_params": [
+                    "chatId"
+                ]
+            },
+            "remove_users_from_group": {
+                "php_method": "removeUsersFromGroup",
+                "params": [
+                    "chat_id",
+                    "user_ids",
+                    "clean_msg_period"
+                ],
+                "php_params": [
+                    "chatId",
+                    "userIds",
+                    "cleanMsgPeriod"
+                ]
+            },
+            "resolve_group_by_link": {
+                "php_method": "resolveGroupByLink",
+                "params": [
+                    "link"
+                ],
+                "php_params": [
+                    "link"
+                ]
+            },
+            "rework_invite_link": {
+                "php_method": "reworkInviteLink",
+                "params": [
+                    "chat_id"
+                ],
+                "php_params": [
+                    "chatId"
+                ]
+            }
+        },
+        "messages": {
+            "add_reaction": {
+                "php_method": "addReaction",
+                "params": [
+                    "chat_id",
+                    "message_id",
+                    "reaction"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageId",
+                    "reaction"
+                ]
+            },
+            "delete_message": {
+                "php_method": "deleteMessage",
+                "params": [
+                    "chat_id",
+                    "message_ids",
+                    "for_me"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageIds",
+                    "forMe"
+                ]
+            },
+            "edit_message": {
+                "php_method": "editMessage",
+                "params": [
+                    "chat_id",
+                    "message_id",
+                    "text",
+                    "attachments"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageId",
+                    "text",
+                    "attachments"
+                ]
+            },
+            "fetch_history": {
+                "php_method": "fetchHistory",
+                "params": [
+                    "chat_id",
+                    "forward",
+                    "backward",
+                    "backward_time",
+                    "forward_time",
+                    "from_",
+                    "item_type",
+                    "get_chat",
+                    "get_messages",
+                    "interactive"
+                ],
+                "php_params": [
+                    "chatId",
+                    "forward",
+                    "backward",
+                    "backwardTime",
+                    "forwardTime",
+                    "from",
+                    "itemType",
+                    "getChat",
+                    "getMessages",
+                    "interactive"
+                ]
+            },
+            "forward_message": {
+                "php_method": "forwardMessage",
+                "params": [
+                    "chat_id",
+                    "message_id",
+                    "source_chat_id",
+                    "notify"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageId",
+                    "sourceChatId",
+                    "notify"
+                ]
+            },
+            "get_file_by_id": {
+                "php_method": "getFileById",
+                "params": [
+                    "chat_id",
+                    "message_id",
+                    "file_id"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageId",
+                    "fileId"
+                ]
+            },
+            "get_message": {
+                "php_method": "getMessage",
+                "params": [
+                    "chat_id",
+                    "message_id"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageId"
+                ]
+            },
+            "get_messages": {
+                "php_method": "getMessages",
+                "params": [
+                    "chat_id",
+                    "message_ids"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageIds"
+                ]
+            },
+            "get_reactions": {
+                "php_method": "getReactions",
+                "params": [
+                    "chat_id",
+                    "message_ids"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageIds"
+                ]
+            },
+            "get_video_by_id": {
+                "php_method": "getVideoById",
+                "params": [
+                    "chat_id",
+                    "message_id",
+                    "video_id"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageId",
+                    "videoId"
+                ]
+            },
+            "pin_message": {
+                "php_method": "pinMessage",
+                "params": [
+                    "chat_id",
+                    "message_id",
+                    "notify_pin"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageId",
+                    "notifyPin"
+                ]
+            },
+            "read_message": {
+                "php_method": "readMessage",
+                "params": [
+                    "message_id",
+                    "chat_id"
+                ],
+                "php_params": [
+                    "messageId",
+                    "chatId"
+                ]
+            },
+            "remove_reaction": {
+                "php_method": "removeReaction",
+                "params": [
+                    "chat_id",
+                    "message_id"
+                ],
+                "php_params": [
+                    "chatId",
+                    "messageId"
+                ]
+            },
+            "send_message": {
+                "php_method": "sendMessage",
+                "params": [
+                    "chat_id",
+                    "text",
+                    "reply_to",
+                    "attachments",
+                    "notify"
+                ],
+                "php_params": [
+                    "chatId",
+                    "text",
+                    "replyTo",
+                    "attachments",
+                    "notify"
+                ]
+            }
+        },
+        "self": {
+            "change_profile": {
+                "php_method": "changeProfile",
+                "params": [
+                    "first_name",
+                    "last_name",
+                    "description",
+                    "photo",
+                    "photo_token"
+                ],
+                "php_params": [
+                    "firstName",
+                    "lastName",
+                    "description",
+                    "photo",
+                    "photoToken"
+                ]
+            },
+            "close_all_sessions": {
+                "php_method": "closeAllSessions",
+                "params": [],
+                "php_params": []
+            },
+            "create_folder": {
+                "php_method": "createFolder",
+                "params": [
+                    "title",
+                    "chat_include",
+                    "filters"
+                ],
+                "php_params": [
+                    "title",
+                    "chatInclude",
+                    "filters"
+                ]
+            },
+            "delete_folder": {
+                "php_method": "deleteFolder",
+                "params": [
+                    "folder_id"
+                ],
+                "php_params": [
+                    "folderId"
+                ]
+            },
+            "get_folders": {
+                "php_method": "getFolders",
+                "params": [
+                    "folder_sync"
+                ],
+                "php_params": [
+                    "folderSync"
+                ]
+            },
+            "logout": {
+                "php_method": "logout",
+                "params": [],
+                "php_params": []
+            },
+            "request_profile_photo_upload_url": {
+                "php_method": "requestProfilePhotoUploadUrl",
+                "params": [],
+                "php_params": []
+            },
+            "update_folder": {
+                "php_method": "updateFolder",
+                "params": [
+                    "folder_id",
+                    "title",
+                    "chat_include",
+                    "filters",
+                    "options"
+                ],
+                "php_params": [
+                    "folderId",
+                    "title",
+                    "chatInclude",
+                    "filters",
+                    "options"
+                ]
+            }
+        },
+        "session": {
+            "handshake": {
+                "php_method": "handshake",
+                "params": [
+                    "mt_instance_id",
+                    "user_agent",
+                    "device_id"
+                ],
+                "php_params": [
+                    "mtInstanceId",
+                    "userAgent",
+                    "deviceId"
+                ]
+            },
+            "mobile_handshake": {
+                "php_method": "mobileHandshake",
+                "params": [
+                    "mt_instance_id",
+                    "user_agent",
+                    "device_id"
+                ],
+                "php_params": [
+                    "mtInstanceId",
+                    "userAgent",
+                    "deviceId"
+                ]
+            },
+            "web_handshake": {
+                "php_method": "webHandshake",
+                "params": [
+                    "user_agent",
+                    "device_id"
+                ],
+                "php_params": [
+                    "userAgent",
+                    "deviceId"
+                ]
+            }
+        },
+        "uploads": {
+            "on_file_attach": {
+                "php_method": "onFileAttach",
+                "params": [
+                    "attach"
+                ],
+                "php_params": [
+                    "attach"
+                ]
+            },
+            "on_video_attach": {
+                "php_method": "onVideoAttach",
+                "params": [
+                    "attach"
+                ],
+                "php_params": [
+                    "attach"
+                ]
+            },
+            "upload_file": {
+                "php_method": "uploadFile",
+                "params": [
+                    "file"
+                ],
+                "php_params": [
+                    "file"
+                ]
+            },
+            "upload_photo": {
+                "php_method": "uploadPhoto",
+                "params": [
+                    "photo",
+                    "profile"
+                ],
+                "php_params": [
+                    "photo",
+                    "profile"
+                ]
+            },
+            "upload_video": {
+                "php_method": "uploadVideo",
+                "params": [
+                    "video"
+                ],
+                "php_params": [
+                    "video"
+                ]
+            }
+        },
+        "users": {
+            "add_contact": {
+                "php_method": "addContact",
+                "params": [
+                    "contact_id"
+                ],
+                "php_params": [
+                    "contactId"
+                ]
+            },
+            "fetch_users": {
+                "php_method": "fetchUsers",
+                "params": [
+                    "user_ids"
+                ],
+                "php_params": [
+                    "userIds"
+                ]
+            },
+            "get_cached_user": {
+                "php_method": "getCachedUser",
+                "params": [
+                    "user_id"
+                ],
+                "php_params": [
+                    "userId"
+                ]
+            },
+            "get_chat_id": {
+                "php_method": "getChatId",
+                "params": [
+                    "first_user_id",
+                    "second_user_id"
+                ],
+                "php_params": [
+                    "firstUserId",
+                    "secondUserId"
+                ]
+            },
+            "get_sessions": {
+                "php_method": "getSessions",
+                "params": [],
+                "php_params": []
+            },
+            "get_user": {
+                "php_method": "getUser",
+                "params": [
+                    "user_id"
+                ],
+                "php_params": [
+                    "userId"
+                ]
+            },
+            "get_users": {
+                "php_method": "getUsers",
+                "params": [
+                    "user_ids"
+                ],
+                "php_params": [
+                    "userIds"
+                ]
+            },
+            "import_contacts": {
+                "php_method": "importContacts",
+                "params": [
+                    "contacts"
+                ],
+                "php_params": [
+                    "contacts"
+                ]
+            },
+            "remove_contact": {
+                "php_method": "removeContact",
+                "params": [
+                    "contact_id"
+                ],
+                "php_params": [
+                    "contactId"
+                ]
+            },
+            "search_by_phone": {
+                "php_method": "searchByPhone",
+                "params": [
+                    "phone"
+                ],
+                "php_params": [
+                    "phone"
+                ]
+            }
+        }
+    },
+    "client_method_params": {
+        "add_contact": {
+            "php_method": "addContact",
+            "params": [
+                "contact_id"
+            ],
+            "php_params": [
+                "contactId"
+            ]
+        },
+        "add_reaction": {
+            "php_method": "addReaction",
+            "params": [
+                "chat_id",
+                "message_id",
+                "reaction"
+            ],
+            "php_params": [
+                "chatId",
+                "messageId",
+                "reaction"
+            ]
+        },
+        "authorize_qr_login": {
+            "php_method": "authorizeQrLogin",
+            "params": [
+                "qr_link"
+            ],
+            "php_params": [
+                "qrLink"
+            ]
+        },
+        "change_group_profile": {
+            "php_method": "changeGroupProfile",
+            "params": [
+                "chat_id",
+                "name",
+                "description"
+            ],
+            "php_params": [
+                "chatId",
+                "name",
+                "description"
+            ]
+        },
+        "change_group_settings": {
+            "php_method": "changeGroupSettings",
+            "params": [
+                "chat_id",
+                "all_can_pin_message",
+                "only_owner_can_change_icon_title",
+                "only_admin_can_add_member",
+                "only_admin_can_call",
+                "members_can_see_private_link"
+            ],
+            "php_params": [
+                "chatId",
+                "allCanPinMessage",
+                "onlyOwnerCanChangeIconTitle",
+                "onlyAdminCanAddMember",
+                "onlyAdminCanCall",
+                "membersCanSeePrivateLink"
+            ]
+        },
+        "change_password": {
+            "php_method": "changePassword",
+            "params": [
+                "password_old",
+                "password_new"
+            ],
+            "php_params": [
+                "passwordOld",
+                "passwordNew"
+            ]
+        },
+        "change_profile": {
+            "php_method": "changeProfile",
+            "params": [
+                "first_name",
+                "last_name",
+                "description",
+                "photo",
+                "photo_token"
+            ],
+            "php_params": [
+                "firstName",
+                "lastName",
+                "description",
+                "photo",
+                "photoToken"
+            ]
+        },
+        "check_2fa": {
+            "php_method": "checkTwoFactor",
+            "params": [],
+            "php_params": []
+        },
+        "close_all_sessions": {
+            "php_method": "closeAllSessions",
+            "params": [],
+            "php_params": []
+        },
+        "confirm_join_request": {
+            "php_method": "confirmJoinRequest",
+            "params": [
+                "chat_id",
+                "user_id",
+                "show_history"
+            ],
+            "php_params": [
+                "chatId",
+                "userId",
+                "showHistory"
+            ]
+        },
+        "confirm_join_requests": {
+            "php_method": "confirmJoinRequests",
+            "params": [
+                "chat_id",
+                "user_ids",
+                "show_history"
+            ],
+            "php_params": [
+                "chatId",
+                "userIds",
+                "showHistory"
+            ]
+        },
+        "create_folder": {
+            "php_method": "createFolder",
+            "params": [
+                "title",
+                "chat_include",
+                "filters"
+            ],
+            "php_params": [
+                "title",
+                "chatInclude",
+                "filters"
+            ]
+        },
+        "create_group": {
+            "php_method": "createGroup",
+            "params": [
+                "name",
+                "participant_ids",
+                "notify"
+            ],
+            "php_params": [
+                "name",
+                "participantIds",
+                "notify"
+            ]
+        },
+        "decline_join_request": {
+            "php_method": "declineJoinRequest",
+            "params": [
+                "chat_id",
+                "user_id"
+            ],
+            "php_params": [
+                "chatId",
+                "userId"
+            ]
+        },
+        "decline_join_requests": {
+            "php_method": "declineJoinRequests",
+            "params": [
+                "chat_id",
+                "user_ids"
+            ],
+            "php_params": [
+                "chatId",
+                "userIds"
+            ]
+        },
+        "delete_chat": {
+            "php_method": "deleteChat",
+            "params": [
+                "chat_id",
+                "last_event_time",
+                "for_all"
+            ],
+            "php_params": [
+                "chatId",
+                "lastEventTime",
+                "forAll"
+            ]
+        },
+        "delete_folder": {
+            "php_method": "deleteFolder",
+            "params": [
+                "folder_id"
+            ],
+            "php_params": [
+                "folderId"
+            ]
+        },
+        "delete_message": {
+            "php_method": "deleteMessage",
+            "params": [
+                "chat_id",
+                "message_ids",
+                "for_me"
+            ],
+            "php_params": [
+                "chatId",
+                "messageIds",
+                "forMe"
+            ]
+        },
+        "edit_message": {
+            "php_method": "editMessage",
+            "params": [
+                "chat_id",
+                "message_id",
+                "text",
+                "attachments"
+            ],
+            "php_params": [
+                "chatId",
+                "messageId",
+                "text",
+                "attachments"
+            ]
+        },
+        "fetch_chats": {
+            "php_method": "fetchChats",
+            "params": [
+                "marker"
+            ],
+            "php_params": [
+                "marker"
+            ]
+        },
+        "fetch_history": {
+            "php_method": "fetchHistory",
+            "params": [
+                "chat_id",
+                "forward",
+                "backward",
+                "backward_time",
+                "forward_time",
+                "from_time",
+                "item_type",
+                "get_chat",
+                "get_messages",
+                "interactive"
+            ],
+            "php_params": [
+                "chatId",
+                "forward",
+                "backward",
+                "backwardTime",
+                "forwardTime",
+                "fromTime",
+                "itemType",
+                "getChat",
+                "getMessages",
+                "interactive"
+            ]
+        },
+        "fetch_users": {
+            "php_method": "fetchUsers",
+            "params": [
+                "user_ids"
+            ],
+            "php_params": [
+                "userIds"
+            ]
+        },
+        "forward_message": {
+            "php_method": "forwardMessage",
+            "params": [
+                "chat_id",
+                "message_id",
+                "source_chat_id",
+                "notify"
+            ],
+            "php_params": [
+                "chatId",
+                "messageId",
+                "sourceChatId",
+                "notify"
+            ]
+        },
+        "get_bot_init_data": {
+            "php_method": "getBotInitData",
+            "params": [
+                "bot_id",
+                "chat_id",
+                "start_param"
+            ],
+            "php_params": [
+                "botId",
+                "chatId",
+                "startParam"
+            ]
+        },
+        "get_cached_user": {
+            "php_method": "getCachedUser",
+            "params": [
+                "user_id"
+            ],
+            "php_params": [
+                "userId"
+            ]
+        },
+        "get_chat": {
+            "php_method": "getChat",
+            "params": [
+                "chat_id"
+            ],
+            "php_params": [
+                "chatId"
+            ]
+        },
+        "get_chat_id": {
+            "php_method": "getChatId",
+            "params": [
+                "first_user_id",
+                "second_user_id"
+            ],
+            "php_params": [
+                "firstUserId",
+                "secondUserId"
+            ]
+        },
+        "get_chats": {
+            "php_method": "getChats",
+            "params": [
+                "chat_ids"
+            ],
+            "php_params": [
+                "chatIds"
+            ]
+        },
+        "get_file_by_id": {
+            "php_method": "getFileById",
+            "params": [
+                "chat_id",
+                "message_id",
+                "file_id"
+            ],
+            "php_params": [
+                "chatId",
+                "messageId",
+                "fileId"
+            ]
+        },
+        "get_folders": {
+            "php_method": "getFolders",
+            "params": [
+                "folder_sync"
+            ],
+            "php_params": [
+                "folderSync"
+            ]
+        },
+        "get_join_requests": {
+            "php_method": "getJoinRequests",
+            "params": [
+                "chat_id",
+                "count"
+            ],
+            "php_params": [
+                "chatId",
+                "count"
+            ]
+        },
+        "get_message": {
+            "php_method": "getMessage",
+            "params": [
+                "chat_id",
+                "message_id"
+            ],
+            "php_params": [
+                "chatId",
+                "messageId"
+            ]
+        },
+        "get_messages": {
+            "php_method": "getMessages",
+            "params": [
+                "chat_id",
+                "message_ids"
+            ],
+            "php_params": [
+                "chatId",
+                "messageIds"
+            ]
+        },
+        "get_reactions": {
+            "php_method": "getReactions",
+            "params": [
+                "chat_id",
+                "message_ids"
+            ],
+            "php_params": [
+                "chatId",
+                "messageIds"
+            ]
+        },
+        "get_sessions": {
+            "php_method": "getSessions",
+            "params": [],
+            "php_params": []
+        },
+        "get_user": {
+            "php_method": "getUser",
+            "params": [
+                "user_id"
+            ],
+            "php_params": [
+                "userId"
+            ]
+        },
+        "get_users": {
+            "php_method": "getUsers",
+            "params": [
+                "user_ids"
+            ],
+            "php_params": [
+                "userIds"
+            ]
+        },
+        "get_video_by_id": {
+            "php_method": "getVideoById",
+            "params": [
+                "chat_id",
+                "message_id",
+                "video_id"
+            ],
+            "php_params": [
+                "chatId",
+                "messageId",
+                "videoId"
+            ]
+        },
+        "import_contacts": {
+            "php_method": "importContacts",
+            "params": [
+                "contacts"
+            ],
+            "php_params": [
+                "contacts"
+            ]
+        },
+        "invite_users_to_channel": {
+            "php_method": "inviteUsersToChannel",
+            "params": [
+                "chat_id",
+                "user_ids",
+                "show_history"
+            ],
+            "php_params": [
+                "chatId",
+                "userIds",
+                "showHistory"
+            ]
+        },
+        "invite_users_to_group": {
+            "php_method": "inviteUsersToGroup",
+            "params": [
+                "chat_id",
+                "user_ids",
+                "show_history"
+            ],
+            "php_params": [
+                "chatId",
+                "userIds",
+                "showHistory"
+            ]
+        },
+        "join_channel": {
+            "php_method": "joinChannel",
+            "params": [
+                "link"
+            ],
+            "php_params": [
+                "link"
+            ]
+        },
+        "join_group": {
+            "php_method": "joinGroup",
+            "params": [
+                "link"
+            ],
+            "php_params": [
+                "link"
+            ]
+        },
+        "leave_channel": {
+            "php_method": "leaveChannel",
+            "params": [
+                "chat_id"
+            ],
+            "php_params": [
+                "chatId"
+            ]
+        },
+        "leave_group": {
+            "php_method": "leaveGroup",
+            "params": [
+                "chat_id"
+            ],
+            "php_params": [
+                "chatId"
+            ]
+        },
+        "logout": {
+            "php_method": "logout",
+            "params": [],
+            "php_params": []
+        },
+        "pin_message": {
+            "php_method": "pinMessage",
+            "params": [
+                "chat_id",
+                "message_id",
+                "notify_pin"
+            ],
+            "php_params": [
+                "chatId",
+                "messageId",
+                "notifyPin"
+            ]
+        },
+        "read_message": {
+            "php_method": "readMessage",
+            "params": [
+                "message_id",
+                "chat_id"
+            ],
+            "php_params": [
+                "messageId",
+                "chatId"
+            ]
+        },
+        "remove_2fa": {
+            "php_method": "removeTwoFactor",
+            "params": [
+                "password"
+            ],
+            "php_params": [
+                "password"
+            ]
+        },
+        "remove_contact": {
+            "php_method": "removeContact",
+            "params": [
+                "contact_id"
+            ],
+            "php_params": [
+                "contactId"
+            ]
+        },
+        "remove_reaction": {
+            "php_method": "removeReaction",
+            "params": [
+                "chat_id",
+                "message_id"
+            ],
+            "php_params": [
+                "chatId",
+                "messageId"
+            ]
+        },
+        "remove_users_from_group": {
+            "php_method": "removeUsersFromGroup",
+            "params": [
+                "chat_id",
+                "user_ids",
+                "clean_msg_period"
+            ],
+            "php_params": [
+                "chatId",
+                "userIds",
+                "cleanMsgPeriod"
+            ]
+        },
+        "request_profile_photo_upload_url": {
+            "php_method": "requestProfilePhotoUploadUrl",
+            "params": [],
+            "php_params": []
+        },
+        "resolve_group_by_link": {
+            "php_method": "resolveGroupByLink",
+            "params": [
+                "link"
+            ],
+            "php_params": [
+                "link"
+            ]
+        },
+        "rework_invite_link": {
+            "php_method": "reworkInviteLink",
+            "params": [
+                "chat_id"
+            ],
+            "php_params": [
+                "chatId"
+            ]
+        },
+        "search_by_phone": {
+            "php_method": "searchByPhone",
+            "params": [
+                "phone"
+            ],
+            "php_params": [
+                "phone"
+            ]
+        },
+        "send_message": {
+            "php_method": "sendMessage",
+            "params": [
+                "chat_id",
+                "text",
+                "reply_to",
+                "attachments",
+                "notify"
+            ],
+            "php_params": [
+                "chatId",
+                "text",
+                "replyTo",
+                "attachments",
+                "notify"
+            ]
+        },
+        "set_2fa": {
+            "php_method": "setTwoFactor",
+            "params": [
+                "password",
+                "email",
+                "hint",
+                "email_code_provider"
+            ],
+            "php_params": [
+                "password",
+                "email",
+                "hint",
+                "emailCodeProvider"
+            ]
+        },
+        "update_folder": {
+            "php_method": "updateFolder",
+            "params": [
+                "folder_id",
+                "title",
+                "chat_include",
+                "filters",
+                "options"
+            ],
+            "php_params": [
+                "folderId",
+                "title",
+                "chatInclude",
+                "filters",
+                "options"
+            ]
+        }
+    },
+    "domain_models": {
+        "AudioAttachment": {
+            "fields": [
+                "duration",
+                "audio_id",
+                "wave",
+                "transcription_status",
+                "url",
+                "type",
+                "token"
+            ],
+            "payload_keys": {
+                "duration": "duration",
+                "audio_id": "audioId",
+                "wave": "wave",
+                "transcription_status": "transcriptionStatus",
+                "url": "url",
+                "type": "_type",
+                "token": "token"
+            }
+        },
+        "CallAttachment": {
+            "fields": [
+                "type",
+                "duration",
+                "conversation_id",
+                "contact_ids"
+            ],
+            "payload_keys": {
+                "type": "_type",
+                "duration": "duration",
+                "conversation_id": "conversationId",
+                "contact_ids": "contactIds"
+            }
+        },
+        "Chat": {
+            "fields": [
+                "id",
+                "type",
+                "status",
+                "owner",
+                "participants",
+                "title",
+                "base_raw_icon_url",
+                "base_icon_url",
+                "last_message",
+                "last_event_time",
+                "last_delayed_update_time",
+                "last_fire_delayed_error_time",
+                "created",
+                "new_messages",
+                "link",
+                "access",
+                "restrictions",
+                "pinned_message",
+                "participants_count",
+                "description",
+                "options",
+                "join_time",
+                "invited_by",
+                "modified",
+                "messages_count",
+                "has_bots",
+                "prev_message_id",
+                "admin_participants",
+                "admins",
+                "cid"
+            ],
+            "payload_keys": {
+                "id": "id",
+                "type": "type",
+                "status": "status",
+                "owner": "owner",
+                "participants": "participants",
+                "title": "title",
+                "base_raw_icon_url": "baseRawIconUrl",
+                "base_icon_url": "baseIconUrl",
+                "last_message": "lastMessage",
+                "last_event_time": "lastEventTime",
+                "last_delayed_update_time": "lastDelayedUpdateTime",
+                "last_fire_delayed_error_time": "lastFireDelayedErrorTime",
+                "created": "created",
+                "new_messages": "newMessages",
+                "link": "link",
+                "access": "access",
+                "restrictions": "restrictions",
+                "pinned_message": "pinnedMessage",
+                "participants_count": "participantsCount",
+                "description": "description",
+                "options": "options",
+                "join_time": "joinTime",
+                "invited_by": "invitedBy",
+                "modified": "modified",
+                "messages_count": "messagesCount",
+                "has_bots": "hasBots",
+                "prev_message_id": "prevMessageId",
+                "admin_participants": "adminParticipants",
+                "admins": "admins",
+                "cid": "cid"
+            }
+        },
+        "CheckCodeResponse": {
+            "fields": [
+                "token_attrs",
+                "password_challenge"
+            ],
+            "payload_keys": {
+                "token_attrs": "tokenAttrs",
+                "password_challenge": "passwordChallenge"
+            }
+        },
+        "CheckPasswordResponse": {
+            "fields": [
+                "token_attrs",
+                "error"
+            ],
+            "payload_keys": {
+                "token_attrs": "tokenAttrs",
+                "error": "error"
+            }
+        },
+        "CheckQrResponse": {
+            "fields": [
+                "status"
+            ],
+            "payload_keys": {
+                "status": "status"
+            }
+        },
+        "ConfirmRegistrationResponse": {
+            "fields": [
+                "user_token",
+                "profile",
+                "token_type",
+                "token"
+            ],
+            "payload_keys": {
+                "user_token": "userToken",
+                "profile": "profile",
+                "token_type": "tokenType",
+                "token": "token"
+            }
+        },
+        "ContactAttachment": {
+            "fields": [
+                "contact_id",
+                "first_name",
+                "last_name",
+                "name",
+                "photo_url",
+                "type"
+            ],
+            "payload_keys": {
+                "contact_id": "contactId",
+                "first_name": "firstName",
+                "last_name": "lastName",
+                "name": "name",
+                "photo_url": "photoUrl",
+                "type": "_type"
+            }
+        },
+        "ContactInfo": {
+            "fields": [
+                "phone",
+                "first_name",
+                "last_name"
+            ],
+            "payload_keys": {
+                "phone": "phone",
+                "first_name": "firstName",
+                "last_name": "lastName"
+            }
+        },
+        "ControlAttachment": {
+            "fields": [
+                "type",
+                "event"
+            ],
+            "payload_keys": {
+                "type": "_type",
+                "event": "event"
+            }
+        },
+        "Element": {
+            "fields": [
+                "type",
+                "from_",
+                "length",
+                "attributes"
+            ],
+            "payload_keys": {
+                "type": "type",
+                "from_": "from",
+                "length": "length",
+                "attributes": "attributes"
+            }
+        },
+        "ElementAttributes": {
+            "fields": [
+                "url"
+            ],
+            "payload_keys": {
+                "url": "url"
+            }
+        },
+        "FileAttachment": {
+            "fields": [
+                "file_id",
+                "name",
+                "size",
+                "token",
+                "type"
+            ],
+            "payload_keys": {
+                "file_id": "fileId",
+                "name": "name",
+                "size": "size",
+                "token": "token",
+                "type": "_type"
+            }
+        },
+        "FileRequest": {
+            "fields": [
+                "unsafe",
+                "url"
+            ],
+            "payload_keys": {
+                "unsafe": "unsafe",
+                "url": "url"
+            }
+        },
+        "Folder": {
+            "fields": [
+                "source_id",
+                "include",
+                "options",
+                "update_time",
+                "id",
+                "filters",
+                "title"
+            ],
+            "payload_keys": {
+                "source_id": "sourceId",
+                "include": "include",
+                "options": "options",
+                "update_time": "updateTime",
+                "id": "id",
+                "filters": "filters",
+                "title": "title"
+            }
+        },
+        "FolderList": {
+            "fields": [
+                "folders_order",
+                "folders",
+                "all_filter_exclude_folders",
+                "folder_sync"
+            ],
+            "payload_keys": {
+                "folders_order": "foldersOrder",
+                "folders": "folders",
+                "all_filter_exclude_folders": "allFilterExcludeFolders",
+                "folder_sync": "folderSync"
+            }
+        },
+        "FolderUpdate": {
+            "fields": [
+                "folders_order",
+                "folder",
+                "folder_sync"
+            ],
+            "payload_keys": {
+                "folders_order": "foldersOrder",
+                "folder": "folder",
+                "folder_sync": "folderSync"
+            }
+        },
+        "InitData": {
+            "fields": [
+                "query_id",
+                "url"
+            ],
+            "payload_keys": {
+                "query_id": "queryId",
+                "url": "url"
+            }
+        },
+        "InlineKeyboardAttachment": {
+            "fields": [
+                "type",
+                "keyboard"
+            ],
+            "payload_keys": {
+                "type": "_type",
+                "keyboard": "keyboard"
+            }
+        },
+        "LoginConfig": {
+            "fields": [
+                "hash"
+            ],
+            "payload_keys": {
+                "hash": "hash"
+            }
+        },
+        "LoginResponse": {
+            "fields": [
+                "chats",
+                "profile",
+                "messages",
+                "contacts",
+                "token",
+                "time",
+                "config"
+            ],
+            "payload_keys": {
+                "chats": "chats",
+                "profile": "profile",
+                "messages": "messages",
+                "contacts": "contacts",
+                "token": "token",
+                "time": "time",
+                "config": "config"
+            }
+        },
+        "MaxApiError": {
+            "fields": [
+                "error",
+                "message",
+                "title",
+                "localized_message"
+            ],
+            "payload_keys": {
+                "error": "error",
+                "message": "message",
+                "title": "title",
+                "localized_message": "localizedMessage"
+            }
+        },
+        "Member": {
+            "fields": [
+                "contact",
+                "presence"
+            ],
+            "payload_keys": {
+                "contact": "contact",
+                "presence": "presence"
+            }
+        },
+        "Message": {
+            "fields": [
+                "id",
+                "chat_id",
+                "sender",
+                "text",
+                "time",
+                "type",
+                "cid",
+                "attaches",
+                "stats",
+                "status",
+                "reaction_info",
+                "options",
+                "prev_message_id",
+                "ttl",
+                "unread",
+                "mark",
+                "elements"
+            ],
+            "payload_keys": {
+                "id": "id",
+                "chat_id": "chatId",
+                "sender": "sender",
+                "text": "text",
+                "time": "time",
+                "type": "type",
+                "cid": "cid",
+                "attaches": "attaches",
+                "stats": "stats",
+                "status": "status",
+                "reaction_info": "reactionInfo",
+                "options": "options",
+                "prev_message_id": "prevMessageId",
+                "ttl": "ttl",
+                "unread": "unread",
+                "mark": "mark",
+                "elements": "elements"
+            }
+        },
+        "Name": {
+            "fields": [
+                "name",
+                "first_name",
+                "last_name",
+                "type"
+            ],
+            "payload_keys": {
+                "name": "name",
+                "first_name": "firstName",
+                "last_name": "lastName",
+                "type": "type"
+            }
+        },
+        "PasswordChallenge": {
+            "fields": [
+                "track_id",
+                "hint"
+            ],
+            "payload_keys": {
+                "track_id": "trackId",
+                "hint": "hint"
+            }
+        },
+        "PhotoAttachment": {
+            "fields": [
+                "base_url",
+                "height",
+                "width",
+                "photo_id",
+                "photo_token",
+                "preview_data",
+                "type"
+            ],
+            "payload_keys": {
+                "base_url": "baseUrl",
+                "height": "height",
+                "width": "width",
+                "photo_id": "photoId",
+                "photo_token": "photoToken",
+                "preview_data": "previewData",
+                "type": "_type"
+            }
+        },
+        "Presence": {
+            "fields": [
+                "seen",
+                "status"
+            ],
+            "payload_keys": {
+                "seen": "seen",
+                "status": "status"
+            }
+        },
+        "Profile": {
+            "fields": [
+                "contact",
+                "profile_options"
+            ],
+            "payload_keys": {
+                "contact": "contact",
+                "profile_options": "profileOptions"
+            }
+        },
+        "QrStatus": {
+            "fields": [
+                "expires_at",
+                "login_available"
+            ],
+            "payload_keys": {
+                "expires_at": "expiresAt",
+                "login_available": "loginAvailable"
+            }
+        },
+        "ReactionCounter": {
+            "fields": [
+                "count",
+                "reaction"
+            ],
+            "payload_keys": {
+                "count": "count",
+                "reaction": "reaction"
+            }
+        },
+        "ReactionInfo": {
+            "fields": [
+                "total_count",
+                "counters",
+                "your_reaction"
+            ],
+            "payload_keys": {
+                "total_count": "totalCount",
+                "counters": "counters",
+                "your_reaction": "yourReaction"
+            }
+        },
+        "ReadState": {
+            "fields": [
+                "unread",
+                "mark"
+            ],
+            "payload_keys": {
+                "unread": "unread",
+                "mark": "mark"
+            }
+        },
+        "RequestQrResponse": {
+            "fields": [
+                "expires_at",
+                "polling_interval",
+                "qr_link",
+                "track_id",
+                "ttl"
+            ],
+            "payload_keys": {
+                "expires_at": "expiresAt",
+                "polling_interval": "pollingInterval",
+                "qr_link": "qrLink",
+                "track_id": "trackId",
+                "ttl": "ttl"
+            }
+        },
+        "Session": {
+            "fields": [
+                "id",
+                "device_id",
+                "current",
+                "user_agent",
+                "app_version",
+                "device_name",
+                "device_type",
+                "platform",
+                "ip",
+                "location",
+                "created",
+                "updated",
+                "last_activity",
+                "options"
+            ],
+            "payload_keys": {
+                "id": "id",
+                "device_id": "deviceId",
+                "current": "current",
+                "user_agent": "userAgent",
+                "app_version": "appVersion",
+                "device_name": "deviceName",
+                "device_type": "deviceType",
+                "platform": "platform",
+                "ip": "ip",
+                "location": "location",
+                "created": "created",
+                "updated": "updated",
+                "last_activity": "lastActivity",
+                "options": "options"
+            }
+        },
+        "ShareAttachment": {
+            "fields": [
+                "type",
+                "url",
+                "title",
+                "description",
+                "image"
+            ],
+            "payload_keys": {
+                "type": "_type",
+                "url": "url",
+                "title": "title",
+                "description": "description",
+                "image": "image"
+            }
+        },
+        "StartAuthResponse": {
+            "fields": [
+                "token",
+                "code_length",
+                "request_max_duration",
+                "request_count_left",
+                "alt_action_duration"
+            ],
+            "payload_keys": {
+                "token": "token",
+                "code_length": "codeLength",
+                "request_max_duration": "requestMaxDuration",
+                "request_count_left": "requestCountLeft",
+                "alt_action_duration": "altActionDuration"
+            }
+        },
+        "StickerAttachment": {
+            "fields": [
+                "author_type",
+                "lottie_url",
+                "url",
+                "sticker_id",
+                "tags",
+                "width",
+                "set_id",
+                "time",
+                "sticker_type",
+                "audio",
+                "height",
+                "type"
+            ],
+            "payload_keys": {
+                "author_type": "authorType",
+                "lottie_url": "lottieUrl",
+                "url": "url",
+                "sticker_id": "stickerId",
+                "tags": "tags",
+                "width": "width",
+                "set_id": "setId",
+                "time": "time",
+                "sticker_type": "stickerType",
+                "audio": "audio",
+                "height": "height",
+                "type": "_type"
+            }
+        },
+        "SyncOverrides": {
+            "fields": [
+                "chats_sync",
+                "contacts_sync",
+                "drafts_sync",
+                "presence_sync",
+                "config_hash"
+            ],
+            "payload_keys": {
+                "chats_sync": "chats_sync",
+                "contacts_sync": "contacts_sync",
+                "drafts_sync": "drafts_sync",
+                "presence_sync": "presence_sync",
+                "config_hash": "config_hash"
+            }
+        },
+        "SyncState": {
+            "fields": [
+                "chats_sync",
+                "contacts_sync",
+                "drafts_sync",
+                "presence_sync",
+                "config_hash"
+            ],
+            "payload_keys": {
+                "chats_sync": "chats_sync",
+                "contacts_sync": "contacts_sync",
+                "drafts_sync": "drafts_sync",
+                "presence_sync": "presence_sync",
+                "config_hash": "config_hash"
+            }
+        },
+        "Token": {
+            "fields": [
+                "token"
+            ],
+            "payload_keys": {
+                "token": "token"
+            }
+        },
+        "TokenAttrs": {
+            "fields": [
+                "login",
+                "register_token"
+            ],
+            "payload_keys": {
+                "login": "LOGIN",
+                "register_token": "REGISTER"
+            }
+        },
+        "UnknownAttachment": {
+            "fields": [
+                "type"
+            ],
+            "payload_keys": {
+                "type": "_type"
+            }
+        },
+        "User": {
+            "fields": [
+                "id",
+                "account_status",
+                "registration_time",
+                "country",
+                "base_raw_url",
+                "base_url",
+                "names",
+                "options",
+                "photo_id",
+                "update_time",
+                "phone",
+                "status",
+                "description",
+                "gender",
+                "link",
+                "web_app",
+                "menu_button"
+            ],
+            "payload_keys": {
+                "id": "id",
+                "account_status": "accountStatus",
+                "registration_time": "registrationTime",
+                "country": "country",
+                "base_raw_url": "baseRawUrl",
+                "base_url": "baseUrl",
+                "names": "names",
+                "options": "options",
+                "photo_id": "photoId",
+                "update_time": "updateTime",
+                "phone": "phone",
+                "status": "status",
+                "description": "description",
+                "gender": "gender",
+                "link": "link",
+                "web_app": "webApp",
+                "menu_button": "menuButton"
+            }
+        },
+        "VideoAttachment": {
+            "fields": [
+                "height",
+                "width",
+                "video_id",
+                "duration",
+                "preview_data",
+                "type",
+                "thumbnail",
+                "token",
+                "video_type"
+            ],
+            "payload_keys": {
+                "height": "height",
+                "width": "width",
+                "video_id": "videoId",
+                "duration": "duration",
+                "preview_data": "previewData",
+                "type": "_type",
+                "thumbnail": "thumbnail",
+                "token": "token",
+                "video_type": "videoType"
+            }
+        },
+        "VideoRequest": {
+            "fields": [
+                "external",
+                "cache",
+                "url"
+            ],
+            "payload_keys": {
+                "external": "EXTERNAL",
+                "cache": "cache",
+                "url": "url"
+            }
+        }
+    },
+    "event_models": {
+        "FileUploadSignal": {
+            "fields": [
+                "file_id"
+            ],
+            "payload_keys": {
+                "file_id": "fileId"
+            }
+        },
+        "MessageDeleteEvent": {
+            "fields": [
+                "message_ids",
+                "chat_id",
+                "chat",
+                "message",
+                "ttl"
+            ],
+            "payload_keys": {
+                "message_ids": "messageIds",
+                "chat_id": "chatId",
+                "chat": "chat",
+                "message": "message",
+                "ttl": "ttl"
+            }
+        },
+        "MessageReadEvent": {
+            "fields": [
+                "set_as_unread",
+                "chat_id",
+                "user_id",
+                "mark"
+            ],
+            "payload_keys": {
+                "set_as_unread": "setAsUnread",
+                "chat_id": "chatId",
+                "user_id": "userId",
+                "mark": "mark"
+            }
+        },
+        "PresenceEvent": {
+            "fields": [
+                "presence",
+                "user_id"
+            ],
+            "payload_keys": {
+                "presence": "presence",
+                "user_id": "userId"
+            }
+        },
+        "ReactionUpdateEvent": {
+            "fields": [
+                "message_id",
+                "chat_id",
+                "counters",
+                "total_count"
+            ],
+            "payload_keys": {
+                "message_id": "messageId",
+                "chat_id": "chatId",
+                "counters": "counters",
+                "total_count": "totalCount"
+            }
+        },
+        "TypingEvent": {
+            "fields": [
+                "chat_id",
+                "user_id"
+            ],
+            "payload_keys": {
+                "chat_id": "chatId",
+                "user_id": "userId"
+            }
+        },
+        "VideoUploadSignal": {
+            "fields": [
+                "video_id"
+            ],
+            "payload_keys": {
+                "video_id": "videoId"
+            }
+        }
+    }
+}

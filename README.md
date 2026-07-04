@@ -1,177 +1,244 @@
-# PyMax
+# PHPMax
 
-Python-библиотека для Max API.
-
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Package](https://img.shields.io/badge/package-maxapi--python-orange.svg)](https://pypi.org/project/maxapi-python/)
+PHPMax is a PHP 7.4+ SDK port of PyMax for the unofficial Max internal API.
+The goal is behavioral parity with PyMax while keeping the runtime practical
+for shared hosting, cron jobs and short CLI scripts.
 
 > [!WARNING]
-> PyMax использует неофициальный внутренний API Max. API может измениться без
-> предупреждения, а использование библиотеки может нарушать условия сервиса.
-> Вы используете PyMax на свой риск; авторы и контрибьюторы не несут
-> ответственности за блокировки аккаунтов, потерю данных или другие последствия.
+> PHPMax uses an unofficial internal Max API. The API can change without
+> notice, and using this library can violate service terms. Use it at your own
+> risk.
 
-## Что это
+## Status
 
-**PyMax** - асинхронная Python-библиотека для внутреннего API Max. Она умеет
-авторизоваться в аккаунте, слушать события, отправлять сообщения, работать с
-чатами, пользователями, файлами, сессиями и доменными типами Max через TCP или
-WebSocket.
+This repository is an active PHP port. The Python implementation in `src/pymax`
+is kept as the reference implementation for contract checks and upstream sync.
 
-## Возможности
+Implemented foundations include:
 
-- Авторизация по телефону и SMS-коду через `Client`.
-- QR-авторизация web-клиента через `WebClient`.
-- Роутеры, фильтры, `on_start`, raw-события и typed events.
-- Сообщения: отправка, ответы, reply, реакции, pin, read, delete и история.
-- Чаты, группы, участники, invite-ссылки и настройки групп.
-- Пользователи, контакты, профиль, папки, активные сессии и 2FA.
-- Вложения: `Photo`, `File`, `Video`.
-- SQLite-сессии, sync-state, reconnect и debug-логи.
-- Pydantic-модели и удобные domain-объекты.
+- PHP 7.4-compatible Composer package with PSR-4 namespace `PHPMax\\`;
+- TCP client runtime, bounded lifecycle, reconnect and heartbeat;
+- JSON and optional SQLite session stores;
+- auth/session flows, token login, SMS auth, 2FA helpers and QR auth
+  foundation;
+- messages, chats, users, account/folders, bots and domain-bound helpers;
+- typed events, router, raw fallback, error scopes and disconnect callbacks;
+- file/photo/video upload foundations with bounded processing waits;
+- WebSocket `WebClient` scaffold, proxy adapters and explicit telemetry;
+- release ZIP workflow for shared hosting without shell Composer install.
 
-## Установка
+Real-account integration checks are intentionally opt-in and require your own
+token/account configuration.
 
-Требуется Python 3.10 или новее.
+## Requirements
 
-```bash
-pip install -U maxapi-python
-```
+- PHP 7.4 or newer;
+- `ext-json`;
+- `ext-openssl`;
+- optional `ext-curl` for streaming file/video uploads and uploads through a
+  proxy;
+- optional `ext-pdo_sqlite` for SQLite session storage;
+- optional `ext-zstd` for Zstd-compressed TCP payloads.
 
-Через `uv`:
+## Installation
 
-```bash
-uv add -U maxapi-python
-```
-
-Напрямую из репозитория:
-
-```bash
-pip install git+https://github.com/MaxApiTeam/PyMax.git
-```
-
-## Быстрый старт
-
-`Client` использует TCP-соединение. При первом запуске PyMax попросит SMS-код
-и сохранит сессию в SQLite-файл; дальше этот файл используется автоматически.
-
-```python
-import asyncio
-
-from pymax import Client, Message
-
-client = Client(
-    phone="+79990000000",
-    work_dir="cache",
-    session_name="main.db",
-)
-
-
-@client.on_start()
-async def on_start(client: Client) -> None:
-    print("Клиент запущен")
-    print("Ваш ID:", client.me.contact.id if client.me else "unknown")
-
-
-@client.on_message()
-async def on_message(message: Message, client: Client) -> None:
-    print(message.chat_id, message.sender, message.text)
-
-    if message.chat_id is not None and message.text:
-        await message.answer("Привет от PyMax")
-
-
-async def main() -> None:
-    await client.start()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-## WebClient
-
-`WebClient` использует WebSocket и QR-авторизацию:
-
-```python
-import asyncio
-
-from pymax import WebClient
-
-client = WebClient(work_dir="cache", session_name="web.db")
-
-
-@client.on_start()
-async def on_start(client: WebClient) -> None:
-    print("Web-клиент запущен")
-
-
-asyncio.run(client.start())
-```
-
-## Роутеры
-
-Обработчики можно регистрировать на клиенте или вынести в отдельный роутер.
-Handler всегда принимает событие и клиента: `(event, client)`.
-
-```python
-from pymax import Client, ClientRouter, Message
-
-router = ClientRouter()
-
-
-def is_start(message: Message) -> bool:
-    return message.text == "/start"
-
-
-@router.on_message(is_start)
-async def start(message: Message, client: Client) -> None:
-    await message.answer("Готово")
-
-
-client = Client(phone="+79990000000", work_dir="cache")
-client.include_router(router)
-```
-
-## Куда дальше
-
-- [Getting Started](docs/getting-started.rst) - первый запуск и сессии.
-- [Client](docs/client.rst) - жизненный цикл клиента, reconnect и sync-state.
-- [Router](docs/router.rst) - роутеры, фильтры и raw events.
-- [Messages](docs/messages.rst) - сообщения, реакции, история и вложения.
-- [Files](docs/files.rst) - отправка и скачивание файлов.
-- [FAQ](docs/faq.rst) и [Troubleshooting](docs/troubleshooting.rst) - частые
-  проблемы.
-
-Опубликованная документация:
-
-- [docs.pymax.org](https://docs.pymax.org/)
-- [DeepWiki](https://deepwiki.com/MaxApiTeam/PyMax)
-
-## Разработка
+When the package is installed through Composer:
 
 ```bash
-uv sync --all-groups
-uv run pre-commit install
-uv run pre-commit run --all-files
-uv run pytest
-uv run python -c "import pymax; print(pymax.__all__)"
-uv run sphinx-build -b html docs docs/_build/html
+composer require varyagnord/phpmax
 ```
 
-## Ссылки
+Until the package is published on Packagist, add this repository as a VCS
+source first:
 
-- [GitHub](https://github.com/MaxApiTeam/PyMax)
-- [PyPI](https://pypi.org/project/maxapi-python/)
-- [Telegram](https://t.me/pymax_news)
+```bash
+composer config repositories.phpmax vcs https://github.com/varyagnord/PHPMax
+composer require varyagnord/phpmax:dev-main
+```
 
-## Лицензия
+For shared hosting without shell access, build a runtime archive locally and
+upload the ZIP contents:
 
-Проект распространяется под лицензией MIT. Подробности см. в [LICENSE](LICENSE).
+```bash
+just release-zip
+```
 
-## Авторы
+The release archive contains `autoload.php`, `src/PHPMax`, `docs/phpmax`,
+`composer.json` and optional `vendor/` if runtime Composer packages are added
+later.
 
-- [ink](https://github.com/ink-developer) - основной разработчик, исследование
-  API и документация.
-- [noxzion](https://github.com/noxzion) - оригинальный автор проекта.
+## Quick Start
+
+```php
+<?php
+
+declare(strict_types=1);
+
+require __DIR__ . '/vendor/autoload.php';
+
+use PHPMax\Client;
+use PHPMax\Config\ClientOptions;
+use PHPMax\Domain\Message;
+
+$client = new Client(new ClientOptions([
+    'phone' => '+79990000000',
+    'workDir' => __DIR__ . '/var/phpmax',
+    'sessionName' => 'main.json',
+]));
+
+$client->onStart(static function (Client $client): void {
+    $profile = $client->me();
+    $userId = $profile !== null && $profile->contact !== null
+        ? $profile->contact->id
+        : null;
+
+    echo 'Client started, user id: ' . ($userId !== null ? $userId : 'unknown') . PHP_EOL;
+});
+
+$client->onMessage(static function (Message $message, Client $client): void {
+    echo $message->chatId . ': ' . $message->text . PHP_EOL;
+
+    if ($message->text === '/start') {
+        $message->reply('PHPMax is running');
+    }
+});
+
+$client->withOpenSession(static function (Client $client): void {
+    $client->runFor(25);
+});
+```
+
+`Client::withOpenSession()` is the preferred short-script shape: it opens the
+connection, runs bounded work and always closes transport/session resources.
+
+## Token Login
+
+If you already have a valid token:
+
+```php
+<?php
+
+use PHPMax\Client;
+use PHPMax\Config\ClientOptions;
+
+$client = new Client(new ClientOptions([
+    'token' => getenv('PHPMAX_TOKEN') ?: null,
+    'workDir' => __DIR__ . '/var/phpmax',
+    'sessionName' => 'token-session.json',
+]));
+
+$client->withOpenSession(static function (Client $client): void {
+    $client->sendMessage(123456789, 'Hello from PHPMax');
+});
+```
+
+Do not log tokens. Keep `workDir` and session files outside the webroot.
+
+## Sending Files
+
+```php
+<?php
+
+use PHPMax\Client;
+use PHPMax\Config\ClientOptions;
+use PHPMax\Files\Photo;
+
+$client = new Client(new ClientOptions([
+    'token' => getenv('PHPMAX_TOKEN') ?: null,
+    'workDir' => __DIR__ . '/var/phpmax',
+]));
+
+$client->withOpenSession(static function (Client $client): void {
+    $photo = Photo::fromPath(__DIR__ . '/avatar.png');
+    $attachment = $client->uploadPhoto($photo);
+
+    $client->sendMessage(123456789, 'Photo uploaded', null, [$attachment]);
+});
+```
+
+For large file/video uploads, install `ext-curl`; PHPMax streams those uploads
+through a read callback instead of buffering the entire request body.
+
+## WebClient and QR Auth
+
+`WebClient` uses the shared bounded lifecycle, WebSocket transport and QR auth
+flow:
+
+```php
+<?php
+
+use PHPMax\Config\ClientOptions;
+use PHPMax\WebClient;
+
+$client = new WebClient(new ClientOptions([
+    'workDir' => __DIR__ . '/var/phpmax',
+    'sessionName' => 'web.json',
+]));
+
+$client->withOpenSession(static function (WebClient $client): void {
+    $client->runFor(25);
+});
+```
+
+The default QR handler prints the QR payload in CLI. Production code can pass a
+custom `QrHandlerInterface` implementation to `WebClient`.
+
+## Integration Checks
+
+Local deterministic gates:
+
+```bash
+just doctor
+just php-check
+just pre-publish-check
+```
+
+Real-account checks are disabled by default:
+
+```bash
+just integration-plan
+PHPMAX_INTEGRATION=1 PHPMAX_TOKEN=... just integration-check
+```
+
+To verify first login by phone, SMS-code prompting, local session persistence
+and login reuse from the saved session:
+
+```bash
+PHPMAX_INTEGRATION=1 PHPMAX_AUTH_SMS=1 PHPMAX_PHONE=+79990000000 just integration-check
+```
+
+Optional environment flags enable upload/download/WebSocket/proxy/telemetry
+paths. The integration harness performs a secret-safe preflight and does not
+print token or proxy credentials.
+
+## Documentation
+
+PHPMax-specific documentation lives in `docs/phpmax`:
+
+- `docs/phpmax/README.md` - documentation hub;
+- `docs/phpmax/architecture.md` - architecture and layer boundaries;
+- `docs/phpmax/roadmap.md` - staged parity plan;
+- `docs/phpmax/upstream-sync.md` - mandatory PyMax upstream sync log;
+- `docs/phpmax/testing.md` - test and parity strategy;
+- `docs/phpmax/implementation-status.md` - current implementation status.
+
+The original PyMax RST documentation remains as reference material for the
+Python package and parity work.
+
+## Development
+
+```bash
+just list
+just contract-check
+just php-check
+just release-check
+just pre-publish-check
+```
+
+Before publishing to git, source changes must be reviewed together with
+documentation changes. If a source change is cosmetic and does not require docs,
+run `DOCS_REVIEWED=1 just docs-guard` after that decision is made.
+
+## License
+
+MIT. See `LICENSE`.
