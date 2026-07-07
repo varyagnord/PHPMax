@@ -343,6 +343,25 @@ return static function (callable $assert, callable $assertSame, callable $assert
     $assertSame(['+79990000000'], $codeProvider->phones);
     $assertSame(['hint'], $passwordProvider->hints);
 
+    $passwordResponse = \PHPMax\Domain\Auth\CheckPasswordResponse::fromArray([
+        'tokenAttrs' => ['LOGIN' => ['token' => '2fa-token-with-error-false']],
+        'error' => false,
+    ]);
+    $assertSame('2fa-token-with-error-false', $passwordResponse->loginToken());
+    $assertSame(false, $passwordResponse->error);
+    $userWithFalseStrings = \PHPMax\Domain\User::fromArray([
+        'id' => 42,
+        'country' => false,
+        'baseRawUrl' => false,
+        'baseUrl' => false,
+        'status' => false,
+        'description' => false,
+        'link' => false,
+    ]);
+    $assertSame('', $userWithFalseStrings->country);
+    $assertSame('', $userWithFalseStrings->baseUrl);
+    $assertSame('', $userWithFalseStrings->status);
+
     $nowMs = (int) floor(microtime(true) * 1000);
     $qrTransport = new AuthTestTransport(array_merge(
         $frameChunks([

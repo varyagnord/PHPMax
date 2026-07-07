@@ -67,6 +67,17 @@ return static function (callable $assert, callable $assertSame, callable $assert
     $assertSame(2, $message->unread);
     $assert($message->attaches[0] instanceof PhotoAttachment, 'Known photo attachment must hydrate to PhotoAttachment');
     $assertSame('token-1', $message->attaches[0]->photoToken);
+    $malformedPhoto = PhotoAttachment::fromArray([
+        '_type' => AttachmentType::PHOTO,
+        'baseUrl' => ['bad' => 'shape'],
+        'photoId' => 12345,
+        'token' => ['bad' => 'token'],
+        'previewData' => true,
+    ]);
+    $assertSame('', $malformedPhoto->baseUrl);
+    $assertSame('12345', $malformedPhoto->photoId);
+    $assertSame('', $malformedPhoto->photoToken);
+    $assertSame('1', $malformedPhoto->previewData);
     $assert($message->attaches[1] instanceof FileAttachment, 'Known file attachment must hydrate to FileAttachment');
     $assertSame('file-token', $message->attaches[1]->token);
     $assert($message->attaches[2] instanceof VideoAttachment, 'Known video attachment must hydrate to VideoAttachment');

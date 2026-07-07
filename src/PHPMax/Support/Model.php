@@ -367,8 +367,11 @@ abstract class Model
         if (is_string($value)) {
             return $value;
         }
+        if ($value === false) {
+            return '';
+        }
 
-        throw new ValidationException('Expected string value');
+        throw new ValidationException('Expected string value for ' . static::class);
     }
 
     /**

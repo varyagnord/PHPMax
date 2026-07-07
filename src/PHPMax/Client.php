@@ -126,23 +126,60 @@ class Client
     {
         $budget = ExecutionBudget::fromRequestedSeconds($seconds, $this->options->executionSafetyMargin);
         $nextPingAt = $this->nextPingDeadline();
+        $startedAt = microtime(true);
+        $this->traceRuntime('run_start', $startedAt, $budget, [
+            'seconds' => $seconds,
+            'ping_interval_ms' => (int) round($this->options->pingInterval * 1000),
+            'request_timeout_ms' => (int) round($this->options->requestTimeout * 1000),
+            'safety_margin_ms' => (int) round($this->options->executionSafetyMargin * 1000),
+        ]);
         while (!$budget->expired() && $this->connection->isOpen()) {
+            $readTimeout = $this->runReadTimeout($budget, $nextPingAt);
             try {
-                $frame = $this->connection->readFrame($this->runReadTimeout($budget, $nextPingAt));
+                $this->traceRuntime('read_wait', $startedAt, $budget, [
+                    'read_timeout_ms' => (int) round($readTimeout * 1000),
+                    'next_ping_due_ms' => $this->millisecondsUntil($nextPingAt),
+                ]);
+                $frame = $this->connection->readFrame($readTimeout);
             } catch (ProtocolException $e) {
                 if ($this->isTimeoutException($e)) {
-                    $nextPingAt = $this->runPingIfDue($nextPingAt, $budget);
+                    $this->traceRuntime('read_timeout', $startedAt, $budget, [
+                        'error' => $this->shortError($e),
+                        'next_ping_due_ms' => $this->millisecondsUntil($nextPingAt),
+                    ]);
+                    $nextPingAt = $this->runPingIfDue($nextPingAt, $budget, $startedAt);
                     continue;
                 }
+                $this->traceRuntime('read_error', $startedAt, $budget, [
+                    'error' => $this->shortError($e),
+                    'connection_open' => $this->connection->isOpen() ? 1 : 0,
+                ]);
                 if (!$this->handleRunDisconnect($e, $budget)) {
+                    $this->traceRuntime('read_error_unhandled', $startedAt, $budget, [
+                        'error' => $this->shortError($e),
+                    ]);
                     throw $e;
                 }
+                $this->traceRuntime('read_error_reconnected', $startedAt, $budget, [
+                    'error' => $this->shortError($e),
+                    'connection_open' => $this->connection->isOpen() ? 1 : 0,
+                ]);
                 $nextPingAt = $this->nextPingDeadline();
                 continue;
             }
+            $this->traceRuntime('frame_received', $startedAt, $budget, [
+                'opcode' => $frame->opcode,
+                'cmd' => $frame->cmd,
+                'seq' => $frame->seq,
+                'field_keys' => $this->payloadKeySummary($frame->payload),
+            ]);
             $this->connection->dispatchEvent($frame);
-            $nextPingAt = $this->runPingIfDue($nextPingAt, $budget);
+            $nextPingAt = $this->runPingIfDue($nextPingAt, $budget, $startedAt);
         }
+        $this->traceRuntime('run_end', $startedAt, $budget, [
+            'connection_open' => $this->connection->isOpen() ? 1 : 0,
+            'budget_expired' => $budget->expired() ? 1 : 0,
+        ]);
     }
 
     /**
@@ -937,12 +974,16 @@ class Client
         return $timeout;
     }
 
-    private function runPingIfDue(?float $nextPingAt, ExecutionBudget $budget): ?float
+    private function runPingIfDue(?float $nextPingAt, ExecutionBudget $budget, ?float $startedAt = null): ?float
     {
         if ($nextPingAt === null || microtime(true) < $nextPingAt || $budget->expired()) {
             return $nextPingAt;
         }
 
+        $startedAt = $startedAt !== null ? $startedAt : microtime(true);
+        $this->traceRuntime('ping_due', $startedAt, $budget, [
+            'ping_interval_ms' => (int) round($this->options->pingInterval * 1000),
+        ]);
         try {
             $this->app->invoke(
                 Opcode::PING,
@@ -950,13 +991,73 @@ class Client
                 Command::REQUEST,
                 min(max(0.001, $this->options->requestTimeout), max(0.001, $budget->remaining()))
             );
+            $this->traceRuntime('ping_ok', $startedAt, $budget, []);
         } catch (ProtocolException $e) {
+            $this->traceRuntime('ping_error', $startedAt, $budget, [
+                'error' => $this->shortError($e),
+                'timeout' => $this->isTimeoutException($e) ? 1 : 0,
+            ]);
             if (!$this->isTimeoutException($e) && !$this->handleRunDisconnect($e, $budget)) {
+                $this->traceRuntime('ping_error_unhandled', $startedAt, $budget, [
+                    'error' => $this->shortError($e),
+                ]);
                 throw $e;
             }
+            $this->traceRuntime('ping_error_reconnected', $startedAt, $budget, [
+                'connection_open' => $this->connection->isOpen() ? 1 : 0,
+            ]);
         }
 
         return $this->nextPingDeadline();
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function traceRuntime(string $event, float $startedAt, ExecutionBudget $budget, array $context): void
+    {
+        if (!is_callable($this->options->debugLogger)) {
+            return;
+        }
+
+        $safe = [
+            'event' => $event,
+            'elapsed_ms' => (int) round((microtime(true) - $startedAt) * 1000),
+            'remaining_ms' => (int) round(max(0.0, $budget->remaining()) * 1000),
+        ];
+        foreach ($context as $key => $value) {
+            if (is_scalar($value) || $value === null) {
+                $safe[$key] = $value;
+            }
+        }
+
+        call_user_func($this->options->debugLogger, $event, $safe);
+    }
+
+    private function millisecondsUntil(?float $deadline): int
+    {
+        if ($deadline === null) {
+            return -1;
+        }
+        return (int) round(max(0.0, $deadline - microtime(true)) * 1000);
+    }
+
+    private function shortError(ProtocolException $exception): string
+    {
+        return substr(str_replace(["\r", "\n"], ' ', $exception->getMessage()), 0, 180);
+    }
+
+    /**
+     * @param array<mixed>|null $payload
+     */
+    private function payloadKeySummary(?array $payload): string
+    {
+        if ($payload === null || $payload === []) {
+            return '';
+        }
+        $keys = array_slice(array_map('strval', array_keys($payload)), 0, 12);
+        sort($keys);
+        return implode(',', $keys);
     }
 
     private function isTimeoutException(ProtocolException $exception): bool

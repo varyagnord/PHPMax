@@ -16,7 +16,7 @@ final class MsgpackPayloadCodec
         if ($payload === null) {
             return '';
         }
-        if (function_exists('msgpack_pack')) {
+        if (function_exists('msgpack_pack') && !$this->containsBinaryString($payload)) {
             /** @var string $packed */
             $packed = msgpack_pack($payload);
             return $packed;
@@ -63,6 +63,9 @@ final class MsgpackPayloadCodec
         }
         if (is_string($value)) {
             return $this->packString($value);
+        }
+        if ($value instanceof BinaryString) {
+            return $this->packBinary($value->bytes());
         }
         if (is_array($value)) {
             return $this->isList($value) ? $this->packArray($value) : $this->packMap($value);
@@ -120,6 +123,19 @@ final class MsgpackPayloadCodec
         return "\xDB" . pack('N', $length) . $value;
     }
 
+    private function packBinary(string $value): string
+    {
+        $length = strlen($value);
+        if ($length <= 0xFF) {
+            return "\xC4" . pack('C', $length) . $value;
+        }
+        if ($length <= 0xFFFF) {
+            return "\xC5" . pack('n', $length) . $value;
+        }
+
+        return "\xC6" . pack('N', $length) . $value;
+    }
+
     /**
      * @param array<int, mixed> $items
      */
@@ -157,6 +173,25 @@ final class MsgpackPayloadCodec
             $out .= $this->packValue($value);
         }
         return $out;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function containsBinaryString($value): bool
+    {
+        if ($value instanceof BinaryString) {
+            return true;
+        }
+        if (!is_array($value)) {
+            return false;
+        }
+        foreach ($value as $item) {
+            if ($this->containsBinaryString($item)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

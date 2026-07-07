@@ -191,7 +191,7 @@ function buildManifest(string $repoRoot): array
     $manifest = [
         'generated_from' => [
             'pymax_version' => $pymaxVersion,
-            'pymax_commit' => currentGitCommit($repoRoot),
+            'pymax_commit' => currentPyMaxReferenceCommit($repoRoot),
             'reference_paths' => [
                 'src/pymax/protocol/enums.py',
                 'src/pymax/dispatch/enums.py',
@@ -1271,7 +1271,7 @@ function readLines(string $path): array
     return $lines;
 }
 
-function currentGitCommit(string $repoRoot): ?string
+function currentPyMaxReferenceCommit(string $repoRoot): ?string
 {
     $current = getcwd();
     if ($current === false || !chdir($repoRoot)) {
@@ -1280,7 +1280,12 @@ function currentGitCommit(string $repoRoot): ?string
 
     $output = [];
     $exitCode = 1;
-    exec('git rev-parse HEAD 2>/dev/null', $output, $exitCode);
+    exec('git log -1 --first-parent --format=%H -- src/pymax pyproject.toml 2>/dev/null', $output, $exitCode);
+    if ($exitCode !== 0 || !isset($output[0]) || trim($output[0]) === '') {
+        $output = [];
+        $exitCode = 1;
+        exec('git rev-parse HEAD 2>/dev/null', $output, $exitCode);
+    }
     chdir($current);
 
     return $exitCode === 0 && isset($output[0]) ? trim($output[0]) : null;

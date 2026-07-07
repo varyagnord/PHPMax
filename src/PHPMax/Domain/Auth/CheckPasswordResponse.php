@@ -10,7 +10,7 @@ class CheckPasswordResponse extends Model
 {
     /** @var TokenAttrs|null */
     public $tokenAttrs;
-    /** @var string|null */
+    /** @var mixed */
     public $error;
 
     protected static function schema(): array
@@ -19,7 +19,10 @@ class CheckPasswordResponse extends Model
             'tokenAttrs' => ['type' => TokenAttrs::class, 'default' => static function (): TokenAttrs {
                 return new TokenAttrs();
             }],
-            'error' => ['type' => 'string'],
+            // MAX на успешной проверке 2FA может вернуть error=false вместе с
+            // tokenAttrs. Храним поле без строгого string-cast, чтобы не
+            // ломать успешный login из-за формы внешнего API.
+            'error' => ['type' => 'mixed'],
         ];
     }
 
@@ -30,4 +33,3 @@ class CheckPasswordResponse extends Model
             : null;
     }
 }
-

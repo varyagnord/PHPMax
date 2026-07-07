@@ -29,4 +29,18 @@ class ReactionUpdateEvent extends Model
             'totalCount' => ['type' => 'int', 'required' => true],
         ];
     }
+
+    protected static function normalizeInput(array $data): array
+    {
+        // MAX может прислать messageId реакции числом. Для EasyChat это
+        // служебное событие не должно ронять весь короткий polling-цикл.
+        if (array_key_exists('messageId', $data) && (is_int($data['messageId']) || is_float($data['messageId']))) {
+            $data['messageId'] = (string)$data['messageId'];
+        }
+        if (array_key_exists('message_id', $data) && (is_int($data['message_id']) || is_float($data['message_id']))) {
+            $data['message_id'] = (string)$data['message_id'];
+        }
+
+        return $data;
+    }
 }

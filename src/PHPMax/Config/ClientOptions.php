@@ -73,6 +73,8 @@ class ClientOptions
     public $uploadProcessingTimeout;
     /** @var float */
     public $uploadHttpTimeout;
+    /** @var callable|null */
+    public $debugLogger;
 
     /**
      * @param array<string, mixed> $options
@@ -121,6 +123,9 @@ class ClientOptions
         $this->uploadChunkSize = isset($options['uploadChunkSize']) ? max(1, (int) $options['uploadChunkSize']) : 1024 * 1024;
         $this->uploadProcessingTimeout = isset($options['uploadProcessingTimeout']) ? max(0.001, (float) $options['uploadProcessingTimeout']) : 60.0;
         $this->uploadHttpTimeout = isset($options['uploadHttpTimeout']) ? max(0.001, (float) $options['uploadHttpTimeout']) : 900.0;
+        $this->debugLogger = isset($options['debugLogger']) && is_callable($options['debugLogger'])
+            ? $options['debugLogger']
+            : null;
     }
 
     private function uuidV4(): string

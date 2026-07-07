@@ -106,6 +106,10 @@ class TcpTransport implements TransportInterface
         while (strlen($data) < $length) {
             $chunk = fread($stream, $length - strlen($data));
             if ($chunk === false) {
+                $meta = stream_get_meta_data($stream);
+                if (!empty($meta['timed_out'])) {
+                    throw new ProtocolException('Timed out reading from TCP transport');
+                }
                 throw new ProtocolException('Failed to read from TCP transport');
             }
             if ($chunk === '') {
