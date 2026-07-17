@@ -932,6 +932,20 @@ token, device_id, phone, mt_instance_id и отдельные sync markers.
 самым переносимым вариантом. Optional adapter дает parity путь для окружений,
 где SQLite доступен, не меняя public client/service API.
 
+## 2026-07-16 - JSON session store supports explicit single-session ownership
+
+Решение: добавить третий backward-compatible параметр
+`JsonFileSessionStore(..., bool $singleSession = false)`. При `true` каждый
+`saveSession()` атомарно заменяет предыдущее состояние, а legacy-файл с
+несколькими entries сохраняет первую запись, которую прежний PHPMax реально
+читал как активную.
+
+Причина: библиотека должна оставаться пригодной для multi-session сценариев,
+но cron-driven интеграции одной личной учетной записи не должны накапливать
+старые token sessions. Generation lock и отклонение stale workers остаются
+ответственностью host-приложения, потому что библиотека не знает его БД и
+reconnect lifecycle.
+
 ## 2026-07-03 - Telemetry navigation planner is explicit and bounded
 
 Решение: перенести PyMax `NavigationPlanner`, screen graph и route profiles,

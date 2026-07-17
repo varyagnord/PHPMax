@@ -104,6 +104,36 @@ return static function (callable $assert, callable $assertSame, callable $assert
         new JsonFileSessionStore($dir, $fileName);
     }, 'json');
 
+    $singleDir = sys_get_temp_dir() . '/phpmax-session-single-test-' . getmypid() . '-' . mt_rand();
+    try {
+        $legacyStore = new JsonFileSessionStore($singleDir);
+        $legacyStore->saveSession(new SessionInfo([
+            'token' => 'active-token',
+            'deviceId' => 'active-device',
+            'phone' => '+79990000002',
+        ]));
+        $legacyStore->saveSession(new SessionInfo([
+            'token' => 'secondary-token',
+            'deviceId' => 'secondary-device',
+            'phone' => '+79990000003',
+        ]));
+
+        $singleStore = new JsonFileSessionStore($singleDir, 'session.json', true);
+        $assertSame('active-device', $singleStore->loadSession()->deviceId);
+        $assertSame(null, $singleStore->loadSessionByDeviceId('secondary-device'));
+        $assertSame(null, $singleStore->loadSessionByPhone('+79990000003'));
+        $singleStore->saveSession(new SessionInfo([
+            'token' => 'replacement-token',
+            'deviceId' => 'replacement-device',
+            'phone' => '+79990000004',
+        ]));
+        $singlePayload = json_decode((string) file_get_contents($singleDir . '/session.json'), true);
+        $assertSame(1, count($singlePayload['sessions'] ?? []));
+        $assertSame('replacement-device', $singleStore->loadSession()->deviceId);
+    } finally {
+        $cleanupDir($singleDir);
+    }
+
     $sqliteDir = sys_get_temp_dir() . '/phpmax-session-sqlite-test-' . getmypid() . '-' . mt_rand();
     if (class_exists(PDO::class) && in_array('sqlite', PDO::getAvailableDrivers(), true)) {
         try {

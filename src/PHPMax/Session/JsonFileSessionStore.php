@@ -10,8 +10,10 @@ class JsonFileSessionStore implements SessionStoreInterface
 {
     /** @var string */
     private $path;
+    /** @var bool */
+    private $singleSession;
 
-    public function __construct(string $workDir, string $fileName = 'session.json')
+    public function __construct(string $workDir, string $fileName = 'session.json', bool $singleSession = false)
     {
         $this->assertSafeFileName($fileName);
 
@@ -23,10 +25,16 @@ class JsonFileSessionStore implements SessionStoreInterface
         }
 
         $this->path = rtrim($workDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $fileName;
+        $this->singleSession = $singleSession;
     }
 
     public function saveSession(SessionInfo $sessionInfo): void
     {
+        if ($this->singleSession) {
+            $this->writeSessions([$sessionInfo->toArray()]);
+            return;
+        }
+
         $sessions = $this->readSessions();
         $replaced = false;
         foreach ($sessions as $index => $session) {
@@ -45,10 +53,11 @@ class JsonFileSessionStore implements SessionStoreInterface
     public function updateToken(string $oldToken, string $newToken): void
     {
         $sessions = $this->readSessions();
-        foreach ($sessions as $index => $session) {
+        foreach ($this->sessionIndexes($sessions) as $index) {
+            $session = $sessions[$index];
             if (($session['token'] ?? null) === $oldToken) {
                 $sessions[$index]['token'] = $newToken;
-                $this->writeSessions($sessions);
+                $this->writeSessions($this->singleSession ? [$sessions[$index]] : $sessions);
                 return;
             }
         }
@@ -66,7 +75,9 @@ class JsonFileSessionStore implements SessionStoreInterface
 
     public function loadSessionByDeviceId(string $deviceId): ?SessionInfo
     {
-        foreach ($this->readSessions() as $session) {
+        $sessions = $this->readSessions();
+        foreach ($this->sessionIndexes($sessions) as $index) {
+            $session = $sessions[$index];
             if (($session['deviceId'] ?? $session['device_id'] ?? null) === $deviceId) {
                 return SessionInfo::fromArray($session);
             }
@@ -77,7 +88,9 @@ class JsonFileSessionStore implements SessionStoreInterface
 
     public function loadSessionByPhone(string $phone): ?SessionInfo
     {
-        foreach ($this->readSessions() as $session) {
+        $sessions = $this->readSessions();
+        foreach ($this->sessionIndexes($sessions) as $index) {
+            $session = $sessions[$index];
             if (($session['phone'] ?? null) === $phone) {
                 return SessionInfo::fromArray($session);
             }
@@ -88,6 +101,16 @@ class JsonFileSessionStore implements SessionStoreInterface
 
     public function deleteSession(string $token): void
     {
+        if ($this->singleSession) {
+            $sessions = $this->readSessions();
+            if ($sessions === []) {
+                return;
+            }
+            $active = $sessions[0];
+            $this->writeSessions(($active['token'] ?? null) === $token ? [] : [$active]);
+            return;
+        }
+
         $sessions = [];
         foreach ($this->readSessions() as $session) {
             if (($session['token'] ?? null) !== $token) {
@@ -118,6 +141,23 @@ class JsonFileSessionStore implements SessionStoreInterface
         ) {
             throw new PHPMaxException('Session file name must be a plain file name');
         }
+    }
+
+    /**
+     * Single-session mode preserves the first legacy entry because that is
+     * exactly the session older PHPMax versions loaded as active.
+     *
+     * @param list<array<string, mixed>> $sessions
+     * @return list<int>
+     */
+    private function sessionIndexes(array $sessions): array
+    {
+        if ($this->singleSession) {
+            return $sessions === [] ? [] : [0];
+        }
+
+        $indexes = array_keys($sessions);
+        return $indexes;
     }
 
     /**
@@ -171,12 +211,33 @@ class JsonFileSessionStore implements SessionStoreInterface
             if (file_put_contents($tmpPath, $payload . PHP_EOL, LOCK_EX) === false) {
                 throw new PHPMaxException('Unable to write temporary session store: ' . $tmpPath);
             }
-            @chmod($tmpPath, 0600);
+            set_error_handler(static function (): bool {
+                return true;
+            });
+            try {
+                chmod($tmpPath, 0600);
+            } finally {
+                restore_error_handler();
+            }
             if (!rename($tmpPath, $this->path)) {
-                @unlink($tmpPath);
+                set_error_handler(static function (): bool {
+                    return true;
+                });
+                try {
+                    unlink($tmpPath);
+                } finally {
+                    restore_error_handler();
+                }
                 throw new PHPMaxException('Unable to replace session store atomically: ' . $this->path);
             }
-            @chmod($this->path, 0600);
+            set_error_handler(static function (): bool {
+                return true;
+            });
+            try {
+                chmod($this->path, 0600);
+            } finally {
+                restore_error_handler();
+            }
         } finally {
             flock($lock, LOCK_UN);
             fclose($lock);

@@ -331,6 +331,8 @@
 - Persistence:
   - `SessionStoreInterface`;
   - `JsonFileSessionStore` с atomic write и file lock;
+  - opt-in single-session mode для приложений, где один account lifecycle
+    должен атомарно заменять предыдущую запись без накопления token sessions;
   - optional `SQLiteSessionStore` с PyMax-compatible session columns, indexes
     by `device_id`/`phone`, token update, sync marker persistence и
     `deleteAllSessions()` full local cleanup;

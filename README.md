@@ -30,6 +30,30 @@ Implemented foundations include:
 Real-account integration checks are intentionally opt-in and require your own
 token/account configuration.
 
+## Session Storage
+
+`JsonFileSessionStore` keeps the historical multi-session behavior by default.
+Applications that own exactly one account session, such as a cron-driven
+personal messenger integration, can enable the explicit single-session mode:
+
+```php
+use PHPMax\Session\JsonFileSessionStore;
+
+$store = new JsonFileSessionStore(
+    __DIR__ . '/var/phpmax',
+    'personal-account.json',
+    true
+);
+```
+
+In this mode every successful `saveSession()` atomically replaces the previous
+entry. When a legacy file contains several entries, `loadSession()` preserves
+the first one because older PHPMax versions treated it as active. Alternate
+device and phone lookups are restricted to that same entry, and the next save
+compacts the file to one session. Cross-process lifecycle generation and
+application-level reconnect locking remain the responsibility of the host
+application.
+
 ## Requirements
 
 - PHP 7.4 or newer;
