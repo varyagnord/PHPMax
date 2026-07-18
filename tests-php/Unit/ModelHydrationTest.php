@@ -67,6 +67,42 @@ return static function (callable $assert, callable $assertSame, callable $assert
     $assertSame(2, $message->unread);
     $assert($message->attaches[0] instanceof PhotoAttachment, 'Known photo attachment must hydrate to PhotoAttachment');
     $assertSame('token-1', $message->attaches[0]->photoToken);
+
+    $forwardEnvelope = Message::fromArray([
+        'chatId' => 100,
+        'message' => [
+            'id' => 43,
+            'time' => 123457,
+            'type' => 'USER',
+            'text' => '',
+        ],
+        'link' => [
+            'type' => 'FORWARD',
+            'chatId' => -200,
+            'messageId' => '42',
+        ],
+        'attaches' => [
+            ['_type' => AttachmentType::PHOTO, 'baseUrl' => 'https://cdn.test/forwarded.jpg', 'photoId' => 'forwarded-photo'],
+        ],
+    ]);
+    $assertSame('FORWARD', $forwardEnvelope->extra()['link']['type'] ?? null);
+    $assertSame(-200, $forwardEnvelope->extra()['link']['chatId'] ?? null);
+    $assert($forwardEnvelope->attaches[0] instanceof PhotoAttachment, 'Outer event attachments must survive nested message normalization');
+    $assertSame('https://cdn.test/forwarded.jpg', $forwardEnvelope->attaches[0]->baseUrl);
+
+    $nestedMessageWins = Message::fromArray([
+        'chatId' => null,
+        'message' => [
+            'id' => 44,
+            'chatId' => 101,
+            'time' => 123458,
+            'type' => 'USER',
+            'link' => ['type' => 'REPLY', 'messageId' => '41'],
+        ],
+        'link' => ['type' => 'FORWARD', 'chatId' => -200, 'messageId' => '42'],
+    ]);
+    $assertSame(101, $nestedMessageWins->chatId);
+    $assertSame('REPLY', $nestedMessageWins->extra()['link']['type'] ?? null);
     $malformedPhoto = PhotoAttachment::fromArray([
         '_type' => AttachmentType::PHOTO,
         'baseUrl' => ['bad' => 'shape'],

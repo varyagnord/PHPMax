@@ -195,11 +195,21 @@ class Message extends Model
 
         foreach ($outerFields as $target => $aliases) {
             foreach ($aliases as $alias) {
-                if (array_key_exists($alias, $data)) {
+                if (array_key_exists($alias, $data) && $data[$alias] !== null) {
                     $message[$target] = $data[$alias];
                     break;
                 }
             }
+        }
+
+        // MAX периодически кладет полезные поля сообщения во внешнюю оболочку
+        // события. Сохраняем отсутствующие во вложенном message поля, чтобы не
+        // потерять link пересылки и вложения; при совпадении message важнее.
+        foreach ($data as $key => $value) {
+            if ($key === 'message' || array_key_exists($key, $message)) {
+                continue;
+            }
+            $message[$key] = $value;
         }
 
         return $message;
