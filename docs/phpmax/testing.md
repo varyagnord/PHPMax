@@ -8,6 +8,9 @@
   payload keys and API service/client method surface.
 - Release packaging tests: dry-run manifest and archive content.
 - Byte parity tests: TCP frame header, MessagePack payloads, compression.
+- MessagePack extension fixtures: MAX wrapped value code `1`, вложенные
+  wrappers, неизвестный extension с byte-level round trip и fail-closed для
+  поврежденного вложенного payload.
 - Domain parity tests: Python fixture payload -> PHP model -> payload.
 - Model alias parity tests: hydrator accepts PHP property names, protocol
   camelCase keys and PyMax/Pydantic snake_case field names.

@@ -63,6 +63,26 @@ Follow-up:
 ```
 
 ```text
+Date: 2026-07-20
+Checked by: Codex
+Current PHPMax reference: maxapi-python 2.3.1, commit 8c40b71
+Latest upstream: stable/PyPI 2.3.1; development branch dev/2.4.0, commit bf13d9b
+Sources checked:
+  - git fetch upstream --tags --prune
+  - upstream/dev/2.4.0 protocol/auth diff
+  - https://pypi.org/pypi/maxapi-python/json
+Diff summary: development PyMax now unwraps selected response values from
+  MessagePack extension code 1; the same line introduces optional LOGIN2 and
+  fingerprint changes
+Decision: port the extension decoder now because production full sync fails
+  without it; preserve unknown extensions fail-safe. Defer LOGIN2 to a separate
+  auth parity change because QR/password login remains successful and broad
+  auth changes would increase this patch release risk.
+Follow-up: audit LOGIN2 flags and fingerprint payloads before the next auth
+  compatibility release
+```
+
+```text
 Date: 2026-07-03
 Checked by: Codex
 Current PHPMax reference: maxapi-python 2.3.1, commit 8c40b71

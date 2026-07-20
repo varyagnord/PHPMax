@@ -143,6 +143,11 @@ tooling.
 - TCP MessagePack/framing/compression.
 - MessagePack fallback обязан сохранять 64-bit timestamps/ids; усечение до
   32-bit ломает QR expiry, events и часть protocol payloads.
+- Входящий MessagePack декодируется детерминированным PHP-декодером даже при
+  установленном `ext-msgpack`: PECL decoder теряет содержимое extension-типов.
+  MAX extension code `1` раскрывается как вложенное MessagePack-значение с
+  ограничением глубины, а неизвестные extension-типы сохраняются в
+  `MessagePackExtension` без потери type/data.
 - Auth/login/session token refresh.
 - API errors: нельзя терять server error payload или превращать его только в
   generic string exception.

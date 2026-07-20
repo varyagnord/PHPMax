@@ -8,6 +8,7 @@ use PHPMax\Protocol\InboundFrame;
 use PHPMax\Protocol\Opcode;
 use PHPMax\Protocol\OutboundFrame;
 use PHPMax\Protocol\Tcp\Lz4BlockCompression;
+use PHPMax\Protocol\Tcp\MessagePackExtension;
 use PHPMax\Protocol\Tcp\MsgpackPayloadCodec;
 use PHPMax\Protocol\Tcp\TcpPacketFramer;
 use PHPMax\Protocol\Tcp\TcpPayloadDecoder;
@@ -58,6 +59,53 @@ return static function (callable $assert, callable $assertSame, callable $assert
     ]));
     $assertSame($largePositive, $largeDecoded['expiresAt'], 'MessagePack fallback must preserve uint64 timestamps');
     $assertSame($largeNegative, $largeDecoded['offset'], 'MessagePack fallback must preserve int64 values');
+
+    $wrappedLoginFixture = hex2bin('81a86d65737361676573c70301810090');
+    $assertSame(
+        ['messages' => [0 => []]],
+        $codec->decode($wrappedLoginFixture),
+        'MAX extension code 1 must unwrap nested MessagePack values'
+    );
+
+    $nestedWrappedFixture = hex2bin('c70401c701012a');
+    $assertSame(42, $codec->decode($nestedWrappedFixture), 'Nested MAX wrappers must decode recursively');
+
+    $unknownExtension = $codec->decode(hex2bin('d62affffffff'));
+    $assert(
+        $unknownExtension instanceof MessagePackExtension,
+        'Unknown MessagePack extension types must be preserved explicitly'
+    );
+    $assertSame(42, $unknownExtension->type());
+    $assertSame("\xFF\xFF\xFF\xFF", $unknownExtension->data());
+    $assertSame(
+        hex2bin('d62affffffff'),
+        $codec->encode($unknownExtension),
+        'Unknown MessagePack extensions must survive a byte-level round trip'
+    );
+
+    foreach ([0, 1, 2, 3, 4, 8, 16, 256, 65536] as $extensionLength) {
+        $extensionData = str_repeat('x', $extensionLength);
+        $encodedExtension = $codec->encode(new MessagePackExtension(-7, $extensionData));
+        $decodedExtension = $codec->decode($encodedExtension);
+        $assert(
+            $decodedExtension instanceof MessagePackExtension,
+            'Every MessagePack extension prefix must preserve the value object'
+        );
+        $assertSame(-7, $decodedExtension->type());
+        $assertSame($extensionData, $decodedExtension->data());
+    }
+
+    $assertThrows(\PHPMax\Exception\ProtocolException::class, static function () use ($codec): void {
+        $codec->decode(hex2bin('c7030190c0c0'));
+    }, 'Wrapped extension with trailing data must be rejected');
+
+    $tooDeepWrapper = "\x00";
+    for ($depth = 0; $depth < 33; $depth++) {
+        $tooDeepWrapper = $codec->encode(new MessagePackExtension(1, $tooDeepWrapper));
+    }
+    $assertThrows(\PHPMax\Exception\ProtocolException::class, static function () use ($codec, $tooDeepWrapper): void {
+        $codec->decode($tooDeepWrapper);
+    }, 'Wrapped extension nesting must be bounded');
 
     $compressed = hex2bin(
         'f40a84a6707265666978a27878a464617461b0664a73436c4b437508008f' .

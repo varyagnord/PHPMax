@@ -8,6 +8,9 @@ use PHPMax\Exception\ProtocolException;
 
 final class MsgpackPayloadCodec
 {
+    private const WRAPPED_VALUE_EXT_CODE = 1;
+    private const MAX_WRAPPED_EXTENSION_DEPTH = 32;
+
     /**
      * @param mixed $payload
      */
@@ -16,7 +19,7 @@ final class MsgpackPayloadCodec
         if ($payload === null) {
             return '';
         }
-        if (function_exists('msgpack_pack') && !$this->containsBinaryString($payload)) {
+        if (function_exists('msgpack_pack') && !$this->containsFallbackOnlyValue($payload)) {
             /** @var string $packed */
             $packed = msgpack_pack($payload);
             return $packed;
@@ -33,12 +36,8 @@ final class MsgpackPayloadCodec
         if ($payloadBytes === '') {
             return [];
         }
-        if (function_exists('msgpack_unpack')) {
-            return msgpack_unpack($payloadBytes);
-        }
-
         $offset = 0;
-        return $this->unpackValue($payloadBytes, $offset);
+        return $this->unpackValue($payloadBytes, $offset, 0);
     }
 
     /**
@@ -66,6 +65,9 @@ final class MsgpackPayloadCodec
         }
         if ($value instanceof BinaryString) {
             return $this->packBinary($value->bytes());
+        }
+        if ($value instanceof MessagePackExtension) {
+            return $this->packExtension($value);
         }
         if (is_array($value)) {
             return $this->isList($value) ? $this->packArray($value) : $this->packMap($value);
@@ -136,6 +138,35 @@ final class MsgpackPayloadCodec
         return "\xC6" . pack('N', $length) . $value;
     }
 
+    private function packExtension(MessagePackExtension $extension): string
+    {
+        $value = $extension->data();
+        $length = strlen($value);
+        $type = pack('C', $extension->type() & 0xFF);
+
+        switch ($length) {
+            case 1:
+                return "\xD4" . $type . $value;
+            case 2:
+                return "\xD5" . $type . $value;
+            case 4:
+                return "\xD6" . $type . $value;
+            case 8:
+                return "\xD7" . $type . $value;
+            case 16:
+                return "\xD8" . $type . $value;
+        }
+
+        if ($length <= 0xFF) {
+            return "\xC7" . pack('C', $length) . $type . $value;
+        }
+        if ($length <= 0xFFFF) {
+            return "\xC8" . pack('n', $length) . $type . $value;
+        }
+
+        return "\xC9" . pack('N', $length) . $type . $value;
+    }
+
     /**
      * @param array<int, mixed> $items
      */
@@ -178,16 +209,16 @@ final class MsgpackPayloadCodec
     /**
      * @param mixed $value
      */
-    private function containsBinaryString($value): bool
+    private function containsFallbackOnlyValue($value): bool
     {
-        if ($value instanceof BinaryString) {
+        if ($value instanceof BinaryString || $value instanceof MessagePackExtension) {
             return true;
         }
         if (!is_array($value)) {
             return false;
         }
         foreach ($value as $item) {
-            if ($this->containsBinaryString($item)) {
+            if ($this->containsFallbackOnlyValue($item)) {
                 return true;
             }
         }
@@ -197,7 +228,7 @@ final class MsgpackPayloadCodec
     /**
      * @return mixed
      */
-    private function unpackValue(string $bytes, int &$offset)
+    private function unpackValue(string $bytes, int &$offset, int $extensionDepth)
     {
         if ($offset >= strlen($bytes)) {
             throw new ProtocolException('MessagePack: unexpected end of payload');
@@ -216,10 +247,10 @@ final class MsgpackPayloadCodec
             return $this->readBytes($bytes, $offset, $prefix & 0x1F);
         }
         if (($prefix & 0xF0) === 0x90) {
-            return $this->unpackArray($bytes, $offset, $prefix & 0x0F);
+            return $this->unpackArray($bytes, $offset, $prefix & 0x0F, $extensionDepth);
         }
         if (($prefix & 0xF0) === 0x80) {
-            return $this->unpackMap($bytes, $offset, $prefix & 0x0F);
+            return $this->unpackMap($bytes, $offset, $prefix & 0x0F, $extensionDepth);
         }
 
         switch ($prefix) {
@@ -255,14 +286,32 @@ final class MsgpackPayloadCodec
                 return $this->readBytes($bytes, $offset, $this->readUInt($bytes, $offset, 1));
             case 0xC5:
                 return $this->readBytes($bytes, $offset, $this->readUInt($bytes, $offset, 2));
+            case 0xC6:
+                return $this->readBytes($bytes, $offset, $this->readUInt($bytes, $offset, 4));
+            case 0xC7:
+                return $this->unpackExtension($bytes, $offset, $this->readUInt($bytes, $offset, 1), $extensionDepth);
+            case 0xC8:
+                return $this->unpackExtension($bytes, $offset, $this->readUInt($bytes, $offset, 2), $extensionDepth);
+            case 0xC9:
+                return $this->unpackExtension($bytes, $offset, $this->readUInt($bytes, $offset, 4), $extensionDepth);
+            case 0xD4:
+                return $this->unpackExtension($bytes, $offset, 1, $extensionDepth);
+            case 0xD5:
+                return $this->unpackExtension($bytes, $offset, 2, $extensionDepth);
+            case 0xD6:
+                return $this->unpackExtension($bytes, $offset, 4, $extensionDepth);
+            case 0xD7:
+                return $this->unpackExtension($bytes, $offset, 8, $extensionDepth);
+            case 0xD8:
+                return $this->unpackExtension($bytes, $offset, 16, $extensionDepth);
             case 0xDC:
-                return $this->unpackArray($bytes, $offset, $this->readUInt($bytes, $offset, 2));
+                return $this->unpackArray($bytes, $offset, $this->readUInt($bytes, $offset, 2), $extensionDepth);
             case 0xDD:
-                return $this->unpackArray($bytes, $offset, $this->readUInt($bytes, $offset, 4));
+                return $this->unpackArray($bytes, $offset, $this->readUInt($bytes, $offset, 4), $extensionDepth);
             case 0xDE:
-                return $this->unpackMap($bytes, $offset, $this->readUInt($bytes, $offset, 2));
+                return $this->unpackMap($bytes, $offset, $this->readUInt($bytes, $offset, 2), $extensionDepth);
             case 0xDF:
-                return $this->unpackMap($bytes, $offset, $this->readUInt($bytes, $offset, 4));
+                return $this->unpackMap($bytes, $offset, $this->readUInt($bytes, $offset, 4), $extensionDepth);
             case 0xCA:
                 $raw = $this->readBytes($bytes, $offset, 4);
                 $unpacked = unpack('G', $raw);
@@ -279,11 +328,11 @@ final class MsgpackPayloadCodec
     /**
      * @return array<int, mixed>
      */
-    private function unpackArray(string $bytes, int &$offset, int $length): array
+    private function unpackArray(string $bytes, int &$offset, int $length, int $extensionDepth): array
     {
         $items = [];
         for ($i = 0; $i < $length; $i++) {
-            $items[] = $this->unpackValue($bytes, $offset);
+            $items[] = $this->unpackValue($bytes, $offset, $extensionDepth);
         }
         return $items;
     }
@@ -291,14 +340,54 @@ final class MsgpackPayloadCodec
     /**
      * @return array<mixed>
      */
-    private function unpackMap(string $bytes, int &$offset, int $length): array
+    private function unpackMap(string $bytes, int &$offset, int $length, int $extensionDepth): array
     {
         $items = [];
         for ($i = 0; $i < $length; $i++) {
-            $key = $this->unpackValue($bytes, $offset);
-            $items[$key] = $this->unpackValue($bytes, $offset);
+            $key = $this->unpackValue($bytes, $offset, $extensionDepth);
+            if (!is_int($key) && !is_string($key)) {
+                throw new ProtocolException('MessagePack map key must be an integer or string');
+            }
+            $items[$key] = $this->unpackValue($bytes, $offset, $extensionDepth);
         }
         return $items;
+    }
+
+    /**
+     * MAX использует extension code 1 как прозрачную обертку над еще одним
+     * MessagePack-значением. Неизвестные коды сохраняем без интерпретации.
+     *
+     * @return mixed
+     */
+    private function unpackExtension(string $bytes, int &$offset, int $length, int $extensionDepth)
+    {
+        $type = $this->readSignedByte($bytes, $offset);
+        $data = $this->readBytes($bytes, $offset, $length);
+
+        if ($type !== self::WRAPPED_VALUE_EXT_CODE) {
+            return new MessagePackExtension($type, $data);
+        }
+        if ($extensionDepth >= self::MAX_WRAPPED_EXTENSION_DEPTH) {
+            throw new ProtocolException('MessagePack wrapped extension nesting limit exceeded');
+        }
+        if ($data === '') {
+            throw new ProtocolException('MessagePack wrapped extension payload is empty');
+        }
+
+        $innerOffset = 0;
+        $value = $this->unpackValue($data, $innerOffset, $extensionDepth + 1);
+        if ($innerOffset !== strlen($data)) {
+            throw new ProtocolException('MessagePack wrapped extension contains trailing data');
+        }
+
+        return $value;
+    }
+
+    private function readSignedByte(string $bytes, int &$offset): int
+    {
+        $value = $this->readUInt($bytes, $offset, 1);
+
+        return $value > 0x7F ? $value - 0x100 : $value;
     }
 
     private function readUInt(string $bytes, int &$offset, int $length): int
